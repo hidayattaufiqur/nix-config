@@ -6,7 +6,6 @@
 { config, pkgs, ... }:
 
 {
-
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
@@ -99,18 +98,31 @@
   # ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.nixos = {
-    isNormalUser = true;
-    description = "swift";
-    extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-    packages = with pkgs; [
-    	neovim # basic necessity
-    ];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
-    ];
-  };
+  # users.users.nixos = {
+  #   isNormalUser = true;
+  #   description = "swift";
+  #   extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
+  #   packages = with pkgs; [
+  #   	neovim # basic necessity
+  #   ];
+  #   shell = pkgs.zsh;
+  #   openssh.authorizedKeys.keys = [
+  #     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
+  #   ];
+  # };
+
+  # users.users.nixos-box = { 
+  #    isNormalUser = true;
+  #    description = "box";
+  #    extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
+  #    packages = with pkgs; [
+  #    	neovim # basic necessity
+  #    ];
+  #    shell = pkgs.zsh;
+  #    openssh.authorizedKeys.keys = [
+  #      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
+  #    ];
+  # };
 
   # Enable automatic login for the user.
   services.xserver.displayManager.autoLogin.enable = true;
