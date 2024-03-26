@@ -5,13 +5,41 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
-    ];
+    [ (modulesPath + "/installer/scan/not-detected.nix") ./configuration.nix ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+
+  networking.hostName = "nixos"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+
+  # Bootloader.
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
+
+  # Dual Booting using Grub 
+   boot.loader = { 
+    # systemd-boot.enable = true;
+     efi = { 
+       efiSysMountPoint = "/boot/efi"; # if using grub
+      # efiSysMountPoint = "/boot";  # if using systemd
+     };
+
+     # efi.canTouchEfiVariables = true;
+
+     grub = { 
+      enable = true; 
+      devices = [ "nodev" ];
+      efiInstallAsRemovable = true;
+      efiSupport = true;  
+      useOSProber = true;  
+      configurationLimit = 7;
+     };
+     timeout = 7;  
+   };
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/e0a2ebd4-531b-473d-ab3c-4b1486ea5df7";

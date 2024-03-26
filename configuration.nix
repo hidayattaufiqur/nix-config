@@ -6,40 +6,6 @@
 { config, pkgs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      ./battery-configuration.nix
-      # <home-manager/nixos>
-    ];
-
-  # Bootloader.
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.efi.canTouchEfiVariables = true;
-
-  # Dual Booting using Grub 
-   boot.loader = { 
-    # systemd-boot.enable = true;
-     efi = { 
-       efiSysMountPoint = "/boot/efi"; # if using grub
-      # efiSysMountPoint = "/boot";  # if using systemd
-     };
-
-     # efi.canTouchEfiVariables = true;
-
-     grub = { 
-      enable = true; 
-      devices = [ "nodev" ];
-      efiInstallAsRemovable = true;
-      efiSupport = true;  
-      useOSProber = true;  
-      configurationLimit = 7;
-     };
-     timeout = 7;  
-   };
-
-  networking.hostName = "nixos"; # Define your hostname.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
