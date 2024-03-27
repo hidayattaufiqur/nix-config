@@ -69,11 +69,6 @@
   services.xserver.libinput.enable = true;
 
   # Enable programs
-  programs.steam = {
-    enable = true;
-    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-  };
   programs.java.enable = true; 
   programs.noisetorch.enable = true; 
   programs.zsh.enable = true;
@@ -125,19 +120,12 @@
   #-------------------------------------------------------------------------
   # Enable redis service
   #-------------------------------------------------------------------------
-  services.redis.servers."api-talent-report".enable=true;
-  services.redis.servers."api-talent-report".port=6379;
+  # services.redis.servers."api-talent-report".enable=true;
+  # services.redis.servers."api-talent-report".port=6379;
 
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
-
-  nixpkgs.config.permittedInsecurePackages = [
-      "electron-12.2.3"
-      "steam"
-      "steam-original"
-      "steam-run"
-  ];
 
   # Disable default Gnome apps
   environment.gnome.excludePackages = with pkgs.gnome; [
@@ -217,8 +205,8 @@
     python3
 
     ## Python packages
-    python310Packages.pip
-    python310Packages.virtualenv
+    python311Packages.pip
+    python311Packages.virtualenv
 
     ## LSP servers
     nodePackages_latest.pyright
@@ -259,10 +247,7 @@
     # GTK themes 
     qgnomeplatform
     nordic
-
-    # Gamiiingg
-    lutris
-    protonup-qt
+    # andromeda-gtk-theme # still in unstable channel
   ];
 	
   nix = { 
@@ -295,7 +280,6 @@
     enable = true; 
   }; 
 
-
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -311,27 +295,6 @@
   system.stateVersion = "23.05"; # Did you read the comment?
  
   # Package overlays 
-  nixpkgs.overlays = [
-    (final: prev: {
-      steam = prev.steam.override ({ extraPkgs ? pkgs': [], ... }: {
-        extraPkgs = pkgs': (extraPkgs pkgs') ++ (with pkgs'; [
-          libgdiplus
-        ]);
-      });
-
-      postman = prev.postman.overrideAttrs(old: rec {
-        version = "20230716100528";
-        src = final.fetchurl {
-          url = "https://web.archive.org/web/${version}/https://dl.pstmn.io/download/latest/linux_64";
-          sha256 = "sha256-svk60K4pZh0qRdx9+5OUTu0xgGXMhqvQTGTcmqBOMq8=";
-
-          name = "${old.pname}-${version}.tar.gz";
-        };
-      });
-    })
-  ];
-
-
   nix = { 
     package = pkgs.nixFlakes; 
     extraOptions = "experimental-features = nix-command flakes";

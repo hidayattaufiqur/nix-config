@@ -6,10 +6,47 @@
      extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
      packages = with pkgs; [
      	neovim # basic necessity
+
+      # Gamiiingg
+      lutris
+      protonup-qt
      ];
      shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
      ];
   };
+
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+  };
+
+  nixpkgs.config.permittedinsecurepackages = [
+      "electron-12.2.3"
+      "steam"
+      "steam-original"
+      "steam-run"
+  ];
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      steam = prev.steam.override ({ extraPkgs ? pkgs': [], ... }: {
+        extraPkgs = pkgs': (extraPkgs pkgs') ++ (with pkgs'; [
+          libgdiplus
+        ]);
+      });
+
+      postman = prev.postman.overrideAttrs(old: rec {
+        version = "20230716100528";
+        src = final.fetchurl {
+          url = "https://web.archive.org/web/${version}/https://dl.pstmn.io/download/latest/linux_64";
+          sha256 = "sha256-svk60K4pZh0qRdx9+5OUTu0xgGXMhqvQTGTcmqBOMq8=";
+
+          name = "${old.pname}-${version}.tar.gz";
+        };
+      });
+    })
+  ];
 }
