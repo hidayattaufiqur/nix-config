@@ -201,7 +201,6 @@
     neovim 
     vim
     google-cloud-sdk
-    postman
     python3
 
     ## Python packages
