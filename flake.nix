@@ -10,27 +10,53 @@ outputs = { self, home-manager, nixpkgs }@inputs:
   let
     system = "x86_64-linux";
     specialArgs = inputs // { inherit system; };
-    shared-modules = [
-      home-manager.nixosModules.home-manager
-      {
-        home-manager = {
-          useUserPackages = true;
-          extraSpecialArgs = specialArgs;
-        };
-      }
-    ];
+    # shared-modules = [
+    #   home-manager.nixosModules.home-manager
+    #   {
+    #     home-manager = {
+    #       useUserPackages = true;
+    #       useGlobalPkgs = true; 
+    #       extraSpecialArgs = specialArgs;
+    #
+    #       users.nixos-box = import ./hosts/desktop/home.nix;
+    #       users.nixos = import ./hosts/laptop/home.nix;
+    #     };
+    #   }
+    # ];
   in
   {
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         specialArgs = specialArgs;
         system = system;
-        modules = shared-modules ++ [ ./swift.nix ];
+        modules = [
+          ./hosts/laptop/laptop.nix 
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useUserPackages = true;
+              useGlobalPkgs = true; 
+              extraSpecialArgs = specialArgs;
+              users.nixos = import ./hosts/laptop/home.nix;
+            };
+          }
+        ];
       };
        nixos-box = nixpkgs.lib.nixosSystem {
         specialArgs = specialArgs;
         system = system;
-        modules = shared-modules ++ [ ./nixos-box.nix ];
+        modules = [
+          ./hosts/desktop/desktop.nix 
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useUserPackages = true;
+              useGlobalPkgs = true; 
+              extraSpecialArgs = specialArgs;
+              users.nixos-box = import ./hosts/desktop/home.nix;
+            };
+          }
+          ];
        };
     };
   };

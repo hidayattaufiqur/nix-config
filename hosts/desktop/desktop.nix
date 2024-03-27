@@ -6,20 +6,15 @@
 {
   imports = [ 
     (modulesPath + "/installer/scan/not-detected.nix")
-    ./configuration.nix 
+    ./users/nixos-box.nix
+    ./../../configuration.nix 
     ];
 
   # Bootloader.
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.efi.canTouchEfiVariables = true;
-
-  # Dual Booting using Grub 
    boot.loader = { 
      efi = { 
        efiSysMountPoint = "/boot/efi"; # if using grub
      };
-
-     # efi.canTouchEfiVariables = true;
 
      grub = { 
       enable = true; 
@@ -33,19 +28,6 @@
    };
 
   networking.hostName = "nixos-box"; # Define your hostname.
-
-  users.users.nixos-box = { 
-     isNormalUser = true;
-     description = "box";
-     extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-     packages = with pkgs; [
-     	neovim # basic necessity
-     ];
-     shell = pkgs.zsh;
-     openssh.authorizedKeys.keys = [
-       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
-     ];
-  };
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];

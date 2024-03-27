@@ -6,8 +6,9 @@
 {
   imports = [
   (modulesPath + "/installer/scan/not-detected.nix") 
-  ./configuration.nix 
   ./battery-configuration.nix
+  ./users/nixos.nix
+  ./../../configuration.nix
   ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "sd_mod" ];
@@ -18,20 +19,11 @@
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
-
-  # Bootloader.
-  # boot.loader.systemd-boot.enable = true;
-  # boot.loader.efi.canTouchEfiVariables = true;
-
   # Dual Booting using Grub 
    boot.loader = { 
-    # systemd-boot.enable = true;
      efi = { 
        efiSysMountPoint = "/boot/efi"; # if using grub
-      # efiSysMountPoint = "/boot";  # if using systemd
      };
-
-     # efi.canTouchEfiVariables = true;
 
      grub = { 
       enable = true; 
@@ -44,21 +36,7 @@
      timeout = 7;  
    };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.nixos = {
-    isNormalUser = true;
-    description = "swift";
-    extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-    packages = with pkgs; [
-    	neovim # basic necessity
-    ];
-    shell = pkgs.zsh;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
-    ];
-  };
-
-  fileSystems."/" =
+    fileSystems."/" =
     { device = "/dev/disk/by-uuid/e0a2ebd4-531b-473d-ab3c-4b1486ea5df7";
       fsType = "ext4";
     };
