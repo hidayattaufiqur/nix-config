@@ -4,6 +4,13 @@
   home.username = "nixos-box"; 
   home.homeDirectory = "/home/nixos-box";
 
+  imports = [
+    (import ../../home-manager/programs/git.nix)
+    (import ../../home-manager/programs/nvim.nix)
+    (import ../../home-manager/programs/zsh.nix)
+    (import ../../home-manager/programs/rofi.nix)
+  ];
+
   programs.git = {
     enable = true; 
     userName = "Hidayat Taufiqur";
@@ -25,10 +32,10 @@
     };
   };
 
-  programs.fzf = {
+  program.fzf = {
     enable = true; 
     enableZshIntegration = true; 
-  };
+  }
 
   home.stateVersion = "23.11";
 

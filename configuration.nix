@@ -68,16 +68,12 @@
   # Enable touchpad support (enabled default in most desktopManager).
   services.xserver.libinput.enable = true;
 
-  # Enable docker
-  virtualisation.docker.enable = true;
-
   # Enable programs
   programs.steam = {
     enable = true;
     remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
   };
-	
   programs.java.enable = true; 
   programs.noisetorch.enable = true; 
   programs.zsh.enable = true;
@@ -85,9 +81,10 @@
     enable = true; 
     package = pkgs.wireshark;
   };
-
- virtualisation.virtualbox.host.enable = true;
- users.extraGroups.vboxusers.members = [ "nixos" ];
+  programs.kdeconnect.enable = true; 
+  virtualisation.docker.enable = true;
+  virtualisation.virtualbox.host.enable = true;
+  users.extraGroups.vboxusers.members = [ "nixos" "nixos-box" ];
 
   # enable nix-ld for pip and friends
   programs.nix-ld.enable = true;
@@ -97,36 +94,10 @@
   #   zlib # numpy
   # ];
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  # users.users.nixos = {
-  #   isNormalUser = true;
-  #   description = "swift";
-  #   extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-  #   packages = with pkgs; [
-  #   	neovim # basic necessity
-  #   ];
-  #   shell = pkgs.zsh;
-  #   openssh.authorizedKeys.keys = [
-  #     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
-  #   ];
-  # };
-
-  # users.users.nixos-box = { 
-  #    isNormalUser = true;
-  #    description = "box";
-  #    extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-  #    packages = with pkgs; [
-  #    	neovim # basic necessity
-  #    ];
-  #    shell = pkgs.zsh;
-  #    openssh.authorizedKeys.keys = [
-  #      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
-  #    ];
-  # };
-
   # Enable automatic login for the user.
   services.xserver.displayManager.autoLogin.enable = true;
   services.xserver.displayManager.autoLogin.user = "nixos";
+  services.xserver.displayManager.autoLogin.user = "nixos-box";
 
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
@@ -190,6 +161,7 @@
     "wireshark" = "QT_STYLE_OVERRIDE=Adwaita-Dark wireshark";
   }; 
 
+  # Installing fonts
   fonts.packages = with pkgs; [
     (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" "RobotoMono" ]; })
   ];
@@ -200,7 +172,7 @@
     # Gnome extensions
     gnomeExtensions.compiz-alike-magic-lamp-effect
     gnomeExtensions.just-perfection
-    gnomeExtensions.resource-monitor
+    gnomeExtensions.resource-monitor # unsupported version in Nix repo
     gnomeExtensions.dash-to-dock
     gnomeExtensions.blur-my-shell
     gnomeExtensions.appindicator

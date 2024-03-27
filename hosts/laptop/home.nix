@@ -18,10 +18,10 @@ in
   home.stateVersion = "23.05"; # Please read the comment before changing.
 
   imports = [
-    (import ./programs/git.nix)
-    (import ./programs/nvim.nix)
-    (import ./programs/zsh.nix)
-    (import ./programs/rofi.nix)
+    (import ../../home-manager/programs/git.nix)
+    (import ../../home-manager/programs/nvim.nix)
+    (import ../../home-manager/programs/zsh.nix)
+    (import ../../home-manager/programs/rofi.nix)
   ];
 
   programs.neovim = { 
