@@ -190,6 +190,10 @@
     "wireshark" = "QT_STYLE_OVERRIDE=Adwaita-Dark wireshark";
   }; 
 
+  fonts.packages = with pkgs; [
+    (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" "RobotoMono" ]; })
+  ];
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [		
@@ -257,6 +261,7 @@
     gnumake42
     xdotool
     wl-clipboard
+    xclip
     unzip
     tmux
     neofetch
@@ -283,6 +288,10 @@
     # GTK themes 
     qgnomeplatform
     nordic
+
+    # Gamiiingg
+    lutris
+    protonup-qt
   ];
 	
   nix = { 
