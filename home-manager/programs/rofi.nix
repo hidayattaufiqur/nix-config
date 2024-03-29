@@ -10,7 +10,7 @@
     ];
 
     # font = "IBM Plex Mono 10";
-    font = "Source Sans 3 VF Regular";
+    font = "RobotoMono Nerd Font";
     theme = "dmenu";
 
     extraConfig = {

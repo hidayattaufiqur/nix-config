@@ -105,7 +105,6 @@
     description = "Keychron enable fn keys mode";
     unitConfig = {
       Type = "simple";
-      # ...
     };
 
     wantedBy = [ "multi-user.target" ];
@@ -142,7 +141,6 @@
     gnome-maps 
     pkgs.gnome-connections
   ];
-
 
   environment.shellAliases = {
     "wireshark" = "QT_STYLE_OVERRIDE=Adwaita-Dark wireshark";

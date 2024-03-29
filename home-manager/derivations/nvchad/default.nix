@@ -28,4 +28,5 @@ nvchad = stdenv.mkDerivation rec {
     platforms = platforms.all;
     license = licenses.gpl3;
   };
+};
 }
