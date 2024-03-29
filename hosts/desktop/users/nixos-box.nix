@@ -10,7 +10,11 @@
       # Gamiiingg
       lutris
       protonup-qt
+
+      # dev 
+      postgresql
      ];
+
      shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
@@ -49,4 +53,20 @@
       });
     })
   ];
+
+  # Enable postgresql service
+  services.postgresql = {
+    enable = true;
+    # ensureDatabases = [ "mydatabase" ];
+    # enableTCPIP = true;
+    # port = 5432;
+    # authentication = pkgs.lib.mkOverride 10 ''
+    #   #...
+    #   #type database DBuser origin-address auth-method
+    #   # ipv4
+    #   host  all      all     127.0.0.1/32   trust
+    #   # ipv6
+    #   host all       all     ::1/128        trust
+    # '';
+  };
 }

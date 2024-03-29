@@ -164,6 +164,7 @@
     gnomeExtensions.blur-my-shell
     gnomeExtensions.appindicator
     gnomeExtensions.quick-settings-tweaker
+    gnomeExtensions.rounded-window-corners
     themechanger
     
     # Basic Apps
@@ -184,6 +185,7 @@
     zotero
 
     # Dev apps 
+    postman
     rustup
     redis
     perl
