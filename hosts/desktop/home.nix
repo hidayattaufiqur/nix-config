@@ -9,6 +9,8 @@
     (import ../../home-manager/programs/nvim.nix)
     (import ../../home-manager/programs/zsh.nix)
     (import ../../home-manager/programs/rofi.nix)
+    (import ../../home-manager/programs/tmux.nix)
+    (import ../../home-manager/programs/alacritty/alacritty.nix)
   ];
 
   programs.fzf = {

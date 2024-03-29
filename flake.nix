@@ -30,7 +30,7 @@ outputs = { self, home-manager, nixpkgs }@inputs:
         specialArgs = specialArgs;
         system = system;
         modules = [
-          ./hosts/laptop/laptop.nix 
+          ./hosts/laptop/hardware-configuration/default.nix
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -46,7 +46,7 @@ outputs = { self, home-manager, nixpkgs }@inputs:
         specialArgs = specialArgs;
         system = system;
         modules = [
-          ./hosts/desktop/desktop.nix 
+          ./hosts/desktop/hardware-configuration/default.nix
           home-manager.nixosModules.home-manager
           {
             home-manager = {

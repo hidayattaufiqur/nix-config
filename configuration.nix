@@ -198,7 +198,7 @@
     jdk
     redis
     nodejs_20
-    alacritty 
+    # alacritty 
     jetbrains.datagrip
     neovim 
     vim
@@ -223,7 +223,7 @@
     wl-clipboard
     xclip
     unzip
-    tmux
+    # tmux
     neofetch
     tlp
     git

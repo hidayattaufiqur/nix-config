@@ -6,9 +6,9 @@
 {
   imports = [
   (modulesPath + "/installer/scan/not-detected.nix") 
-  ./battery-configuration.nix
-  ./users/nixos.nix
-  ./../../configuration.nix
+  ./../../../configuration.nix
+  ./../battery-configuration.nix
+  ./../users/nixos.nix
   ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "sd_mod" ];

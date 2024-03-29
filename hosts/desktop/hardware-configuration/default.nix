@@ -6,8 +6,8 @@
 {
   imports = [ 
     (modulesPath + "/installer/scan/not-detected.nix")
-    ./users/nixos-box.nix
-    ./../../configuration.nix 
+    ./../../../configuration.nix 
+    ./../users/nixos-box.nix
     ];
 
   # Bootloader.
