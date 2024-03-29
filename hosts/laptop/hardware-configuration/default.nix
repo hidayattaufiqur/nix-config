@@ -9,6 +9,7 @@
   ./../../../configuration.nix
   ./../battery-configuration.nix
   ./../users/nixos.nix
+  ./bluetooth.nix
   ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "thunderbolt" "vmd" "nvme" "usb_storage" "sd_mod" ];
@@ -48,7 +49,7 @@
 
   swapDevices =
     [ { device = "/dev/disk/by-uuid/bc70bb0b-50e3-43a1-9792-217825319cdd"; }
-    ];
+  ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
@@ -57,17 +58,6 @@
   networking.useDHCP = lib.mkDefault true;
   # networking.interfaces.wlp0s20f3.useDHCP = lib.mkDefault true;
 	
-  # Configure bluetooth to fix Keychron connection delay problem 
-  hardware.bluetooth = { 
-    enable = true; 
-    settings.General = { 
-      Experimental = true; 
-    #   FastConnectable = true; 
-    #   ReconnectAttempts = 7; 
-    #   ReconnectIntervals = "1, 2, 3"; 
-    }; 
-  };
-
   hardware.opengl.extraPackages = with pkgs; [ intel-compute-runtime ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";

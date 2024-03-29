@@ -8,6 +8,7 @@
     (modulesPath + "/installer/scan/not-detected.nix")
     ./../../../configuration.nix 
     ./../users/nixos-box.nix
+    ./bluetooth.nix
     ];
 
   # Bootloader.
@@ -49,12 +50,17 @@
       fsType = "vfat";
     };
 
+  fileSystems."/run/media/nixos-box/Ext-HDD" = 
+  { device = "/dev/disk/by-uuid/D2FC7781FC775F23";
+    fsType = "NTFS";
+  };
+
   swapDevices =
     [ { device = "/dev/disk/by-uuid/2b99bb38-51a9-4511-abb5-3d59ba220eb3"; }
     ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
-  # (the default) this is the recommended approach. When using systemd-networkd it's
+  # () this is the recommended approach. When using systemd-networkd it's
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
