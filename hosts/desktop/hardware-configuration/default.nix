@@ -33,8 +33,10 @@
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-amd" ];
+  boot.kernelModules = [ "kvm-amd" "amdgpu" ];
   boot.extraModulePackages = [ ];
+
+  services.xserver.videoDrivers = [ "amdgpu" ];
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/a56584ed-7787-4050-8a09-2388e15d291a";

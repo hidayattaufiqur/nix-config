@@ -5,7 +5,7 @@
      description = "box";
      extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
      packages = with pkgs; [
-     	neovim # basic necessity
+     neovim # basic necessity
 
       # Gamiiingg
       lutris
@@ -13,6 +13,10 @@
 
       # dev 
       postgresql
+
+      # linux utilities
+      radeontop
+      glxinfo
      ];
 
      shell = pkgs.zsh;
