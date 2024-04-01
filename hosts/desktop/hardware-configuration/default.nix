@@ -47,17 +47,7 @@
     { device = "/dev/disk/by-uuid/83DA-0099";
       fsType = "vfat";
     };
-
-  # fileSystems."/boot" =
-  #   { device = "/dev/disk/by-uuid/83DA-0099";
-  #     fsType = "vfat";
-  #   };
-
-  # fileSystems."/run/media/nixos-box/D2FC7781FC775F23" = 
-  #   { device = "/dev/disk/by-uuid/D2FC7781FC775F23";
-  #     fsType = "NTFS";
-  #   };
-
+  
   swapDevices =
     [ { device = "/dev/disk/by-uuid/2b99bb38-51a9-4511-abb5-3d59ba220eb3"; }
     ];
