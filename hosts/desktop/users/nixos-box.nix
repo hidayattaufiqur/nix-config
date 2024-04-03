@@ -62,7 +62,7 @@
   services.postgresql = {
     enable = true;
     # ensureDatabases = [ "mydatabase" ];
-    # enableTCPIP = true;
+    enableTCPIP = true;
     # port = 5432;
     # authentication = pkgs.lib.mkOverride 10 ''
     #   #...

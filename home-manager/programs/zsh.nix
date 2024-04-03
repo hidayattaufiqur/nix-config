@@ -22,7 +22,7 @@
       virtualbox="qt_style_override=adwaita-dark VirtualBox";
 
       # nix command aliases
-      update="nixos-rebuild switch";
+      update="sudo nixos-rebuild switch";
       upgrade="sudo nix-channel --update && sudo nixos-rebuild switch";
       hmupdate="home-manager build switch";
       nix-clean="nix-store --optimise && nix-store --gc";
