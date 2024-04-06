@@ -13,6 +13,7 @@
 
       # dev 
       postgresql
+      gephi
 
       # linux utilities
       radeontop
