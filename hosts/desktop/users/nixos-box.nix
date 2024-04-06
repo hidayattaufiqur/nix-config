@@ -76,5 +76,4 @@
   };
 
   virtualisation.waydroid.enable = true;
-
 }
