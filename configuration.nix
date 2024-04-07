@@ -12,7 +12,8 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-  networking.nameservers = [ "1.1.1.1" "1.0.0.1" ];
+  networking.nameservers = [ "100.100.100.100" "1.1.1.1" "1.0.0.1" ];
+  networking.search = [ "tailede36.ts.net" ];
   
   # Set your time zone.
   time.timeZone = "Asia/Jakarta";
