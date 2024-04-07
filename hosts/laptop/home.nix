@@ -54,6 +54,8 @@ in
     pkgs.wtype
     pkgs.zip 
     pkgs.qbittorrent
+    pkgs.winbox
+
     # # it is sometimes useful to fine-tune packages, for example, by applying
     # # overrides. you can do that directly here, just don"t forget the
     # # parentheses. maybe you want to install nerd fonts with a limited number of
