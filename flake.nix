@@ -106,6 +106,17 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }@inputs:
       '';
     };
 
+    systemd.services.logid-startup = {
+      description = "Automatic startup for Logitech Daemon";
+
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network.target" ];
+      serviceConfig = {
+        ExecStart = "${pkgs.logiops}/bin/logid";
+        Restart = "on-failure";
+      };  
+    };
+
     systemd.services.keyboard-startup-fix = { 
       enable = true; 
       description = "Keychron enable fn keys mode";
