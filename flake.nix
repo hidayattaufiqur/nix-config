@@ -78,6 +78,19 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }@inputs:
        };
     };
 
+    environment.variables = {
+      SUDO_EDITOR = "nvim";
+      EDITOR = "nvim";
+      VISUAL = "nvim";
+      PAGER = "less";
+      BROWSER = "brave";
+      MANPAGER = "nvim +Man!";
+      TERMINAL = "alacritty";
+    };
+
+    /**
+    below are some systemd services that I want to run on startup
+    */
     # stolen from Mustafa's config
     systemd.services.tailscale-autoconnect = {
       description = "Automatic connection to Tailscale";
