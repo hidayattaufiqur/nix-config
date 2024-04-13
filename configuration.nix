@@ -165,6 +165,7 @@
     gnomeExtensions.appindicator
     gnomeExtensions.quick-settings-tweaker
     gnomeExtensions.rounded-window-corners
+    gnomeExtensions.tiling-assistant
     themechanger
     
     # Basic Apps
@@ -185,6 +186,7 @@
     zotero
 
     # Dev apps 
+    lazygit
     postman
     rustup
     redis
@@ -223,7 +225,6 @@
     wl-clipboard
     xclip
     unzip
-    # tmux
     neofetch
     tlp
     git
@@ -240,6 +241,7 @@
     logiops
     tldr
     syncthing
+    btop
 
     # Nix utilities
     nix-tree

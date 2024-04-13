@@ -18,6 +18,10 @@
       # linux utilities
       radeontop
       glxinfo
+      nvtop-amd
+
+      # basic
+      firefox
      ];
 
      shell = pkgs.zsh;

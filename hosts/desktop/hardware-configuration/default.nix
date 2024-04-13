@@ -33,10 +33,24 @@
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "usbhid" "uas" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-amd" "amdgpu" ];
   boot.extraModulePackages = [ ];
 
+  # AMD GPU stuffs (refer to https://nixos.wiki/wiki/AMD_GPU)
+  boot.kernelModules = [ "amdgpu" "kvm-amd" ];
   services.xserver.videoDrivers = [ "amdgpu" ];
+  systemd.tmpfiles.rules = [
+    "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
+  ]; # enable HIP support
+  hardware.opengl.extraPackages = with pkgs; [
+    rocmPackages.clr.icd
+    amdvlk
+  ];
+  # For 32 bit applications 
+  hardware.opengl.extraPackages32 = with pkgs; [
+    driversi686Linux.amdvlk
+  ];
+  hardware.opengl.driSupport = true; # This is already enabled by default
+  hardware.opengl.driSupport32Bit = true; # For 32 bit applications
 
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/a56584ed-7787-4050-8a09-2388e15d291a";

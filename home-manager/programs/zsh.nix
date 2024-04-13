@@ -51,6 +51,7 @@
       gps="git push";
       gpl="git pull";
       gr="git restore";
+      lg="lazygit";
     };
   
     # autosuggestions.highlightStyle = "fg=cyan"; 
