@@ -102,22 +102,7 @@
   # Enabling systemctl start for apps that have systemd units. (refer to systemd in NixOS section on the manual).
   systemd.packages = [ pkgs.logiops ]; # Haven't found a way to make this work, yet. 
 
-  systemd.services.keyboard-startup-fix = { 
-    enable = true; 
-    description = "Keychron enable fn keys mode";
-    unitConfig = {
-      Type = "simple";
-    };
-
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig = {
-      ExecStart = "~/keyboard-fix.sh";
-      # ExecStart = "/etc/init/keyboard-fix.sh";
-      # ExecStart = "echo 2 | sudo tee /sys/module/hid_apple/parameters/fnmode";
-    };
-  };
-
+  
   #-------------------------------------------------------------------------
   # Enable redis service
   #-------------------------------------------------------------------------
