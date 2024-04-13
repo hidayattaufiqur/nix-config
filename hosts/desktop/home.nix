@@ -9,6 +9,7 @@
     (import ../../home-manager/programs/zsh.nix)
     (import ../../home-manager/programs/rofi.nix)
     (import ../../home-manager/programs/tmux.nix)
+    (import ../../home-manager/programs/mimeapps.nix)
     (import ../../home-manager/programs/nvim/nvim.nix)
     (import ../../home-manager/programs/alacritty/alacritty.nix)
   ];
