@@ -142,6 +142,7 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [		
     # Gnome extensions
+    gnomeExtensions.app-hider
     gnomeExtensions.compiz-alike-magic-lamp-effect
     gnomeExtensions.just-perfection
     gnomeExtensions.resource-monitor # unsupported version in Nix repo
