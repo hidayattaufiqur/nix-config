@@ -7,7 +7,7 @@
   imports = [ 
     (modulesPath + "/installer/scan/not-detected.nix")
     ./../../../configuration.nix 
-    ./../users/nixos-box.nix
+    ./../user-config.nix
     ./bluetooth.nix
     ];
 

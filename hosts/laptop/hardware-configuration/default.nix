@@ -8,7 +8,7 @@
   (modulesPath + "/installer/scan/not-detected.nix") 
   ./../../../configuration.nix
   ./../battery-configuration.nix
-  ./../users/nixos.nix
+  ./../user-config.nix
   ./bluetooth.nix
   ];
 
