@@ -48,10 +48,10 @@
     enable = true;
     driSupport = true;
     driSupport32Bit = true;
-    package = upkgs.mesa.drivers;
-    package32 = upkgs.pkgsi686Linux.mesa.drivers;
+    package = pkgs.mesa.drivers;
+    package32 = pkgs.pkgsi686Linux.mesa.drivers;
 
-    extraPackages = [ upkgs.mesa.opencl pkgs.rocmPackages.clr.icd pkgs.amdvlk ];
+    extraPackages = [ pkgs.mesa.opencl pkgs.rocmPackages.clr.icd pkgs.amdvlk ];
     extraPackages32 = [ pkgs.driversi686Linux.amdvlk ];
   };
 
