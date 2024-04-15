@@ -232,6 +232,7 @@
     themechanger
     
     # Basic Apps
+    spotify-tui
     telegram-desktop
     discord
     cinnamon.nemo

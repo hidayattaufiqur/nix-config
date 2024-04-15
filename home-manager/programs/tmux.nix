@@ -62,6 +62,10 @@ let
     set -g status-right-length 50
     set -g status-left-length 20
 
+    set -ga update-environment EDITOR
+    set -g @plugin 'artemave/tmux_super_fingers'
+
+    set -g @super-fingers-key f
     set -g @resurrect-capture-pane-contents 'on'
     set -g @continuum-restore 'on'
 
