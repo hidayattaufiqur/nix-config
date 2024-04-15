@@ -280,6 +280,7 @@
 
     # Linux utilities 
     bat
+    fzf
     nmap
     busybox
     speedtest-cli

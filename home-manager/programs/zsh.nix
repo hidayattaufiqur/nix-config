@@ -9,8 +9,6 @@
 
     initExtra = ''
       bindkey '^@' autosuggest-accept;
-      source ~/.config/fzf/key-bindings.zsh
-      source ~/.config/fzf/completion.zsh
     ''; 
 
     shellAliases = {
