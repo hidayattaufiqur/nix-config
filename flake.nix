@@ -49,7 +49,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
         system = system;
         modules = [
           nur.nixosModules.nur
-          ./hosts/laptop/hardware-configuration/default.nix
+          ./hosts/laptop
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -67,7 +67,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
         system = system;
         modules = [
           nur.nixosModules.nur
-          ./hosts/desktop/hardware-configuration/default.nix 
+          ./hosts/desktop
           home-manager.nixosModules.home-manager
           {
             home-manager = {

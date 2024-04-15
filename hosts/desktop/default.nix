@@ -1,5 +1,10 @@
 { pkgs, ... }:
 {
+  imports = [ # Include the results of the hardware scan.
+  ./hardware-configuration
+  ../../configuration.nix 
+  ];
+
   users.users.nixos-box = { 
      isNormalUser = true;
      description = "box";

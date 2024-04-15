@@ -1,5 +1,9 @@
 { pkgs, ... }:
 {
+  imports = [
+  ./../../configuration.nix
+  ./hardware-configuration
+  ];
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.nixos = {
     isNormalUser = true;

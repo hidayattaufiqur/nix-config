@@ -6,9 +6,7 @@
 {
   imports = [
   (modulesPath + "/installer/scan/not-detected.nix") 
-  ./../../../configuration.nix
-  ./../battery-configuration.nix
-  ./../user-config.nix
+  ./battery-configuration.nix
   ./bluetooth.nix
   ];
 
