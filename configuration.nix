@@ -166,7 +166,13 @@
 
     script = with pkgs; ''
       #!${runtimeShell}
-      echo 2 > /sys/module/hid_apple/parameters/fnmode
+      # check if the file exists before attempting to write to it
+      if [ -e /sys/module/hid_apple/parameters/fnmode ]; then
+        echo 2 > /sys/module/hid_apple/parameters/fnmode
+      else
+        echo "Error: /sys/module/hid_apple/parameters/fnmode does not exist" >&2
+        exit 1
+      fi
     '';
   };
 
