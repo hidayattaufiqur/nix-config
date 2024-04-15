@@ -6,7 +6,9 @@
 {
   imports = [
   (modulesPath + "/installer/scan/not-detected.nix") 
-  ./battery-configuration.nix
+  ./../../../configuration.nix
+  ./../battery-configuration.nix
+  ./../user-config.nix
   ./bluetooth.nix
   ];
 
@@ -14,6 +16,7 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+  boot.kernelPackages = pkgs.linuxPackages_latest; # use latest kernel version
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
