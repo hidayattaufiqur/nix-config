@@ -171,7 +171,7 @@
         echo 2 > /sys/module/hid_apple/parameters/fnmode
       else
         echo "Error: /sys/module/hid_apple/parameters/fnmode does not exist" >&2
-        exit 1
+        exit 0
       fi
     '';
   };
