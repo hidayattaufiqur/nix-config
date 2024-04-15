@@ -269,7 +269,15 @@
     # packages from Nur community
     config.nur.repos.c0deaddict.cameractrls
   ];
-	
+
+  # Some programs need SUID wrappers, can be configured further or are
+  # started in user sessions.
+  # programs.mtr.enable = true;
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
+
   # Nix configuration settings
   nix = { 
     # Enable the Flakes feature and the accompanying new nix command-line tool
@@ -286,18 +294,16 @@
    # Use komunix cache substituter
    settings.keep-outputs = "true";
    settings.keep-derivations = "true";
-   settings.substituters = [ "https://cache.komunix.org/" ];
+   settings.substituters = [ "https://cache.komunix.org/" "https://nix-community.cachix.org" ];
   }; 
 
   boot.supportedFilesystems = [ "ntfs" ];
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
+  # Grant sudo access without password for specific commands
+  security.sudo.configFile = '' 
+    nixos-box ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
+    nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
+  '';
 
   /**
   below are some systemd services that I want to run on startup
