@@ -27,20 +27,6 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
     };
 
     specialArgs = inputs // { inherit system; };
-
-    # shared-modules = [
-    #   home-manager.nixosModules.home-manager
-    #   {
-    #     home-manager = {
-    #       useUserPackages = true;
-    #       useGlobalPkgs = true; 
-    #       extraSpecialArgs = specialArgs;
-    #
-    #       users.nixos-box = import ./hosts/desktop/home.nix;
-    #       users.nixos = import ./hosts/laptop/home.nix;
-    #     };
-    #   }
-    # ];
   in
   {
     nixosConfigurations = {

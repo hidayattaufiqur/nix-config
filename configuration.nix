@@ -1,8 +1,6 @@
 # Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-# TODO: Modularize this 
-
 { config, pkgs, ... }:
 
 {
@@ -79,21 +77,43 @@
     package = pkgs.wireshark;
   };
   programs.kdeconnect.enable = true; 
-  virtualisation.docker.enable = true;
-  virtualisation.virtualbox.host.enable = true;
+
+  # Enable virtualizations
+  virtualisation = {
+    libvirtd = {
+      enable = true;
+      onBoot = "ignore";
+      onShutdown = "shutdown";
+      qemu.ovmf.enable = true;
+      qemu.runAsRoot = true;
+    };
+    docker.enable = true;
+    virtualbox.host.enable = true;
+  };
+
   users.extraGroups.vboxusers.members = [ "nixos" "nixos-box" ];
 
   # enable nix-ld for pip and friends
   programs.nix-ld.enable = true;
-  # programs.nix-ld.libraries = with pkgs; [
-  #   gcc-unwrapped
-  #   stdenv.cc.cc.lib
-  #   zlib # numpy
-  # ];
+  programs.nix-ld.libraries = with pkgs; [
+    curl
+    openssl
+    gcc-unwrapped
+    stdenv.cc.cc
+    zlib # numpy
+  ];
 
   # Enable automatic login for the user.
   services.xserver.displayManager.autoLogin.enable = true;
   services.xserver.displayManager.autoLogin.user = "nixos";
+
+  # Enable the OpenSSH daemon.
+  services.openssh = { 
+    enable = true; 
+    extraConfig = "UseDns no";
+  }; 
+
+  services.tailscale.enable = true;
 
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
@@ -109,77 +129,6 @@
     TERMINAL = "alacritty";
   };
 
-  /**
-  below are some systemd services that I want to run on startup
-  */
-  # stolen from Mustafa's config
-  systemd.services.tailscale-autoconnect = {
-    enable = true; 
-    description = "Automatic connection to Tailscale";
-
-    # make sure tailscale is running before trying to connect to tailscale
-    after = [ "network-pre.target" "tailscale.service" ];
-    wants = [ "network-pre.target" "tailscale.service" ];
-    wantedBy = [ "multi-user.target" ];
-
-    # set this service as a oneshot job
-    serviceConfig.Type = "oneshot";
-
-    # have the job run this shell script
-    script = with pkgs; ''
-      # wait for tailscaled to settle
-      sleep 2
-
-      # check if we are already authenticated to tailscale
-      status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
-      if [ $status = "Running" ]; then # if so, then do nothing
-        exit 0
-      fi
-
-      # otherwise authenticate with tailscale
-      ${tailscale}/bin/tailscale up
-    '';
-  };
-
-  systemd.services.logid-startup = {
-    enable = true;
-    description = "Automatic startup for Logitech Daemon";
-
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = with pkgs; {
-      ExecStart = "${logiops}/bin/logid";
-      Restart = "on-failure";
-    };  
-  };
-
-  systemd.services.keyboard-startup-fix = { 
-    enable = true; 
-    description = "Keychron enable fn keys mode";
-    unitConfig = {
-      Type = "simple";
-    };
-
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig.Type = "oneshot";
-
-    script = with pkgs; ''
-      #!${runtimeShell}
-      # check if the file exists before attempting to write to it
-      if [ -e /sys/module/hid_apple/parameters/fnmode ]; then
-        echo 2 > /sys/module/hid_apple/parameters/fnmode
-      else
-        echo "Error: /sys/module/hid_apple/parameters/fnmode does not exist" >&2
-        exit 0
-      fi
-    '';
-  };
-
-  # Enabling systemctl start for apps that have systemd units. (refer to systemd in NixOS section on the manual).
-  systemd.packages = [ pkgs.logiops ]; # Haven't found a way to make this work, yet. 
-
-  
   #-------------------------------------------------------------------------
   # Enable redis service
   #-------------------------------------------------------------------------
@@ -321,6 +270,7 @@
     config.nur.repos.c0deaddict.cameractrls
   ];
 	
+  # Nix configuration settings
   nix = { 
     # Enable the Flakes feature and the accompanying new nix command-line tool
     settings.experimental-features = [ "nix-command" "flakes" ];
@@ -332,6 +282,11 @@
      dates = "weekly"; 
      options = "--delete-older-than- 7d";
     }; 
+
+   # Use komunix cache substituter
+   settings.keep-outputs = "true";
+   settings.keep-derivations = "true";
+   settings.substituters = [ "https://cache.komunix.org/" ];
   }; 
 
   boot.supportedFilesystems = [ "ntfs" ];
@@ -344,15 +299,72 @@
     enableSSHSupport = true;
   };
 
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  services.openssh = { 
+  /**
+  below are some systemd services that I want to run on startup
+  */
+  # stolen from Mustafa's config
+  systemd.services.tailscale-autoconnect = {
     enable = true; 
-    extraConfig = "UseDns no";
-  }; 
+    description = "Automatic connection to Tailscale";
 
-  services.tailscale.enable = true;
+    # make sure tailscale is running before trying to connect to tailscale
+    after = [ "network-pre.target" "tailscale.service" ];
+    wants = [ "network-pre.target" "tailscale.service" ];
+    wantedBy = [ "multi-user.target" ];
+
+    # set this service as a oneshot job
+    serviceConfig.Type = "oneshot";
+
+    # have the job run this shell script
+    script = with pkgs; ''
+      # wait for tailscaled to settle
+      sleep 2
+
+      # check if we are already authenticated to tailscale
+      status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
+      if [ $status = "Running" ]; then # if so, then do nothing
+        exit 0
+      fi
+
+      # otherwise authenticate with tailscale
+      ${tailscale}/bin/tailscale up
+    '';
+  };
+
+  systemd.services.logid-startup = {
+    enable = true;
+    description = "Automatic startup for Logitech Daemon";
+
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" ];
+    serviceConfig = with pkgs; {
+      ExecStart = "${logiops}/bin/logid";
+      Restart = "on-failure";
+    };  
+  };
+
+  systemd.services.keyboard-startup-fix = { 
+    enable = true; 
+    description = "Keychron enable fn keys mode";
+    unitConfig = {
+      Type = "simple";
+    };
+
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig.Type = "oneshot";
+
+    script = with pkgs; ''
+      #!${runtimeShell}
+      # check if the file exists before attempting to write to it
+      if [ -e /sys/module/hid_apple/parameters/fnmode ]; then
+        echo 2 > /sys/module/hid_apple/parameters/fnmode
+      else
+        echo "Error: /sys/module/hid_apple/parameters/fnmode does not exist" >&2
+        exit 0
+      fi
+    '';
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
