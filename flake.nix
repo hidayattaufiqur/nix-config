@@ -5,9 +5,10 @@ inputs = {
   nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
   nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   home-manager.url = "github:nix-community/home-manager/release-23.11";
+  nur.url = "github:nix-community/NUR";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
   let
     system = "x86_64-linux";
 
@@ -47,6 +48,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }@inputs:
         specialArgs = specialArgs;
         system = system;
         modules = [
+          nur.nixosModules.nur
           ./hosts/laptop/hardware-configuration/default.nix
           home-manager.nixosModules.home-manager
           {
@@ -64,6 +66,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable }@inputs:
         specialArgs = specialArgs // { inherit upkgs; };
         system = system;
         modules = [
+          nur.nixosModules.nur
           ./hosts/desktop/hardware-configuration/default.nix 
           home-manager.nixosModules.home-manager
           {

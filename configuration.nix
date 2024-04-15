@@ -316,6 +316,9 @@
     qgnomeplatform
     nordic
     # andromeda-gtk-theme # still in unstable channel
+
+    # packages from Nur community
+    config.nur.repos.c0deaddict.cameractrls
   ];
 	
   nix = { 
