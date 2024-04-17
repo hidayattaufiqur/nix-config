@@ -1,7 +1,7 @@
 { stdenv, pkgs, fetchFromGithub }:
 let
   custom = ../../programs/nvim/custom;
-  in
+in
 {
 nvchad = stdenv.mkDerivation rec {
   pname = "nvchad";
