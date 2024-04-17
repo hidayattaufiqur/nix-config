@@ -29,6 +29,9 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
     specialArgs = inputs // { inherit system; };
   in
   {
+    inputs.pkgs = pkgs; 
+    inputs.upkgs = upkgs;
+
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         specialArgs = specialArgs;

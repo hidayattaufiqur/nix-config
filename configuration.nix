@@ -1,7 +1,7 @@
 # Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, upkgs, ... }:
 
 {
   # Configure network proxy if necessary
@@ -46,8 +46,11 @@
   };
 
   # Enable XRDP for remote desktop
-  services.xrdp.enable = true;
-  services.xrdp.openFirewall = true;
+  services.xrdp = {
+    enable = true;
+    defaultWindowManager = "gnome-remote-desktop";
+    openFirewall = true;
+  };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
@@ -175,109 +178,13 @@
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-  environment.systemPackages = with pkgs; [		
-    # Gnome extensions
-    gnomeExtensions.app-hider
-    gnomeExtensions.compiz-alike-magic-lamp-effect
-    gnomeExtensions.just-perfection
-    gnomeExtensions.resource-monitor # unsupported version in Nix repo
-    gnomeExtensions.dash-to-dock
-    gnomeExtensions.blur-my-shell
-    gnomeExtensions.appindicator
-    gnomeExtensions.quick-settings-tweaker
-    gnomeExtensions.rounded-window-corners
-    gnomeExtensions.tiling-assistant
-    themechanger
-    
-    # Basic Apps
-    spotify-tui
-    telegram-desktop
-    discord
-    cinnamon.nemo
-    stremio
-    gparted
-    obs-studio
-    calibre
-    blender
-    thunderbird
-    brave
-    spotify
-    blanket
-    libreoffice    
-    mendeley
-    zotero
-
-    # Dev apps 
-    lazygit
-    postman
-    rustup
-    redis
-    perl
-    vscode
-    go
-    gpp
-    gcc9
-    docker
-    docker-compose
-    jdk
-    redis
-    nodejs_20
-    # alacritty 
-    jetbrains.datagrip
-    neovim 
-    vim
-    google-cloud-sdk
-    python3
-
-    ## Python packages
-    python311Packages.pip
-    python311Packages.virtualenv
-
-    ## LSP servers
-    nodePackages_latest.pyright
-    nil
-
-    # Linux utilities 
-    bat
-    fzf
-    nmap
-    busybox
-    speedtest-cli
-    gnumake42
-    xdotool
-    wl-clipboard
-    xclip
-    unzip
-    neofetch
-    tlp
-    git
-    wget
-    htop
-    usbutils
-    oh-my-zsh
-    zsh-powerlevel10k
-    tree
-    tldr
-    cron
-    noisetorch 
-    ripgrep 
-    logiops
-    tldr
-    syncthing
-    btop
-
-    # Nix utilities
-    nix-tree
-    dos2unix 
-
-    # GTK themes 
-    qgnomeplatform
-    nordic
-    # andromeda-gtk-theme # still in unstable channel
-
-    # packages from Nur community
-    config.nur.repos.c0deaddict.cameractrls
-  ];
+  environment.systemPackages = 
+    (import ./packages { pkgs = pkgs; } ).packages 
+    ++ (import ./packages { upkgs = upkgs; } ).unstablePackages
+    ++ (import ./packages { pkgs = pkgs; } ).gnomePackages
+    ++ (import ./packages { pkgs = pkgs; } ).gnomeExtensions
+    ++ (import ./packages { config = config ; } ).nurPackages
+  ;
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -312,6 +219,23 @@
   security.sudo.configFile = '' 
     nixos-box ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
     nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
+  '';
+  security.polkit.enable = true;
+  security.polkit.extraConfig = ''
+    polkit.addRule(function(action, subject) {
+      if (
+        subject.isInGroup("users")
+          && (
+            action.id == "org.freedesktop.login1.reboot" ||
+            action.id == "org.freedesktop.login1.reboot-multiple-sessions" ||
+            action.id == "org.freedesktop.login1.power-off" ||
+            action.id == "org.freedesktop.login1.power-off-multiple-sessions"
+          )
+        )
+      {
+        return polkit.Result.YES;
+      }
+    })
   '';
 
   /**
