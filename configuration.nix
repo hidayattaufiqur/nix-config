@@ -45,6 +45,10 @@
     xkbVariant = "";
   };
 
+  # Enable XRDP for remote desktop
+  services.xrdp.enable = true;
+  services.xrdp.openFirewall = true;
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -106,6 +110,11 @@
   # Enable automatic login for the user.
   services.xserver.displayManager.autoLogin.enable = true;
   services.xserver.displayManager.autoLogin.user = "nixos";
+
+  # Disable closing lid to suspend
+  services.logind.extraConfig = ''
+    HandleLidSwitch=ignore
+  '';
 
   # Enable the OpenSSH daemon.
   services.openssh = { 
