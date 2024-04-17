@@ -49,6 +49,7 @@ rec
     zotero
 
     # Dev apps 
+    gofumpt
     lazygit
     postman
     rustup
