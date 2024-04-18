@@ -1,6 +1,6 @@
-local M = {}
+local Nvconfig = {}
 
-M.ui = {
+Nvconfig.ui = {
   ------------------------------- base46 -------------------------------------
   -- hl = highlights
   hl_add = {},
@@ -57,7 +57,7 @@ M.ui = {
       { "󰈭  Find Word", "Spc f w", "Telescope live_grep" },
       { "  Bookmarks", "Spc m a", "Telescope marks" },
       { "  Themes", "Spc t h", "Telescope themes" },
-      { "  Mappings", "Spc c h", "NvCheatsheet" },
+      { "  Nvconfigappings", "Spc c h", "NvCheatsheet" },
     },
   },
 
@@ -79,8 +79,8 @@ M.ui = {
   },
 }
 
-M.base46 = {
+Nvconfig.base46 = {
   integrations = {},
 }
 
-return vim.tbl_deep_extend("force", M, require "chadrc")
+vim.tbl_deep_extend("force", Nvconfig, require "chadrc")

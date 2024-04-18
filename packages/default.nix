@@ -79,6 +79,7 @@ rec
     nil
     golangci-lint
     gopls
+    lua-language-server
 
     # Linux utilities 
     bat
