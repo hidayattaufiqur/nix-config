@@ -11,13 +11,13 @@ in
   # introduces backwards incompatible changes.
 
   imports = [
+    (import ../../home-manager/programs/nvim)
+    (import ../../home-manager/programs/alacritty)
     (import ../../home-manager/programs/git.nix)
     (import ../../home-manager/programs/zsh.nix)
     (import ../../home-manager/programs/rofi.nix)
     (import ../../home-manager/programs/tmux.nix)
     (import ../../home-manager/programs/mimeapps.nix)
-    (import ../../home-manager/programs/nvim/nvim.nix)
-    (import ../../home-manager/programs/alacritty/alacritty.nix)
   ];
 
   programs.neovim = { 
