@@ -32,4 +32,9 @@
     brightWhite = "#abb2bf";
   };
 
+  mouse = {
+    hints = {
+      launcher = "Brave";
+    };
+  };
 }

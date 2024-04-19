@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, ... }: 
+{  pkgs, ... }: 
 let
   tmuxCustomConf = ''
     set -g mouse on
@@ -9,12 +9,10 @@ let
     bind | split-window -h
     bind - split-window -v
 
-    unbind r
-    bind r source-file ~/.config/tmux/.tmux.conf
-
     set -g default-terminal "tmux-256color"
     set -ga terminal-overrides ",*256col*:Tc"
     set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
+    set -ga terminal-overrides 'xterm*:smcup@:rmcup@'
     set-environment -g COLORTERM "truecolor"
 
     # Smart pane switching with awareness of Vim splits.
@@ -66,8 +64,6 @@ let
     set -g @plugin 'artemave/tmux_super_fingers'
 
     set -g @super-fingers-key f
-    set -g @resurrect-capture-pane-contents 'on'
-    set -g @continuum-restore 'on'
 
     set -g @plugin 'sainnhe/tmux-fzf'
   '';
@@ -79,8 +75,18 @@ in
 
      plugins = with pkgs.tmuxPlugins; [
        vim-tmux-navigator
-       resurrect
-       continuum
+       {
+         plugin = resurrect; 
+         extraConfig = ''
+          set -g @resurrect-capture-pane-contents 'on'
+         '';
+       }
+       {
+         plugin = continuum; 
+         extraConfig = ''
+          set -g @continuum-restore 'on'
+         '';
+       }
        tmux-fzf
        # { 
        #   plugin = dracula;
