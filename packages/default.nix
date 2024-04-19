@@ -63,12 +63,12 @@ rec
     jdk
     redis
     nodejs_20
-    # alacritty 
     jetbrains.datagrip
     neovim 
     vim
     google-cloud-sdk
     python3
+    semgrep
 
     ## Python packages
     python311Packages.pip
@@ -113,6 +113,7 @@ rec
     tldr
     syncthing
     btop
+    xwaylandvideobridge # allow streaming from Wayland to X apps [https://blog.davidedmundson.co.uk/blog/xwaylandvideobridge/]
 
     # Nix utilities
     nix-tree
