@@ -25,7 +25,9 @@ rec
   ];
 
   unstablePackages = with upkgs; [
+    # Dev apps 
     go
+    semgrep
   ];
 
   packages = with pkgs; [
@@ -68,7 +70,6 @@ rec
     vim
     google-cloud-sdk
     python3
-    semgrep
 
     ## Python packages
     python311Packages.pip
