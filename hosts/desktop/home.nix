@@ -14,11 +14,19 @@
     (import ../../home-manager/programs/mimeapps.nix)
   ];
 
-  programs.fzf = {
-    enable = true; 
-    enableZshIntegration = true; 
-  };
+  programs = {
+    fzf = {
+      enable = true; 
+      enableZshIntegration = true; 
+    };
 
+    direnv = {
+      enable = true;
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+    };
+  };
+  
   home.packages = with pkgs; [
     # # adds the "hello" command to your environment. it prints a friendly
     # # "hello, world!" when run.

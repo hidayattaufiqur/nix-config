@@ -87,6 +87,15 @@ lspconfig.pyright.setup{
 lspconfig.nil_ls.setup{
   on_attach = on_attach,
   capabilities = capabilities,
+  autostart = true,
+  settings = {
+    ['nil'] = {
+      testSetting = 42,
+      formatting = {
+        command = { "nixpkgs-fmt" },
+      },
+    }
+  }
 }
 
 -- Without the loop, you would have to manually set up each LSP 
