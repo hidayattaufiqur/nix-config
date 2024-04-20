@@ -11,6 +11,10 @@
        type = "lua";
        config = builtins.readFile ./custom/configs/autosave.lua;
      }
+     {
+       plugin = vim-wakatime;
+       type = "lua";
+     }
     ];
   };
   

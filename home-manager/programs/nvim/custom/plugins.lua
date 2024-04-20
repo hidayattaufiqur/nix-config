@@ -19,6 +19,10 @@ local plugins = {
     config = function()
       require("custom.configs.autosave")
     end,
+  },
+  {
+    'wakatime/vim-wakatime',
+    lazy = false,
   }
   -- {
   --   "hrsh7th/nvim-cmp",
