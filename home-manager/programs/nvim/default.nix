@@ -1,11 +1,19 @@
 {  pkgs, ... }: {
-   programs.neovim = { 
-     enable = true; 
-     vimAlias = true; 
-     viAlias = true;
+  programs.neovim = { 
+    enable = true; 
+    vimAlias = true; 
+    viAlias = true;
 
-     defaultEditor = true; 
+    defaultEditor = true; 
+    plugins = with pkgs.vimPlugins; [
+     { 
+       plugin = auto-save-nvim;
+       type = "lua";
+       config = builtins.readFile ./custom/configs/autosave.lua;
+     }
+    ];
   };
+  
   xdg.configFile.nvim = {
     source = pkgs.stdenv.mkDerivation { 
       name = "tweaked nvchad";
@@ -20,7 +28,7 @@
         cp -r ./* $out/
         cd $out/
         cp -r ${./custom} $out/lua/custom
-      '';  
+      ''; 
     };
   };
 }

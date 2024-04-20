@@ -12,6 +12,14 @@ local plugins = {
       require("copilot").setup(opts)
     end,
   },
+
+  {
+    "Pocco81/auto-save.nvim",
+    lazy = false,
+    config = function()
+      require("custom.configs.autosave")
+    end,
+  }
   -- {
   --   "hrsh7th/nvim-cmp",
   --   dependencies = {
