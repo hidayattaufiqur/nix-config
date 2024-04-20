@@ -83,6 +83,7 @@ rec
     lua-language-server
 
     # Linux utilities 
+    tcpdump
     bat
     fzf
     fzf-zsh
