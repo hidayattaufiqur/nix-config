@@ -25,7 +25,9 @@
         owner = "hidayattaufiqur";
         repo = "neovimchad_tweaked";
         rev = "main"; 
-        hash = "sha256-8miW/G3XVDpHPzo2oL3BlX0VpNDuflQXe6S33TMJujA=";
+        # hash has to be changed each time you want to update nvim config 
+        # explanation: [https://ryantm.github.io/nixpkgs/builders/fetchers/]
+        hash = "sha256-CLW7kz/D+Og0AFaKJ75Vg8VDvIt85aVUI4Uq97+HXDw=";
       };
       installPhase = ''
         mkdir -p $out
