@@ -1,5 +1,11 @@
-{ config, pkgs, ... }: 
+{ pkgs, ... }: 
+let 
+wallpaper = pkgs.fetchurl {
+  url = "https://r4.wallpaperflare.com/wallpaper/626/913/146/cyberpunk-skyscraper-upside-down-animated-movies-wallpaper-6f13244f1d114a1e998a42c94e3c5194.jpg";
+  hash = "sha256-stVaIuMHP/LJ4dEM5URi7BzjLrzQbaGtnFs01dh71tc=";
+};
 
+in
 {
   home.username = "nixos-box"; 
   home.homeDirectory = "/home/nixos-box";
@@ -24,6 +30,14 @@
       enable = true;
       enableZshIntegration = true;
       nix-direnv.enable = true;
+    };
+  };
+
+  dconf = {
+    settings = { 
+      "org/gnome/desktop/background" = {
+        picture-uri = "file://${wallpaper}";
+      };
     };
   };
   

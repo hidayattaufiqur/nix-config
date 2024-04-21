@@ -76,6 +76,7 @@
   services.xserver.libinput.enable = true;
 
   # Enable programs
+  programs.dconf.enable = true;
   programs.java.enable = true; 
   programs.noisetorch.enable = true; 
   programs.zsh.enable = true;
