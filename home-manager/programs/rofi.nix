@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, ... }: {
+{ pkgs, ... }: {
    programs.rofi = { 
     enable = true; 
 

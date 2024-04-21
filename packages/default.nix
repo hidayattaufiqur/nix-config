@@ -92,6 +92,7 @@ rec
     speedtest-cli
     gnumake42
     xdotool
+    wtype
     wl-clipboard
     xclip
     rar 
