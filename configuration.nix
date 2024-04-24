@@ -126,8 +126,26 @@
     extraConfig = "UseDns no";
   }; 
 
+  # Enable tailscale
   services.tailscale.enable = true;
-
+  
+  # Remap capslock to escape 
+  services.interception-tools =
+    let
+      itools = pkgs.interception-tools;
+      itools-caps = pkgs.interception-tools-plugins.caps2esc;
+    in
+    {
+    enable = true;
+    plugins = [ itools-caps ];
+    # requires explicit paths: https://github.com/NixOS/nixpkgs/issues/126681
+    udevmonConfig = pkgs.lib.mkDefault ''
+      - JOB: "${itools}/bin/intercept -g $DEVNODE | ${itools-caps}/bin/caps2esc -m 1 | ${itools}/bin/uinput -d $DEVNODE"
+        DEVICE:
+          EVENTS:
+            EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
+    '';
+  };
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
