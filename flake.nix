@@ -34,7 +34,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
 
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs;
+        specialArgs = specialArgs // { inherit upkgs; };
         system = system;
         modules = [
           nur.nixosModules.nur
@@ -44,7 +44,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
             home-manager = {
               useUserPackages = true;
               useGlobalPkgs = true; 
-              extraSpecialArgs = specialArgs;
+              extraSpecialArgs = specialArgs // { inherit upkgs; };
               users.nixos = import ./hosts/laptop/home.nix;
             };
           }
