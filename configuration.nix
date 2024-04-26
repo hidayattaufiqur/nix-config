@@ -237,7 +237,7 @@
   # Grant sudo access without password for specific commands
   security.sudo.configFile = '' 
     nixos-box ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
-    nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
+    nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff, /run/current-system/sw/bin/reboot
   '';
   security.polkit.enable = true;
   security.polkit.extraConfig = ''

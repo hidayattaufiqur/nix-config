@@ -23,15 +23,19 @@
    boot.loader = { 
      efi = { 
        efiSysMountPoint = "/boot/efi"; # if using grub
+       canTouchEfiVariables = true;
      };
 
      grub = { 
       enable = true; 
       devices = [ "nodev" ];
-      efiInstallAsRemovable = true;
+      # efiInstallAsRemovable = true;
       efiSupport = true;  
-      useOSProber = true;  
+      useOSProber = true; # enable auto detection of bootable partitions
       configurationLimit = 7;
+      extraGrubInstallArgs = [
+        "--disable-shim-lock"
+      ];
      };
      timeout = 7;  
    };
