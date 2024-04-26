@@ -12,16 +12,16 @@
   # Bootloader.
    boot.loader = { 
      efi = { 
-       # canTouchEfiVariables = true;
+       canTouchEfiVariables = true;
        efiSysMountPoint = "/boot/efi"; # if using grub
      };
 
      grub = { 
       enable = true; 
       device = "nodev";
-      efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
+      # efiInstallAsRemovable = true; # in case canTouchEfiVariables doesn't work for your system
       efiSupport = true;  
-      # useOSProber = true;  
+      useOSProber = true;  
       configurationLimit = 20;
      };
      timeout = 7;  
