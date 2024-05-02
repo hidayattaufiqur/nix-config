@@ -82,7 +82,8 @@ rec
     gopls
     lua-language-server
 
-    # Linux utilities 
+    # Linux utilities $
+    ngrep
     tcpdump
     bat
     fzf
