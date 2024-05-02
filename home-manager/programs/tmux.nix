@@ -41,6 +41,7 @@ let
     bind -r h resize-pane -L 
     bind -r m resize-pane -Z
 
+    bind -n 'C-x' copy-mode
     bind-key -T copy-mode-vi 'v' send -X begin-selection # start selecting text with "v"
     bind-key -T copy-mode-vi 'y' send -X copy-selection # copy text with "y"
 
