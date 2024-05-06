@@ -33,6 +33,7 @@ rec
   packages = with pkgs; [
     # Basic Apps
     gnome3.gnome-session
+    gnome-connections
     freerdp
     remmina
     qbittorrent
