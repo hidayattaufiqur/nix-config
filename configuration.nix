@@ -330,8 +330,9 @@
   # Open ports in the firewall.
   networking.firewall = { 
     enable = true;
+    trustedInterfaces = [ "tailscale0" ];
     allowedTCPPorts = [ 22 80 3389 ];
-    allowedUDPPorts = [ 22 80 3389 ];
+    allowedUDPPorts = [ config.services.tailscale.port 22 80 3389 ];
   };
 
   # This value determines the NixOS release from which the default

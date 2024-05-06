@@ -28,6 +28,9 @@ rec
     # Dev apps 
     go
     semgrep
+    
+    # Gnome
+    gnome.gnome-remote-desktop
   ];
 
   packages = with pkgs; [
@@ -56,6 +59,7 @@ rec
 
     # Dev apps 
     gofumpt
+    blackfire
     lazygit
     postman
     rustup
