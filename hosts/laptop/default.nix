@@ -11,6 +11,7 @@
     extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
     packages = with pkgs; [
     	neovim # basic necessity
+      freerdp
     ];
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
@@ -20,7 +21,6 @@
 
   nixpkgs.overlays = [
     (final: prev: {
-
       postman = prev.postman.overrideAttrs(old: rec {
         version = "20230716100528";
         src = final.fetchurl {
@@ -32,6 +32,4 @@
       });
     })
   ];
-
-
 }
