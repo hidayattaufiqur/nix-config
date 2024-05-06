@@ -33,6 +33,7 @@ rec
   packages = with pkgs; [
     # Basic Apps
     freerdp
+    remmina
     qbittorrent
     spotify-tui
     telegram-desktop
