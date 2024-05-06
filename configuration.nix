@@ -51,6 +51,8 @@
     defaultWindowManager = "gnome-remote-desktop";
     openFirewall = true;
   };
+  
+  services.gnome.gnome-remote-desktop.enable = true;
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
