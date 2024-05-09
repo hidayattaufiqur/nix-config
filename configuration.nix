@@ -87,7 +87,10 @@
     enable = true; 
     package = pkgs.wireshark;
   };
-  programs.kdeconnect.enable = true; 
+  programs.kdeconnect = {
+    enable = true; 
+    package = pkgs.gnomeExtensions.gsconnect;
+  };
 
   # Enable virtualizations
   virtualisation = {
