@@ -35,6 +35,7 @@ rec
 
   packages = with pkgs; [
     # Basic Apps
+    gimp
     gnome3.gnome-session
     gnome-connections
     freerdp
