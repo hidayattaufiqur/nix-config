@@ -1,7 +1,5 @@
 { lib, ... }: 
 {
-  nixpkgs.config.allowUnfree = true;
-
   programs.alacritty = {
     enable = true;
     settings = lib.attrsets.recursiveUpdate(import ./default-settings.nix) {

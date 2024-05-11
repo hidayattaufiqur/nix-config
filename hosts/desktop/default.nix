@@ -1,4 +1,33 @@
-{ pkgs, ... }:
+{ upkgs, pkgs, lib, ... }:
+let 
+ unstablePackages = with upkgs; [
+   darktable
+   rawtherapee
+ ];
+
+ packages = with pkgs; [
+    # Gamiiingg
+    lutris
+    protonup-qt
+
+    # dev 
+    bruno
+    postgresql
+    gephi
+
+    # linux utilities
+    radeontop
+    glxinfo
+    nvtop-amd
+
+    # basic
+    firefox
+    neovim 
+        
+    # media 
+    davinci-resolve
+ ];
+in
 {
   imports = [ # Include the results of the hardware scan.
   ./hardware-configuration
@@ -9,25 +38,7 @@
      isNormalUser = true;
      description = "box";
      extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-     packages = with pkgs; [
-     neovim # basic necessity
-
-      # Gamiiingg
-      lutris
-      protonup-qt
-
-      # dev 
-      postgresql
-      gephi
-
-      # linux utilities
-      radeontop
-      glxinfo
-      nvtop-amd
-
-      # basic
-      firefox
-     ];
+     packages = unstablePackages ++ packages;
 
      shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
@@ -48,6 +59,13 @@
       "steam-run"
   ];
 
+  
+  nixpkgs.config.allowUnfreePredicate = upkgs: builtins.elem (lib.getName upkgs) [
+      "davinci-resolve"
+  ];
+
+  nixpkgs.config.allowUnfree = true;
+
   nixpkgs.overlays = [
     (final: prev: {
       steam = prev.steam.override ({ extraPkgs ? pkgs': [], ... }: {
@@ -57,7 +75,7 @@
       });
 
       postman = prev.postman.overrideAttrs(old: rec {
-        version = "20230716100528";
+        version = "20240205183313";
         src = final.fetchurl {
           url = "https://web.archive.org/web/${version}/https://dl.pstmn.io/download/latest/linux_64";
           sha256 = "sha256-svk60K4pZh0qRdx9+5OUTu0xgGXMhqvQTGTcmqBOMq8=";

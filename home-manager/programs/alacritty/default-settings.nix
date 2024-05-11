@@ -9,6 +9,10 @@
     italic.family = "RobotoMono Nerd Font";
   };
 
+  window = {
+    opacity = 0.96;
+  };
+
   colors = {
     primary = {
       background = "#0B0E14";

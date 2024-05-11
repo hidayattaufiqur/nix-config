@@ -26,6 +26,7 @@ rec
 
   unstablePackages = with upkgs; [
     # Dev apps 
+    bruno
     go
     semgrep
     
@@ -62,7 +63,6 @@ rec
     gofumpt
     blackfire
     lazygit
-    postman
     rustup
     redis
     perl

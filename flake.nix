@@ -26,7 +26,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
       };
     };
 
-    specialArgs = inputs // { inherit system; };
+    specialArgs = inputs // { inherit system pkgs upkgs; };
   in
   {
     inputs.pkgs = pkgs; 
@@ -34,7 +34,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
 
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs // { inherit upkgs; };
+        specialArgs = specialArgs // { inherit upkgs; inherit pkgs; };
         system = system;
         modules = [
           nur.nixosModules.nur
@@ -52,7 +52,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
       };
 
       nixos-box = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs // { inherit upkgs; };
+        specialArgs = specialArgs;
         system = system;
         modules = [
           nur.nixosModules.nur
@@ -62,7 +62,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
             home-manager = {
               useUserPackages = true;
               useGlobalPkgs = true; 
-              extraSpecialArgs = specialArgs // { inherit upkgs; };
+              extraSpecialArgs = specialArgs;
               users.nixos-box = import ./hosts/desktop/home.nix;
             };
           }
