@@ -1,4 +1,10 @@
-{ pkgs, ... }:
+{ upkgs, pkgs, ... }:
+let 
+  packages = with pkgs; [
+    freerdp 
+    neovim
+  ];
+in
 {
   imports = [
   ./../../configuration.nix
@@ -9,10 +15,7 @@
     isNormalUser = true;
     description = "swift";
     extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-    packages = with pkgs; [
-    	neovim # basic necessity
-      freerdp
-    ];
+    packages = packages;
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"

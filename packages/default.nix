@@ -32,6 +32,7 @@ rec
     
     # Gnome
     gnome.gnome-remote-desktop
+    andromeda-gtk-theme
   ];
 
   packages = with pkgs; [
@@ -136,7 +137,6 @@ rec
     # GTK themes 
     qgnomeplatform
     nordic
-    # andromeda-gtk-theme # still in unstable channel
     themechanger
   ];
 }
