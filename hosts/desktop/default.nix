@@ -11,7 +11,6 @@ let
     protonup-qt
 
     # dev 
-    bruno
     postgresql
     gephi
 
