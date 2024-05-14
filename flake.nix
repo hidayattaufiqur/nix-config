@@ -68,6 +68,24 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
           }
           ];
        };
+
+      nixos-server = nixpkgs.lib.nixosSystem {
+        specialArgs = specialArgs;
+        system = system;
+        modules = [
+          nur.nixosModules.nur
+          ./hosts/server
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useUserPackages = true;
+              useGlobalPkgs = true; 
+              extraSpecialArgs = specialArgs;
+              users.nixos-server = import ./hosts/server/home.nix;
+            };
+          }
+          ];
+       };
     };
   };
 }
