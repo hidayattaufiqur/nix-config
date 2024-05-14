@@ -63,10 +63,13 @@
         neovim
         git
      ];
+     shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
      ];
    };
+
+   programs.zsh.enable = true;
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -82,9 +85,6 @@
     speedtest-cli
     gnumake42
     xdotool
-    wtype
-    wl-clipboard
-    xclip
     rar 
     unrar
     zip
@@ -129,7 +129,6 @@
     redis
     nodejs_20
     neovim 
-    vim
     google-cloud-sdk
     python3
 
