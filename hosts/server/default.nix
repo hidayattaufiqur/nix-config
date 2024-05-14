@@ -53,13 +53,30 @@
   # services.xserver.enable = true;
 
   services.tailscale.enable = true; 
+  
+  # Enable postgresql service
+  services.postgresql = {
+    enable = true;
+    # ensureDatabases = [ "mydatabase" ];
+    enableTCPIP = true;
+    # port = 5432;
+    # authentication = pkgs.lib.mkOverride 10 ''
+    #   #...
+    #   #type database DBuser origin-address auth-method
+    #   # ipv4
+    #   host  all      all     127.0.0.1/32   trust
+    #   # ipv6
+    #   host all       all     ::1/128        trust
+    # '';
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
    users.users.nixos-server = {
      isNormalUser = true;
      extraGroups = [ "networkmanager" "wheel" ]; # Enable ‘sudo’ for the user.
      packages = with pkgs; [
-       tree
+        postgresql  
+        tree
         neovim
         git
      ];
