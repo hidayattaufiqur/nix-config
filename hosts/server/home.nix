@@ -33,15 +33,7 @@ in
     };
   };
 
-  dconf = {
-    settings = { 
-      "org/gnome/desktop/background" = {
-        picture-uri = "file://${wallpaper}";
-      };
-    };
-  };
-  
-  home.packages = with pkgs; [
+    home.packages = with pkgs; [
     # # adds the "hello" command to your environment. it prints a friendly
     # # "hello, world!" when run.
     # pkgs.hello
