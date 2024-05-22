@@ -5,10 +5,11 @@ inputs = {
   nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
   nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   home-manager.url = "github:nix-community/home-manager/release-23.11";
+  sops-nix.url = "github:Mic92/sops-nix";
   nur.url = "github:nix-community/NUR";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@inputs:
   let
     system = "x86_64-linux";
 
@@ -73,8 +74,9 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur }@inputs:
         specialArgs = specialArgs;
         system = system;
         modules = [
-          nur.nixosModules.nur
           ./hosts/server
+          nur.nixosModules.nur
+          sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
