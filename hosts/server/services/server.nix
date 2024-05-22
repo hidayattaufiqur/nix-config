@@ -23,7 +23,6 @@ in
   # };
 
   systemd.services.gunicorn = {
-
     description = "Gunicorn instance";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
