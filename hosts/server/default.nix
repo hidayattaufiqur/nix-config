@@ -181,10 +181,9 @@
      options = "--delete-older-than- 7d";
     }; 
 
-   # Use komunix cache substituter
    settings.keep-outputs = "true";
    settings.keep-derivations = "true";
-   settings.substituters = [ "https://cache.komunix.org/" "https://nix-community.cachix.org" ];
+   settings.substituters = [ "https://nix-community.cachix.org" "https://cache.nixos.org" "https://cache.komunix.org/" ];
   }; 
 
   boot.supportedFilesystems = [ "ntfs" ];
