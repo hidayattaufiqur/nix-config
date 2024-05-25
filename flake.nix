@@ -56,8 +56,9 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
         specialArgs = specialArgs;
         system = system;
         modules = [
-          nur.nixosModules.nur
           ./hosts/desktop
+          nur.nixosModules.nur
+          sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -86,7 +87,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
               users.nixos-server = import ./hosts/server/home.nix;
             };
           }
-          ];
+        ];
        };
     };
   };

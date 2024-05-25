@@ -61,6 +61,7 @@ rec
     zotero
 
     # Dev apps 
+    sops
     gofumpt
     blackfire
     lazygit
