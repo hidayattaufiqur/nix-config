@@ -6,4 +6,4 @@
 --- 
 ### TODO
 - [ ] split some configs in configuration.nix to make it universal for either local machines and servers 
-- [ ] finish SOPS setup 
+- [x] ~finish SOPS setup~

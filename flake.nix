@@ -38,8 +38,9 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
         specialArgs = specialArgs // { inherit upkgs; inherit pkgs; };
         system = system;
         modules = [
-          nur.nixosModules.nur
           ./hosts/laptop
+          nur.nixosModules.nur
+          sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
