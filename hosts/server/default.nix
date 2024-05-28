@@ -153,6 +153,7 @@
     ## Python packages
     python311Packages.pip
     python311Packages.virtualenv
+    python311Packages.gunicorn
 
     ## LSP servers
     nodePackages_latest.pyright
