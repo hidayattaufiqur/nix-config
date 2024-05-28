@@ -149,6 +149,7 @@
     neovim 
     google-cloud-sdk
     python3
+    nginx
 
     ## Python packages
     python311Packages.pip
