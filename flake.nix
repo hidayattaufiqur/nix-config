@@ -7,9 +7,11 @@ inputs = {
   home-manager.url = "github:nix-community/home-manager/release-23.11";
   sops-nix.url = "github:Mic92/sops-nix";
   nur.url = "github:nix-community/NUR";
+  disko.url = "github:nix-community/disko";
+  disko.inputs.nixpkgs.follows = "nixpkgs";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix, disko }@inputs:
   let
     system = "x86_64-linux";
 
@@ -78,6 +80,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
         modules = [
           ./hosts/server
           nur.nixosModules.nur
+          disko.nixosModules.disko
           sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {

@@ -3,7 +3,7 @@
 {
   imports = [
   ./server.nix 
-  ./cloudflared.nix
+  # ./cloudflared.nix
   ];
 
   services.tailscale.enable = true; 
@@ -11,6 +11,7 @@
   # Enable the OpenSSH daemon.
   services.openssh = { 
     enable = true; 
+    settings.PasswordAuthentication = false;
     extraConfig = "UseDns no";
   }; 
 

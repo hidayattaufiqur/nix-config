@@ -7,7 +7,8 @@
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-configuration
+      ./disk-config.nix
+      # ./hardware-configuration
       ./services
     ];
 
@@ -60,6 +61,13 @@
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
+   users.users.root = {
+     openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl+CaHy7I2ix+tLbvSkBHnvRuCI2Tyma+tmpBUcpTjt hidayattaufiqur@gmail.com"
+     ];
+   };
+
    users.users.nixos-server = {
      isNormalUser = true;
      extraGroups = [ "networkmanager" "wheel" "docker" ]; # Enable ‘sudo’ for the user.
@@ -72,6 +80,7 @@
      shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl+CaHy7I2ix+tLbvSkBHnvRuCI2Tyma+tmpBUcpTjt hidayattaufiqur@gmail.com"
      ];
    };
 
@@ -153,9 +162,9 @@
   ];
 
   # Open ports in the firewall.
-   networking.firewall.trustedInterfaces = [ "tailscale0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 ];
+   # networking.firewall.trustedInterfaces = [ "tailscale0" ];
+   # networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 ];
+   # networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
@@ -200,33 +209,33 @@
   below are some systemd services that I want to run on startup
   */
   # stolen from Mustafa's config
-  systemd.services.tailscale-autoconnect = {
-    enable = true; 
-    description = "Automatic connection to Tailscale";
-
-    # make sure tailscale is running before trying to connect to tailscale
-    after = [ "network-pre.target" "tailscale.service" ];
-    wants = [ "network-pre.target" "tailscale.service" ];
-    wantedBy = [ "multi-user.target" ];
-
-    # set this service as a oneshot job
-    serviceConfig.Type = "oneshot";
-
-    # have the job run this shell script
-    script = with pkgs; ''
-      # wait for tailscaled to settle
-      sleep 2
-
-      # check if we are already authenticated to tailscale
-      status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
-      if [ $status = "Running" ]; then # if so, then do nothing
-        exit 0
-      fi
-
-      # otherwise authenticate with tailscale
-      ${tailscale}/bin/tailscale up
-    '';
-  };
+  # systemd.services.tailscale-autoconnect = {
+  #   enable = true; 
+  #   description = "Automatic connection to Tailscale";
+  #
+  #   # make sure tailscale is running before trying to connect to tailscale
+  #   after = [ "network-pre.target" "tailscale.service" ];
+  #   wants = [ "network-pre.target" "tailscale.service" ];
+  #   wantedBy = [ "multi-user.target" ];
+  #
+  #   # set this service as a oneshot job
+  #   serviceConfig.Type = "oneshot";
+  #
+  #   # have the job run this shell script
+  #   script = with pkgs; ''
+  #     # wait for tailscaled to settle
+  #     sleep 2
+  #
+  #     # check if we are already authenticated to tailscale
+  #     status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
+  #     if [ $status = "Running" ]; then # if so, then do nothing
+  #       exit 0
+  #     fi
+  #
+  #     # otherwise authenticate with tailscale
+  #     ${tailscale}/bin/tailscale up
+  #   '';
+  # };
 
   # Package overlays 
   nix = { 
