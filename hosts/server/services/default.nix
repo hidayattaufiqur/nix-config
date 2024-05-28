@@ -3,7 +3,6 @@
 {
   imports = [
   ./server.nix 
-  # ./cloudflared.nix
   ];
 
   services.tailscale.enable = true; 

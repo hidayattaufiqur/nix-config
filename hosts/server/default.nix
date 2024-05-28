@@ -2,19 +2,19 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./disk-config.nix
       # ./hardware-configuration
+       <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
       ./services
     ];
 
   # Use the systemd-boot EFI boot loader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "nixos-server"; # Define your hostname.
   # Pick only one of the below networking options.
