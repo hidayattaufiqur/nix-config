@@ -68,6 +68,7 @@
      ];
    };
 
+  security.sudo.wheelNeedsPassword = false;
    users.users.nixos-server = {
      isNormalUser = true;
      extraGroups = [ "networkmanager" "wheel" "docker" ]; # Enable ‘sudo’ for the user.
