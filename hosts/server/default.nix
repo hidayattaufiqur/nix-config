@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   imports =
@@ -166,8 +166,8 @@
 
   # Open ports in the firewall.
    # networking.firewall.trustedInterfaces = [ "tailscale0" ];
-   # networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 ];
-   # networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 ];
+   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 ];
+   networking.firewall.allowedUDPPorts = [ 22 80 443 3022 2489 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
