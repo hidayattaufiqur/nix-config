@@ -19,5 +19,10 @@ in
         # '';
       };
     };
+    virtualHosts."portainer.hidayattaufiqur.dev" = {
+      locations."/" = {
+        proxyPass = "https://127.0.0.1:9443";
+      };
+    };
   };
 }

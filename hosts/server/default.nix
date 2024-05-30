@@ -16,6 +16,8 @@
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  networking.nameservers = [ "1.1.1.1" "1.0.0.1" ];
+  # networking.search = [ "tailede36.ts.net" ];
 
   # Set your time zone.
   time.timeZone = "Asia/Jakarta";
@@ -146,9 +148,9 @@
   ];
 
   # Open ports in the firewall.
-   networking.firewall.trustedInterfaces = [ "tailscale0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 5000 5432 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 5000 5432 ];
+   networking.firewall.trustedInterfaces = [ "eth0" ];
+   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 5000 5432 9443 ];
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 5000 5432 9443 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
