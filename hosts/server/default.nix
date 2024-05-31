@@ -12,12 +12,14 @@
       ./services
     ];
 
-  networking.hostName = "nixos-server"; # Define your hostname.
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
-  networking.nameservers = [ "1.1.1.1" "1.0.0.1" ];
-  # networking.search = [ "tailede36.ts.net" ];
+  networking = {
+    hostName = "nixos-server"; # Define your hostname.
+    nameservers = [ "1.1.1.1" "1.0.0.1" ];
+    # search = [ "tailede36.ts.net" ];
+    # Pick only one of the below networking options.
+    # wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+    # networkmanager.enable = true;  # Easiest to use and most distros use this by default.
+  };
 
   # Set your time zone.
   time.timeZone = "Asia/Jakarta";
@@ -53,7 +55,7 @@
   security.sudo.wheelNeedsPassword = false;
    users.users.nixos-server = {
      isNormalUser = true;
-     extraGroups = [ "networkmanager" "wheel" "docker" ]; # Enable ‘sudo’ for the user.
+     extraGroups = [ "networkmanager" "wheel" "docker" ]; 
      packages = with pkgs; [
         postgresql  
         tree
