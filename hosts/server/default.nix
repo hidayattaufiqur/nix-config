@@ -76,9 +76,8 @@
   environment.systemPackages = with pkgs; [
     # Linux utilities 
     libstdcxx5
-    xclip
     ngrep
-    lemonade
+    xsel
     tcpdump
     bat
     fzf
