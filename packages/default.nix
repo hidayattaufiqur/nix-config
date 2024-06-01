@@ -22,6 +22,8 @@ rec
     quick-settings-tweaker
     rounded-window-corners
     tiling-assistant
+    hide-top-bar
+    peek-top-bar-on-fullscreen
   ];
 
   unstablePackages = with upkgs; [
