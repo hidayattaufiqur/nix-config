@@ -77,7 +77,7 @@
     # Linux utilities 
     libstdcxx5
     ngrep
-    xsel
+    lemonade
     tcpdump
     bat
     fzf
