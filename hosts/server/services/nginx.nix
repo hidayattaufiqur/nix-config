@@ -7,6 +7,8 @@ in
     enable = true;
     recommendedProxySettings = true;
     recommendedGzipSettings = true;
+    recommendedTlsSettings = true;
+    recommendedOptimisation = true;
     logError = "stderr debug";
 
     virtualHosts = {
@@ -14,11 +16,9 @@ in
         root = ontology-be;
         locations."/" = {
           proxyPass = "http://127.0.0.1:5000";
-          # extraConfig = ''
-          #   X-Real-IP $remote_addr;
-          #   X-Forwarded-For $proxy_add_x_forwarded_for;
-          #   X-Forwarded-Proto $scheme;
-          # '';
+          extraConfig = ''
+            proxy_set_header X-Forwarded-Proto $scheme;
+          '';
         };
       };
 

@@ -35,31 +35,31 @@ in
     '';
   };
 
-  systemd.services.ontology-be = {
-    description = "Ontology API";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      User = "nixos-server";
-      Group = "users";
-      WorkingDirectory = ontology-be;
-      ExecStart = "/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin/flask run";
-      # Restart = "always";
-      StandardOutput = "journal";
-      StandardError = "journal";
-      Environment = [ "PATH=/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin" "LD_LIBRARY_PATH=${pkgs.libstdcxx5.out}/lib:${pkgs.stdenv.cc.cc.lib}/lib" ];
-    };
-  };
+  # systemd.services.ontology-be = {
+  #   description = "Ontology API";
+  #   after = [ "network.target" ];
+  #   wantedBy = [ "multi-user.target" ];
+  #   serviceConfig = {
+  #     User = "nixos-server";
+  #     Group = "users";
+  #     WorkingDirectory = ontology-be;
+  #     ExecStart = "/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin/flask run";
+  #     # Restart = "always";
+  #     StandardOutput = "journal";
+  #     StandardError = "journal";
+  #     Environment = [ "PATH=/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin" "LD_LIBRARY_PATH=${pkgs.libstdcxx5.out}/lib:${pkgs.stdenv.cc.cc.lib}/lib" ];
+  #   };
+  # };
 
   systemd.services.gunicorn = {
-    description = "Gunicorn instance";
+    description = "Gunicorn instance for Nusantara Food Ontology";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       User = "nixos-server";
       Group = "users";
       WorkingDirectory = ontology-be;
-      ExecStart = "/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin/gunicorn --preload --workers 3 --bind 0.0.0.0:5000 app:app";
+      ExecStart = "/home/nixos-server/Fun/Projects/ontology-BE/.venv/bin/gunicorn --config gunicorn.conf.py app.__init__:'create_app()'";
       # Restart = "always";
       StandardOutput = "journal";
       StandardError = "journal";
