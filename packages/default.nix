@@ -83,6 +83,8 @@ rec
     vim
     google-cloud-sdk
     python3
+    commitizen
+    cz-cli
 
     ## Python packages
     python311Packages.pip

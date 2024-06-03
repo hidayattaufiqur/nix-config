@@ -12,6 +12,7 @@ in
 
   imports = [
     (import ../../home-manager/programs/nvim)
+    (import ../../home-manager/programs/lazygit)
     (import ../../home-manager/programs/alacritty)
     (import ../../home-manager/programs/git.nix)
     (import ../../home-manager/programs/zsh.nix)
