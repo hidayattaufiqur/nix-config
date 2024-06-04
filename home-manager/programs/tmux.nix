@@ -54,6 +54,15 @@ let
 
     setw -g window-status-current-style "bold,fg=colour208"
 
+
+    # set the pane border colors 
+    set -g pane-border-style 'fg=colour235,bg=colour238' 
+    set -g pane-active-border-style 'fg=colour51,bg=colour236'
+
+    # set inactive/active window styles
+    set-window-option -g window-active-style bg=terminal
+    set-window-option -g window-style bg=colour0
+
     set -g status-position bottom
     set -g status-bg colour234
     set -g status-fg colour137
