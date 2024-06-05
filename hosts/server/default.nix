@@ -75,9 +75,9 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     # Linux utilities 
+    xclip
     libstdcxx5
     ngrep
-    lemonade
     tcpdump
     bat
     fzf
