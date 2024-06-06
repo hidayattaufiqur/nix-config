@@ -102,7 +102,8 @@
       qemu.runAsRoot = true;
     };
     docker.enable = true;
-    virtualbox.host.enable = true;
+    # virtualbox.host.enable = true; # disabled due to latest kernel don't support latest version of vbox yet
+    # more here: [https://github.com/NixOS/nixpkgs/issues/312336]
   };
 
   users.extraGroups.vboxusers.members = [ "nixos" "nixos-box" ];
