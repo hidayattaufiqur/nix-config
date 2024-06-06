@@ -56,7 +56,7 @@ let
 
 
     # set the pane border colors 
-    set -g pane-border-style 'fg=colour235,bg=colour238' 
+    set -g pane-border-style 'fg=colour235,bg=colour236' 
     set -g pane-active-border-style 'fg=colour51,bg=colour236'
 
     # set inactive/active window styles
