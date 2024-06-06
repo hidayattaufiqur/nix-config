@@ -21,26 +21,34 @@ in
     (import ../../home-manager/programs/mimeapps.nix)
   ];
 
-  programs.neovim = { 
-   enable = true; 
-   defaultEditor = true; 
-   plugins = with pkgs.vimPlugins; [ 
-    nvim-treesitter
-    elixir-tools-nvim
-    nvchad-ui
-    catppuccin-nvim
-    ];
+  programs = { 
+    direnv = {
+      enable = true;
+      enableZshIntegration = true;
+      nix-direnv.enable = true;
+    };
+
+    neovim = { 
+     enable = true; 
+     defaultEditor = true; 
+     plugins = with pkgs.vimPlugins; [ 
+      nvim-treesitter
+      elixir-tools-nvim
+      nvchad-ui
+      catppuccin-nvim
+      ];
+    };
+
+    git = {
+     enable = true; 
+     userName = "Hidayat Taufiqur"; 
+     userEmail = "hidayattaufiqur@gmail.com";
+    };
+
+    fzf.enable = true;
+    fzf.enableZshIntegration = true;
   };
-
-  programs.git = {
-   enable = true; 
-   userName = "Hidayat Taufiqur"; 
-   userEmail = "hidayattaufiqur@gmail.com";
-  };
-
-  programs.fzf.enable = true;
-  programs.fzf.enableZshIntegration = true;
-
+  
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = [
