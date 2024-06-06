@@ -33,7 +33,7 @@ rec
     semgrep
 
     # LSP
-    # basedpyright
+    basedpyright
     
     # Gnome
     gnome.gnome-remote-desktop
