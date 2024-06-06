@@ -1,15 +1,11 @@
 local mason = require('plugins.configs.mason')
 
 mason.ensure_installed = {
-  "lua-language-server",
+  "lua_ls",
   "gopls",
-  "golangci-lint",
-  "gofumpt",
-  "golangci-lint-langserver",
-  "html-lsp",
-  "stylua",
-  "pyright",
-  "typescript-language-server",
-  "python-lsp-server",
-  "nil"
+  "golangci_lint_ls",
+  "html",
+  "basedpyright",
+  "tsserver",
+  "nil_ls"
 }

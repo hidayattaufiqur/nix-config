@@ -31,6 +31,9 @@ rec
     bruno
     go
     semgrep
+
+    # LSP
+    basedpyright
     
     # Gnome
     gnome.gnome-remote-desktop

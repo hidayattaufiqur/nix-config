@@ -3,7 +3,23 @@ local on_attach = configs.on_attach
 local capabilities = configs.capabilities
 
 local lspconfig = require "lspconfig"
-local servers = { "html", "cssls", "clangd", "golangci-lint-langserver", " typescript-language-server" }
+
+local M = {}
+
+M.opts = { inlay_hints = { enabled = true } }
+
+local servers = {
+  "html",
+  "cssls",
+  "clangd",
+  "lua_ls",
+  "gopls",
+  "golangci_lint_ls",
+  "html",
+  "basedpyright",
+  "tsserver",
+  "nil_ls"
+}
 
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
@@ -18,18 +34,6 @@ for _, lsp in ipairs(servers) do
 		}
   }
 end
-
--- if not configs.golangcilsp then
---  	configs.golangcilsp = {
--- 		default_config = {
--- 			cmd = {'golangci-lint-langserver'},
--- 			root_dir = lspconfig.util.root_pattern('.git', 'go.mod'),
--- 			init_options = {
--- 					command = { "golangci-lint", "run", "--enable-all", "--disable", "lll", "--out-format", "json", "--issues-exit-code=1" };
--- 			}
--- 		};
--- 	}
--- end
 
  lspconfig.gopls.setup {
     on_attach = on_attach,
@@ -79,7 +83,7 @@ lspconfig.tsserver.setup{
   capabilities = capabilities,
 }
 
-lspconfig.pyright.setup{
+lspconfig.basedpyright.setup{
   on_attach = on_attach,
   capabilities = capabilities,
 }
@@ -98,15 +102,4 @@ lspconfig.nil_ls.setup{
   }
 }
 
--- Without the loop, you would have to manually set up each LSP 
--- 
--- lspconfig.html.setup {
---   on_attach = on_attach,
---   capabilities = capabilities,
--- }
---
--- lspconfig.cssls.setup {
---   on_attach = on_attach,
---   capabilities = capabilities,
--- }
-
+return M
