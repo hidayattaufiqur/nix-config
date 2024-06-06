@@ -6,8 +6,7 @@
   ./psql.nix
   ./nginx.nix
   ./systemd.nix
+  ./tailscale.nix
   ./interception_tool.nix
   ];
-
-  services.tailscale.enable = true; 
 }

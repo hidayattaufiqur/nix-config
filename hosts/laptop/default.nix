@@ -8,6 +8,11 @@ in
 {
   imports = [
   ./../../configuration.nix
+  ./../../services/psql.nix
+  ./../../services/ssh.nix
+  ./../../services/tailscale.nix
+  ./../../services/interception_tool.nix
+
   ./hardware-configuration
   ];
   # Define a user account. Don't forget to set a password with ‘passwd’.

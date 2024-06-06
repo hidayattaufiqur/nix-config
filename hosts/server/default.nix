@@ -9,7 +9,7 @@
     [ # Include the results of the hardware scan.
       # ./hardware-configuration
        <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
-      ./services
+       ./../../services # import everything
     ];
 
   networking = {

@@ -126,32 +126,6 @@
     HandleLidSwitch=ignore
   '';
 
-  # Enable the OpenSSH daemon.
-  services.openssh = { 
-    enable = true; 
-    extraConfig = "UseDns no";
-  }; 
-
-  # Enable tailscale
-  services.tailscale.enable = true;
-  
-  # Remap capslock to escape 
-  services.interception-tools =
-    let
-      itools = pkgs.interception-tools;
-      itools-caps = pkgs.interception-tools-plugins.caps2esc;
-    in
-    {
-    enable = true;
-    plugins = [ itools-caps ];
-    # requires explicit paths: https://github.com/NixOS/nixpkgs/issues/126681
-    udevmonConfig = pkgs.lib.mkDefault ''
-      - JOB: "${itools}/bin/intercept -g $DEVNODE | ${itools-caps}/bin/caps2esc -m 1 | ${itools}/bin/uinput -d $DEVNODE"
-        DEVICE:
-          EVENTS:
-            EV_KEY: [KEY_CAPSLOCK, KEY_ESC]
-    '';
-  };
   # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
   systemd.services."getty@tty1".enable = false;
   systemd.services."autovt@tty1".enable = false;
@@ -262,38 +236,6 @@
       }
     })
   '';
-
-  /**
-  below are some systemd services that I want to run on startup
-  */
-  # stolen from Mustafa's config
-  systemd.services.tailscale-autoconnect = {
-    enable = true; 
-    description = "Automatic connection to Tailscale";
-
-    # make sure tailscale is running before trying to connect to tailscale
-    after = [ "network-pre.target" "tailscale.service" ];
-    wants = [ "network-pre.target" "tailscale.service" ];
-    wantedBy = [ "multi-user.target" ];
-
-    # set this service as a oneshot job
-    serviceConfig.Type = "oneshot";
-
-    # have the job run this shell script
-    script = with pkgs; ''
-      # wait for tailscaled to settle
-      sleep 2
-
-      # check if we are already authenticated to tailscale
-      status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
-      if [ $status = "Running" ]; then # if so, then do nothing
-        exit 0
-      fi
-
-      # otherwise authenticate with tailscale
-      ${tailscale}/bin/tailscale up
-    '';
-  };
 
   systemd.services.logid-startup = {
     enable = true;
