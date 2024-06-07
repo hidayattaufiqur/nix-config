@@ -17,7 +17,7 @@ let
     # linux utilities
     radeontop
     glxinfo
-    nvtop-amd
+    nvtopPackages.amd
 
     # basic
     firefox

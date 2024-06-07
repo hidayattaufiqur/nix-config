@@ -155,7 +155,6 @@
   environment.gnome.excludePackages = with pkgs.gnome; [
     cheese      # photo booth
     epiphany    # web browser
-    gedit       # text editor
     simple-scan # document scanner
     yelp        # help viewer
     geary       # email client
@@ -165,6 +164,7 @@
     gnome-contacts
     gnome-maps 
     pkgs.gnome-connections
+    pkgs.gedit  # text editor
   ];
 
   environment.shellAliases = {

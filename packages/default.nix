@@ -48,7 +48,7 @@ rec
     freerdp
     remmina
     qbittorrent
-    spotify-tui
+    # spotify-tui # unmaintained as per nixpkgs version 24.05
     telegram-desktop
     discord
     cinnamon.nemo
