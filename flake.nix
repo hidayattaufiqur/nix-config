@@ -11,7 +11,7 @@ inputs = {
   nur.url = "github:nix-community/NUR";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix }@inputs:
   let
     system = "x86_64-linux";
 
@@ -22,6 +22,13 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
       };
     };
 
+    ppkgs = import nixpkgs-prev { 
+      inherit system;
+      config = {
+        allowunfree = true;
+      };
+    };
+
     upkgs = import nixpkgs-unstable {
       inherit system;
       config = {
@@ -29,15 +36,12 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
       };
     };
 
-    specialArgs = inputs // { inherit system pkgs upkgs; };
+    specialArgs = inputs // { inherit system pkgs ppkgs upkgs; };
   in
   {
-    inputs.pkgs = pkgs; 
-    inputs.upkgs = upkgs;
-
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs // { inherit upkgs; inherit pkgs; };
+        specialArgs = specialArgs;
         system = system;
         modules = [
           ./hosts/laptop
@@ -48,7 +52,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nur, sops-nix }@input
             home-manager = {
               useUserPackages = true;
               useGlobalPkgs = true; 
-              extraSpecialArgs = specialArgs // { inherit upkgs; };
+              extraSpecialArgs = specialArgs;
               users.nixos = import ./hosts/laptop/home.nix;
             };
           }
