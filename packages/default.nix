@@ -37,6 +37,7 @@ rec
     go
     semgrep
     neovim
+    vim
 
     # LSP
     basedpyright
@@ -88,8 +89,6 @@ rec
     redis
     nodejs_20
     jetbrains.datagrip
-    neovim 
-    vim
     google-cloud-sdk
     python3
     commitizen

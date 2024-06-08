@@ -3,6 +3,7 @@ let
  unstablePackages = with upkgs; [
    darktable
    rawtherapee
+   neovim
  ];
 
  packages = with pkgs; [

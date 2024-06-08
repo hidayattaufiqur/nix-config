@@ -2,7 +2,10 @@
 let 
   packages = with pkgs; [
     freerdp 
-    neovim
+  ];
+
+  unstablePackages = with upkgs; [
+   neovim
   ];
 in
 {
@@ -20,7 +23,7 @@ in
     isNormalUser = true;
     description = "swift";
     extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-    packages = packages;
+    packages = unstablePackages ++ packages;
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
