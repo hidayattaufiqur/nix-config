@@ -36,6 +36,7 @@ rec
     bruno
     go
     semgrep
+    neovim
 
     # LSP
     basedpyright
