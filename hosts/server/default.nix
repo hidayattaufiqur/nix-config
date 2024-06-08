@@ -55,7 +55,7 @@
   security.sudo.wheelNeedsPassword = false;
    users.users.nixos-server = {
      isNormalUser = true;
-     extraGroups = [ "networkmanager" "wheel" "docker" ]; 
+     extraGroups = [ "networkmanager" "wheel" "docker" "nginx" ]; 
      packages = with pkgs; [
         postgresql  
         tree
