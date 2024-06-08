@@ -18,7 +18,8 @@ local servers = {
   "html",
   "basedpyright",
   "tsserver",
-  "nil_ls"
+  "nil_ls",
+  "astro"
 }
 
 for _, lsp in ipairs(servers) do
@@ -100,6 +101,11 @@ lspconfig.nil_ls.setup{
       },
     }
   }
+}
+
+lspconfig.astro.setup{
+  on_attach = on_attach,
+  capabilities = capabilities,
 }
 
 return M

@@ -30,6 +30,7 @@ configs.options = {
     "todotxt",
     "cmake",
     "tmux",
+    "astro"
   },
 	autotag = {
 		enable = true,
