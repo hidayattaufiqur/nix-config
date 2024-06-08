@@ -17,8 +17,15 @@ let
 
     # Smart pane switching with awareness of Vim splits.
     # See: https://github.com/christoomey/vim-tmux-navigator
-    is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
-        | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?|fzf)(diff)?$'"
+    if-shell '[ -f /.dockerenv ]' \
+      "is_vim=\"ps -o state=,comm= -t '#{pane_tty}' \
+          | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?)(diff)?$'\""
+      # Filter out docker instances of nvim from the host system to prevent
+      # host from thinking nvim is running in a pseudoterminal when its not.
+      "is_vim=\"ps -o state=,comm=,cgroup= -t '#{pane_tty}' \
+          | grep -ivE '^.+ +.+ +.+\\/docker\\/.+$' \
+          | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|l?n?vim?x?)(diff)? +'\""
+
     bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
     bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
     bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
@@ -28,6 +35,8 @@ let
         "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\'  'select-pane -l'"
     if-shell -b '[ "$(echo "$tmux_version >= 3.0" | bc)" = 1 ]' \
         "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\\\'  'select-pane -l'"
+
+    bind-key -n 'C-d' if-shell "$is_vim" 'display-message "Vim detected"' 'display-message "Vim not detected"'
 
     bind-key -T copy-mode-vi 'C-h' select-pane -L 
     bind-key -T copy-mode-vi 'C-j' select-pane -D
@@ -53,7 +62,6 @@ let
     setw -g pane-base-index 1 
 
     setw -g window-status-current-style "bold,fg=colour208"
-
 
     # set the pane border colors 
     set -g pane-border-style 'fg=colour235,bg=colour236' 
@@ -84,7 +92,7 @@ in
      shortcut = "a"; # global key leader (ctr+{shortcut})
 
      plugins = with pkgs.tmuxPlugins; [
-       vim-tmux-navigator
+       # vim-tmux-navigator
        {
          plugin = resurrect; 
          extraConfig = ''
