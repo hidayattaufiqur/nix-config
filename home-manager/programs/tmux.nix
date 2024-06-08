@@ -90,28 +90,19 @@ in
      shortcut = "a"; # global key leader (ctr+{shortcut})
 
      plugins = with pkgs.tmuxPlugins; [
-       # vim-tmux-navigator
-       {
-         plugin = resurrect; 
-         extraConfig = ''
-          set -g @resurrect-capture-pane-contents 'on'
-         '';
-       }
-       {
-         plugin = continuum; 
-         extraConfig = ''
-          set -g @continuum-restore 'on'
-         '';
-       }
-       tmux-fzf
-       # { 
-       #   plugin = dracula;
+       # {
+       #   plugin = resurrect; 
        #   extraConfig = ''
-       #    set -g @dracula-show-powerline true
-       #    set -g @dracula-refresh-rate 10
-       #    run-shell ${dracula}/share/tmux-plugins/dracula/dracula.tmux
+       #    set -g @resurrect-capture-pane-contents 'on'
        #   '';
        # }
+       # {
+       #   plugin = continuum; 
+       #   extraConfig = ''
+       #    set -g @continuum-restore 'on'
+       #   '';
+       # }
+       tmux-fzf
      ];
 
     keyMode = "vi";
