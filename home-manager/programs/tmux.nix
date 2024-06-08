@@ -36,8 +36,6 @@ let
     if-shell -b '[ "$(echo "$tmux_version >= 3.0" | bc)" = 1 ]' \
         "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\\\'  'select-pane -l'"
 
-    bind-key -n 'C-d' if-shell "$is_vim" 'display-message "Vim detected"' 'display-message "Vim not detected"'
-
     bind-key -T copy-mode-vi 'C-h' select-pane -L 
     bind-key -T copy-mode-vi 'C-j' select-pane -D
     bind-key -T copy-mode-vi 'C-k' select-pane -U
