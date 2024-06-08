@@ -3,6 +3,7 @@ let
  unstablePackages = with upkgs; [
    darktable
    rawtherapee
+   neovim 
  ];
 
  packages = with pkgs; [
@@ -21,7 +22,6 @@ let
 
     # basic
     firefox
-    neovim 
         
     # media 
     davinci-resolve
