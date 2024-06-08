@@ -6,6 +6,11 @@ rec
     repos.c0deaddict.cameractrls
   ];
 
+  nodePackages = with pkgs; [
+    # pkgs.nodePackages_latest.@astrojs/language-server
+    pkgs.nodePackages."@astrojs/language-server"
+  ];
+
   gnomePackages = with pkgs.gnome; [
     gnome-remote-desktop
   ];

@@ -184,6 +184,7 @@
     ++ (import ./packages { pkgs = pkgs; } ).gnomePackages
     ++ (import ./packages { pkgs = pkgs; } ).gnomeExtensions
     ++ (import ./packages { config = config ; } ).nurPackages
+    ++ (import ./packages { pkgs = pkgs ; } ).nodePackages
   ;
 
   # Some programs need SUID wrappers, can be configured further or are
