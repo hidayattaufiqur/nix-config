@@ -1,6 +1,7 @@
 { pkgs, ... }:
 let
   ontology-be = "/home/nixos-server/Fun/Projects/ontology-BE";
+  vitesse = "/home/nixos-server/Fun/Projects/vitesse/dist";
 in
 {
   services.nginx = {
@@ -12,6 +13,12 @@ in
     logError = "stderr debug";
 
     virtualHosts = {
+      "hidayattaufiqur.dev" = {
+        locations."/" = {
+          proxyPass = "http://localhost:1977";
+        };
+      };
+
       "ontology-api.hidayattaufiqur.dev" = {
         root = ontology-be;
         locations."/" = {
@@ -37,7 +44,6 @@ in
           proxyPass = "http://127.0.0.1:3000";
         };
       };
-
     };
   };
 }
