@@ -105,7 +105,8 @@ rec
     gopls
     lua-language-server
 
-    # Linux utilities $
+    # Linux utilities 
+    jq
     ngrep
     tcpdump
     bat
