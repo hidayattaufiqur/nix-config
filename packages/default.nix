@@ -39,6 +39,8 @@ rec
     neovim
     vim
 
+    logiops
+
     # LSP
     basedpyright
     
@@ -137,7 +139,6 @@ rec
     cron
     noisetorch 
     ripgrep 
-    logiops
     tldr
     syncthing
     btop
