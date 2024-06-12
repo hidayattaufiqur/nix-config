@@ -39,12 +39,6 @@ in
       ];
     };
 
-    git = {
-     enable = true; 
-     userName = "Hidayat Taufiqur"; 
-     userEmail = "hidayattaufiqur@gmail.com";
-    };
-
     fzf.enable = true;
     fzf.enableZshIntegration = true;
   };

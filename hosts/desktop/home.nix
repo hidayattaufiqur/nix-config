@@ -41,11 +41,15 @@ in
       };
     };
   };
+
+  home.sessionVariables = {
+    PATH = "$HOME/.config/rofi/scripts:$PATH";
+  };
   
   home.packages = with pkgs; [
     # # adds the "hello" command to your environment. it prints a friendly
     # # "hello, world!" when run.
-    # pkgs.hello
+    pkgs.hello
 
     # # it is sometimes useful to fine-tune packages, for example, by applying
     # # overrides. you can do that directly here, just don"t forget the
