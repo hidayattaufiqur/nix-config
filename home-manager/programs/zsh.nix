@@ -9,6 +9,7 @@
 
     initExtra = ''
       bindkey '^@' autosuggest-accept;
+      export PATH=$HOME/.config/rofi/scripts:$PATH
     ''; 
 
     shellAliases = {

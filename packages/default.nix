@@ -39,7 +39,9 @@ rec
     neovim
     vim
 
+    # Linux utilities
     logiops
+    rofi-wayland
 
     # LSP
     basedpyright
