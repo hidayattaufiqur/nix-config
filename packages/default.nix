@@ -41,7 +41,7 @@ rec
 
     # Linux utilities
     logiops
-    rofi-wayland
+    # rofi-wayland
 
     # LSP
     basedpyright

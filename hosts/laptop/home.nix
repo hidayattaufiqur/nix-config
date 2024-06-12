@@ -107,6 +107,7 @@ in
   # if you don"t want to manage your shell through Home Manager.
   home.sessionVariables = {
     EDITOR = "nvim";
+    PATH = "$HOME/.config/rofi/scripts:$PATH";
   };
 
   # You should not change this value, even if you update Home Manager. If you do
