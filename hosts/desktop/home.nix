@@ -16,7 +16,7 @@ in
     (import ../../home-manager/programs/alacritty)
     (import ../../home-manager/programs/git.nix)
     (import ../../home-manager/programs/zsh.nix)
-    (import ../../home-manager/programs/rofi.nix)
+    (import ../../home-manager/programs/rofi/rofi.nix)
     (import ../../home-manager/programs/tmux.nix)
     (import ../../home-manager/programs/mimeapps.nix)
   ];
