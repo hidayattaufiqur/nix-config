@@ -18,8 +18,8 @@ configuration {
     display-emoji:              ":Emoji";
     drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
     window-format:              "{w} · {c} · {t}";
-}
 
+}
 /*****----- Global Properties -----*****/
 @import                          "colors/onedark.rasi"
 

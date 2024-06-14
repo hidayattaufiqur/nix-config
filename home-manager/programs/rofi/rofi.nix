@@ -28,6 +28,12 @@
       disable-history = false;
       sidebar-mode = false;
       always-on-top = true;
+
+      /* Key bindings */
+      kb-mode-next = "Tab";
+      kb-mode-previous = "ISO_Left_Tab";
+      kb-element-next = "";
+      kb-element-prev = "";
     };
   };
 }
