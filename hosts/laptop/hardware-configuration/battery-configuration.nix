@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ ... }:
 
 {
 
@@ -13,6 +13,9 @@
       CPU_BOOST_ON_BAT = 0;
       CPU_SCALING_GOVERNOR_ON_AC = "performance";
       CPU_SCALING_GOVERNOR_ON_BAT = "balanced";
+      
+      START_CHARGE_THRESH_BAT0 = 80;
+      STOP_CHARGE_THRESH_BAT0 = 85;
     };
   };
 
@@ -24,5 +27,4 @@
 
   # Enable thermald (only necessary if on Intel CPUs)
   services.thermald.enable = true;
-
 }

@@ -42,6 +42,7 @@ rec
     # Linux utilities
     logiops
     rofi-wayland
+    httpstat
 
     # LSP
     basedpyright
@@ -97,6 +98,10 @@ rec
     python3
     commitizen
     cz-cli
+
+    # Programming languages
+    libstdcxx5
+    llvmPackages_18.libcxxClang
 
     ## Python packages
     python311Packages.pip
