@@ -33,15 +33,18 @@ in
         };
       };
 
-      "portainer.hidayattaufiqur.dev" = {
-        locations."/" = {
-          proxyPass = "https://127.0.0.1:9443";
-        };
-      };
-
       "blogablog.hidayattaufiqur.dev" = {
         locations."/" = {
           proxyPass = "http://127.0.0.1:3000";
+        };
+      };
+
+      "tools.hidayattaufiqur.dev" = {
+        locations."/portainer" = {
+          proxyPass = "https://127.0.0.1:9443";
+        };
+        locations."/cockpit" = {
+          proxyPass = "https://127.0.0.1:9090";
         };
       };
     };
