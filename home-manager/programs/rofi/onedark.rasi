@@ -12,7 +12,7 @@ configuration {
 	modi:                       "drun,window,calc,filebrowser,emoji";
     show-icons:                 false;
     display-drun:               " Apps";
-    display-calc:               "⌨  Calc";
+    display-calc:               "⌨ Calc";
     display-run:                " Run";
     display-filebrowser:        " Files";
     display-window:             " Windows";
