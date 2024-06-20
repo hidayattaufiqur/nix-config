@@ -150,8 +150,8 @@
 
   # Open ports in the firewall.
    networking.firewall.trustedInterfaces = [ "eth0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 5000 5432 9443 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 5000 5432 9443 ];
+   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 5000 5432 9443 9090 ];
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 5000 5432 9443 9090 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
