@@ -1,4 +1,4 @@
-{ pkgs, ... }: {
+{ ... }: {
   programs.zsh = {
     enable = true;
     enableAutosuggestions = true; 
@@ -13,6 +13,8 @@
     ''; 
 
     shellAliases = {
+      vi="nvim";
+      vim="nvim";
       open="nemo";
       sudoedit="sudo -e -s";
       clr="clear";
