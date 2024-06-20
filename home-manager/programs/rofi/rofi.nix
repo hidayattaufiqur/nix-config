@@ -12,6 +12,7 @@
       rofi-emoji
       rofi-pass
       rofi-systemd
+      rofi-window
     ];
 
     # font = "IBM Plex Mono 10";

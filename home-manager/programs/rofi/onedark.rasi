@@ -9,14 +9,14 @@
 
 /*****----- Configuration -----*****/
 configuration {
-	modi:                       "drun,calc,run,filebrowser,emoji";
+	modi:                       "drun,window,calc,filebrowser,emoji";
     show-icons:                 false;
     display-drun:               " Apps";
-    display-calc:               "➕Calc";
+    display-calc:               "⌨  Calc";
     display-run:                " Run";
     display-filebrowser:        " Files";
     display-window:             " Windows";
-    display-emoji:              "☠Emoji";
+    display-emoji:              "🗿Emoji";
     drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
     window-format:              "{w} · {c} · {t}";
 
