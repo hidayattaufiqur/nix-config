@@ -39,6 +39,9 @@ rec
     neovim
     vim
 
+    # Nix utilities
+    dconf2nix
+
     # Linux utilities
     logiops
     rofi-wayland
