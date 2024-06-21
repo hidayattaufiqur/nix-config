@@ -40,11 +40,35 @@ in
       };
 
       "tools.hidayattaufiqur.dev" = {
-        locations."/portainer" = {
-          proxyPass = "https://127.0.0.1:9443";
+        locations."/cockpit/" = {
+          proxyPass = "https://127.0.0.1:9090/cockpit/";
+          extraConfig = ''
+            # Required to proxy the connection to Cockpit
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-Proto $scheme;
+
+            # Required for web sockets to function
+            proxy_http_version 1.1;
+            proxy_buffering off;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+
+            # Pass ETag header from Cockpit to clients.
+            # See: https://github.com/cockpit-project/cockpit/issues/5239
+            gzip off;
+          '';
         };
-        locations."/cockpit" = {
-          proxyPass = "https://127.0.0.1:9090";
+
+        locations."/portainer/" = {
+          proxyPass = "https://127.0.0.1:9443/";
+          extraConfig = ''
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Prefix /portainer/;
+
+            rewrite ^/portainer/(.*) /$1 break;
+            '';
         };
       };
     };
