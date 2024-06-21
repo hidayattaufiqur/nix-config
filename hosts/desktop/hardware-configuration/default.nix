@@ -36,7 +36,7 @@
   # AMD GPU stuffs (refer to https://nixos.wiki/wiki/AMD_GPU)
   boot.initrd.kernelModules = [ "amdgpu" ];
   boot.kernelModules = [ "kvm-amd" ];
-  boot.kernelParams = [ "amd_iommu=on" ];
+  boot.kernelParams = [ "amd_iommu=on" "amdgpu.modeset=1" ];
   services.xserver.videoDrivers = [ "amdgpu" ];
   systemd.tmpfiles.rules = [
     "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
