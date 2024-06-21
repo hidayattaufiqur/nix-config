@@ -19,6 +19,7 @@ in
     (import ../../home-manager/programs/rofi/rofi.nix)
     (import ../../home-manager/programs/tmux.nix)
     (import ../../home-manager/programs/mimeapps.nix)
+    (import ../../home-manager/programs/dconf-box.nix)
   ];
 
   programs = {
