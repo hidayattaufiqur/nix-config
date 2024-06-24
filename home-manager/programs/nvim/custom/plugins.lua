@@ -1,6 +1,13 @@
 ---@diagnostic disable: different-requires
 local plugins = {
-  -- ... all your other plugins ...
+  {
+    "supermaven-inc/supermaven-nvim",
+    lazy = false,
+    config = function()
+      local opts = require("custom.configs.supermaven").opts
+      require("supermaven-nvim").setup(opts)
+    end,
+  },
   {
     "zbirenbaum/copilot.lua",
     lazy = false,

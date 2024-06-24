@@ -17,7 +17,7 @@ M.opts = {
     },
   },
   suggestion = {
-    enabled = true,
+    enabled = false,
     auto_trigger = true,
     debounce = 75,
     keymap = {
@@ -33,12 +33,12 @@ M.opts = {
     yaml = true,
     markdown = true,
     help = false,
-    gitcommit = false,
-    gitrebase = false,
+    gitcommit = true,
+    gitrebase = true,
     hgcommit = false,
     svn = false,
     cvs = false,
-    ["."] = false,
+    ["."] = true,
   },
 }
 
