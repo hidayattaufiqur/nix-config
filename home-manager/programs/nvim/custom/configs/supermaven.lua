@@ -8,7 +8,8 @@ M.opts = {
   },
   ignore_filetypes = {},
   color = {
-    suggestion_color = "#ffffff",
+    -- add suggestion color to be grey please
+    suggestion_color = "#808080",
     cterm = 244,
   },
   log_level = "info", -- set to "off" to disable logging completely
