@@ -4,6 +4,7 @@
   };
 
   font = {
+    size = 12;
     normal.family = "RobotoMono Nerd Font";
     bold.family = "RobotoMono Nerd Font";
     italic.family = "RobotoMono Nerd Font";
