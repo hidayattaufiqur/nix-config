@@ -32,12 +32,16 @@ rec
   ];
 
   unstablePackages = with upkgs; [
+    # Basic Apps
+    whatsapp-for-linux
+
     # Dev apps 
     bruno
     go
     semgrep
     neovim
     vim
+    httpstat
 
     # Nix utilities
     dconf2nix
@@ -45,7 +49,6 @@ rec
     # Linux utilities
     logiops
     rofi-wayland
-    httpstat
 
     # LSP
     basedpyright
