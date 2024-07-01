@@ -42,6 +42,7 @@ rec
     neovim
     vim
     httpstat
+    imhex
 
     # Nix utilities
     dconf2nix
