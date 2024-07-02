@@ -6,9 +6,10 @@ rec
     repos.c0deaddict.cameractrls
   ];
 
-  nodePackages = with pkgs; [
+  nodePackages = with upkgs; [
     # pkgs.nodePackages_latest.@astrojs/language-server
     pkgs.nodePackages."@astrojs/language-server"
+    nodePackages_latest.typescript-language-server
   ];
 
   gnomePackages = with pkgs.gnome; [
