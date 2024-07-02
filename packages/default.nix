@@ -1,15 +1,14 @@
 { pkgs ? null, upkgs ? null, config ? null, ... }:
-rec
 {
   nurPackages = with config.nur; [
     # packages from Nur community
     repos.c0deaddict.cameractrls
   ];
 
-  nodePackages = with upkgs; [
+  nodePackages = [
     # pkgs.nodePackages_latest.@astrojs/language-server
-    pkgs.nodePackages."@astrojs/language-server"
-    nodePackages_latest.typescript-language-server
+    upkgs.nodePackages."@astrojs/language-server"
+    upkgs.nodePackages_latest.typescript-language-server
   ];
 
   gnomePackages = with pkgs.gnome; [
