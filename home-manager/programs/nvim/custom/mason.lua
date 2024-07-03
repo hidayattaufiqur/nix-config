@@ -7,5 +7,17 @@ mason.ensure_installed = {
   "html",
   "basedpyright",
   "tsserver",
-  "nil_ls"
+  "nil_ls",
+  "jsonls",
+  "clangd",
+  "cmake",
+  "cmake_format",
+  "rust_analyzer",
+  "rust_analyzer_code_actions",
+  "sumneko_lua",
+  "pyright",
+  "yamlls",
+  "dockerls",
+  "bashls",
+  "sqlls",
 }
