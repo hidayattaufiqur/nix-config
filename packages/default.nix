@@ -93,8 +93,6 @@
     redis
     perl
     vscode
-    gpp
-    gcc9
     docker
     docker-compose
     jdk
@@ -106,6 +104,19 @@
     commitizen
     cz-cli
 
+    libgcc
+    gcc
+    gpp
+    gnumake
+    cmake
+    gdb
+    autoconf
+    automake
+    libtool
+    pkg-config
+    glibc
+    glibc.dev
+
     # Programming languages
     libstdcxx5
     llvmPackages_18.libcxxClang
@@ -116,6 +127,7 @@
 
     ## LSP servers
     nodePackages_latest.pyright
+    ccls 
     nil
     golangci-lint
     gopls
