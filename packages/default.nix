@@ -34,6 +34,7 @@
   unstablePackages = with upkgs; [
     # Basic Apps
     whatsapp-for-linux
+    spotify-player
 
     # Dev apps 
     bruno

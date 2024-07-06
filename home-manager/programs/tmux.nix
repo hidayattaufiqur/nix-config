@@ -1,4 +1,4 @@
-{  pkgs, ... }: 
+{ upkgs, ... }: 
 let
   tmuxCustomConf = ''
     set -g mouse on
@@ -77,10 +77,10 @@ let
     set -g status-left-length 20
 
     set -ga update-environment EDITOR
+
+    # TMUX plugins 
     set -g @plugin 'artemave/tmux_super_fingers'
-
     set -g @super-fingers-key f
-
     set -g @plugin 'sainnhe/tmux-fzf'
   '';
 in 
@@ -89,13 +89,13 @@ in
      enable = true; 
      shortcut = "a"; # global key leader (ctr+{shortcut})
 
-     plugins = with pkgs.tmuxPlugins; [
-       # {
-       #   plugin = resurrect; 
-       #   extraConfig = ''
-       #    set -g @resurrect-capture-pane-contents 'on'
-       #   '';
-       # }
+     plugins = with upkgs.tmuxPlugins; [
+       {
+         plugin = resurrect; 
+         extraConfig = ''
+          set -g @resurrect-capture-pane-contents 'on'
+         '';
+       }
        # {
        #   plugin = continuum; 
        #   extraConfig = ''

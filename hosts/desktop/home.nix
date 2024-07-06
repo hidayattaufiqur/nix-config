@@ -1,4 +1,4 @@
-{ pkgs, ... }: 
+{ pkgs, upkgs, ... }:
 let 
 wallpaper = pkgs.fetchurl {
   url = "https://r4.wallpaperflare.com/wallpaper/626/913/146/cyberpunk-skyscraper-upside-down-animated-movies-wallpaper-6f13244f1d114a1e998a42c94e3c5194.jpg";
@@ -17,7 +17,7 @@ in
     (import ../../home-manager/programs/git.nix)
     (import ../../home-manager/programs/zsh.nix)
     (import ../../home-manager/programs/rofi/rofi.nix)
-    (import ../../home-manager/programs/tmux.nix)
+    (import ../../home-manager/programs/tmux.nix { upkgs = upkgs; })
     (import ../../home-manager/programs/mimeapps.nix)
     (import ../../home-manager/programs/dconf-box.nix)
   ];
