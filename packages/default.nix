@@ -35,6 +35,7 @@
     # Basic Apps
     whatsapp-for-linux
     spotify-player
+    zotero
 
     # Dev apps 
     bruno
@@ -83,7 +84,7 @@
     blanket
     libreoffice    
     mendeley
-    zotero
+    texliveBasic
 
     # Dev apps 
     sops
