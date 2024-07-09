@@ -36,6 +36,7 @@
     whatsapp-for-linux
     spotify-player
     zotero
+    vlc
 
     # Dev apps 
     bruno
