@@ -87,7 +87,6 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/server
-          nur.nixosModules.nur
           sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
