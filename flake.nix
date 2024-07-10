@@ -39,6 +39,8 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
     };
 
     specialArgs = inputs // { inherit system pkgs ppkgs upkgs; };
+    # TODO: make the modules import work so that it can be re-used accross hosts
+    # modules = [ nur.nixosModules.nur sops-nix.nixosModules.sops home-manager.nixosModules.home-manager ];
   in
   {
     nixosConfigurations = {
@@ -104,7 +106,6 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/gce-nixos-asia-southeast1-b
-          nur.nixosModules.nur
           sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
@@ -113,6 +114,42 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
               useGlobalPkgs = true; 
               extraSpecialArgs = specialArgs;
               users.server = import ./hosts/gce-nixos-asia-southeast1-b/home.nix;
+            };
+          }
+        ];
+       };
+
+      gce-nixos-asia-southeast1-b-monitoring = nixpkgs.lib.nixosSystem {
+        specialArgs = specialArgs;
+        system = system;
+        modules = [
+          ./hosts/gce-nixos-asia-southeast1-b-monitoring
+          sops-nix.nixosModules.sops
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useUserPackages = true;
+              useGlobalPkgs = true; 
+              extraSpecialArgs = specialArgs;
+              users.server = import ./hosts/gce-nixos-asia-southeast1-b-monitoring/home.nix;
+            };
+          }
+        ];
+       };
+
+      gce-nixos-us-central1-a = nixpkgs.lib.nixosSystem {
+        specialArgs = specialArgs;
+        system = system;
+        modules = [
+          ./hosts/gce-nixos-us-central1-a
+          sops-nix.nixosModules.sops
+          home-manager.nixosModules.home-manager
+          {
+            home-manager = {
+              useUserPackages = true;
+              useGlobalPkgs = true; 
+              extraSpecialArgs = specialArgs;
+              users.server = import ./hosts/gce-nixos-us-central1-a/home.nix;
             };
           }
         ];
