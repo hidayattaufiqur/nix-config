@@ -6,18 +6,21 @@
 
 {
   imports =
-    [ 
+    [ # Include the results of the hardware scan.
+      # ./hardware-configuration
        <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
 
-        # TODO: only import services that are needed
-       ./../../services # import everything
-       ./../../services/prometheus_node_exporter.nix
-
-       ./services
+       ../../services/nginx.nix
+       ../../services/prometheus_node_exporter.nix
+       ../../services/ssh.nix
+       ../../services/tailscale.nix
+       ../../services/psql.nix
+       ../../services/ssh.nix
+       ../../services/interception_tool.nix
     ];
 
   networking = {
-    hostName = "nixos-server"; # Define your hostname.
+    hostName = "gce-nixos-us-central1-a"; # Define your hostname.
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
     # search = [ "tailede36.ts.net" ];
     # Pick only one of the below networking options.
@@ -57,7 +60,7 @@
    };
 
   security.sudo.wheelNeedsPassword = false;
-   users.users.nixos-server = {
+   users.users.server = {
      isNormalUser = true;
      extraGroups = [ "networkmanager" "wheel" "docker" "nginx" ]; 
      packages = with pkgs; [
@@ -154,8 +157,8 @@
 
   # Open ports in the firewall.
    networking.firewall.trustedInterfaces = [ "eth0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 3022 2489 5000 5432 9443 9090 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 3022 2489 5000 5432 9443 9090 ];
+   networking.firewall.allowedTCPPorts = [ 22 80 443 5000 ];
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
@@ -203,5 +206,5 @@
     extraOptions = "experimental-features = nix-command flakes";
   };
 
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "24.05"; # Did you read the comment?
 }

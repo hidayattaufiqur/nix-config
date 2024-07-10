@@ -3,9 +3,6 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 { config, pkgs, ... }:
-let 
-  prometheusTargets = [ "100.94.212.89:9002" ];
-in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -51,7 +48,9 @@ in
 
   # Set custom option for prometheus scrape targets
   services.prometheus = {
-    targets = prometheusTargets;
+    ta-server-sg = [ "100.94.212.89:9002" ]; 
+    personal-server = [ "100.86.186.55:9002" ];
+    ta-server-us = [ "100.108.137.14:9002" ];
   };
 
   # Enable virtualizations
