@@ -29,13 +29,16 @@
       check-storage="nix-tree";
       upgrade="sudo nixos-rebuild switch --show-trace";
 
+      upgrade-server-sg="nixos-rebuild switch --flake .#nixos-server --target-host gce-nix --build-host gce-ni --fast --use-remote-sudo --impure --show-trace";
+      test-upgrade-server-sg="nixos-rebuild test --flake .#nixos-server --target-host gce-nix --build-host gce-ni --fast --use-remote-sudo --impure --show-trace";
+      
       upgrade-ta-server-sg="nixos-rebuild switch --flake .#gce-nixos-asia-southeast1-b --target-host gce-nixos-asia-southeast1-b --build-host gce-nixos-asia-southeast1-b --fast --use-remote-sudo --impure --show-trace";
       upgrade-ta-server-us="nixos-rebuild switch --flake .#gce-nixos-us-central1-a --target-host gce-nixos-us-central1-a --build-host gce-nixos-us-central1-a --fast --use-remote-sudo --impure --show-trace";
-      upgrade-ta-monitoring-sg="nixos-rebuild switch --flake .#gce-nixos-asia-southeast1-b-monitoring --target-host gce-nixos-asia-southeast1-b-monitoring --build-host gce-nixos-asia-southeast1-b-monitoring --fast --use-remote-sudo --impure --show-trace";
+      upgrade-ta-server-monitoring-sg="nixos-rebuild switch --flake .#gce-nixos-asia-southeast1-b-monitoring --target-host gce-nixos-asia-southeast1-b-monitoring --build-host gce-nixos-asia-southeast1-b-monitoring --fast --use-remote-sudo --impure --show-trace";
 
       test-upgrade-ta-server-sg="nixos-rebuild test --flake .#gce-nixos-asia-southeast1-b --target-host gce-nixos-asia-southeast1-b --build-host gce-nixos-asia-southeast1-b --fast --use-remote-sudo --impure";
       test-upgrade-ta-server-us="nixos-rebuild test --flake .#gce-nixos-us-central1-a --target-host gce-nixos-us-central1-a --build-host gce-nixos-us-central1-a --fast --use-remote-sudo --impure";
-      test-upgrade-ta-monitoring-sg="nixos-rebuild test --flake .#gce-nixos-asia-southeast1-b-monitoring --target-host gce-nixos-asia-southeast1-b-monitoring --build-host gce-nixos-asia-southeast1-b-monitoring --fast --use-remote-sudo --impure";
+      test-upgrade-ta-server-monitoring-sg="nixos-rebuild test --flake .#gce-nixos-asia-southeast1-b-monitoring --target-host gce-nixos-asia-southeast1-b-monitoring --build-host gce-nixos-asia-southeast1-b-monitoring --fast --use-remote-sudo --impure";
       
       # shell aliases
       ll="ls -al";
