@@ -9,7 +9,12 @@
     [ # Include the results of the hardware scan.
       # ./hardware-configuration
        <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
-       ./../../services # import everything
+
+       ../../services/ssh.nix
+       ../../services/tailscale.nix
+       ../../services/psql.nix
+       ../../services/ssh.nix
+       ../../services/interception_tool.nix
     ];
 
   networking = {
