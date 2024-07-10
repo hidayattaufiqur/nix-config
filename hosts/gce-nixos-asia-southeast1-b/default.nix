@@ -10,6 +10,8 @@
       # ./hardware-configuration
        <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
 
+       ../../services/nginx.nix
+       ../../services/prometheus_node_exporter.nix
        ../../services/ssh.nix
        ../../services/tailscale.nix
        ../../services/psql.nix
