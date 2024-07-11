@@ -28,6 +28,7 @@
       config="nvim /etc/nixos/configuration.nix";
       check-storage="nix-tree";
       upgrade="sudo nixos-rebuild switch --show-trace";
+      test-upgrade="sudo nixos-rebuild test --show-trace";
 
       upgrade-server-sg="nixos-rebuild switch --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure --show-trace";
       test-upgrade-server-sg="nixos-rebuild test --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure --show-trace";
