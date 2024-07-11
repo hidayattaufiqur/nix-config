@@ -14,9 +14,10 @@
        ../../services/prometheus_node_exporter.nix
        ../../services/ssh.nix
        ../../services/tailscale.nix
-       ../../services/psql.nix
        ../../services/ssh.nix
        ../../services/interception_tool.nix
+
+       ./services/psql.nix
     ];
 
   networking = {
