@@ -46,6 +46,7 @@
     vim
     httpstat
     imhex
+    zed-editor
 
     # Nix utilities
     dconf2nix
