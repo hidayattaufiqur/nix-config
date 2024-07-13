@@ -48,7 +48,7 @@
 
   # Set custom option for prometheus scrape targets
   services.prometheus = {
-    ta-server-sg = [ "100.94.212.89:9002" ]; 
+    ta-server-sg = [ "100.94.212.89:9002" "100.94.212.89:5000" ]; 
     personal-server = [ "100.86.186.55:9002" ];
     ta-server-us = [ "100.108.137.14:9002" ];
   };
@@ -129,7 +129,6 @@
     dos2unix 
 
     # Dev apps 
-    go
     gofumpt
     blackfire
     lazygit
@@ -164,9 +163,8 @@
 
   # Open ports in the firewall.
    networking.firewall.trustedInterfaces = [ "eth0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 2342 5000 ];
+   networking.firewall.allowedTCPPorts = [ 22 80 443 2342 5000 9001 9002 ];
    networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 2342 ];
-
 
   environment.variables = {
     SUDO_EDITOR = "nvim";

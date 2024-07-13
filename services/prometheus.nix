@@ -27,16 +27,20 @@ in
     services.prometheus = {
       enable = true;
       port = 9001;
+
+      globalConfig = {
+        scrape_interval = "5s";
+      };
       
       scrapeConfigs = [
         {
-          job_name = "ta-server-sg-scraper";
+          job_name = "server-sg-scraper";
           static_configs = [{
             targets = if cfg.ta-server-sg != [] then cfg.ta-server-sg else [ "127.0.0.1:9002" ];
           }];
         }
         {
-          job_name = "ta-server-us-scraper";
+          job_name = "server-us-scraper";
           static_configs = [{
             targets = if cfg.ta-server-us != [] then cfg.ta-server-us else [ "127.0.0.1:9002" ];
           }];
