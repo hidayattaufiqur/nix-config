@@ -10,15 +10,15 @@
       # ./hardware-configuration
        <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
 
-       ../../services/nginx.nix
+       # ../../services/nginx.nix
        ../../services/prometheus_node_exporter.nix
        ../../services/ssh.nix
        ../../services/tailscale.nix
        ../../services/ssh.nix
        ../../services/interception_tool.nix
 
-       ./services/psql.nix
-    ];
+       ./services
+     ];
 
   networking = {
     hostName = "gce-nixos-asia-southeast1-b"; # Define your hostname.
@@ -116,6 +116,8 @@
     tldr
     syncthing
     btop
+    openssl
+    curlHTTP3
 
     # Nix utilities
     nix-tree
@@ -141,7 +143,7 @@
     neovim 
     google-cloud-sdk
     python3
-    nginx
+    nginxQuic
 
     ## Python packages
     python311Packages.pip
@@ -159,7 +161,7 @@
   # Open ports in the firewall.
    networking.firewall.trustedInterfaces = [ "eth0" ];
    networking.firewall.allowedTCPPorts = [ 22 80 443 5000 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 ];
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 5000 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
@@ -199,7 +201,6 @@
     nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff, /run/current-system/sw/bin/reboot
   '';
   security.polkit.enable = true;
-  
 
   # Package overlays 
   nix = { 
