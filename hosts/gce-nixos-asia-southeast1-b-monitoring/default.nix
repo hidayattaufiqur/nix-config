@@ -50,7 +50,7 @@
   services.prometheus = {
     ta-server-sg = [ "100.94.212.89:9002" "100.94.212.89:5000" ]; 
     personal-server = [ "100.86.186.55:9002" ];
-    ta-server-us = [ "100.108.137.14:9002" ];
+    ta-server-us = [ "100.108.137.14:9002" "100.108.137.14:5000"  ]; 
   };
 
   # Enable virtualizations
@@ -122,6 +122,7 @@
     tldr
     syncthing
     btop
+    curlHTTP3
 
     # Nix utilities
     nix-tree
