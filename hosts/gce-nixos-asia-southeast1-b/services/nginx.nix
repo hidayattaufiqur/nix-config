@@ -9,7 +9,7 @@
     eventsConfig = "worker_connections 1024;";
 
     virtualHosts = {
-      "ta.hidayattaufiqur.dev" = {
+      "ta-sg.hidayattaufiqur.dev" = {
         # other configs
         forceSSL = true;
         enableACME = true;
