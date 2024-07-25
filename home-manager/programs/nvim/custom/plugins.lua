@@ -1,6 +1,27 @@
 ---@diagnostic disable: different-requires
 local plugins = {
   {
+    "kdheepak/lazygit.nvim",
+      cmd = {
+      "LazyGit",
+      "LazyGitConfig",
+      "LazyGitCurrentFile",
+      "LazyGitFilter",
+      "LazyGitFilterCurrentFile",
+      },
+      keys = {
+        { "<leader>lg", "<cmd>LazyGit<cr>", desc = "LazyGit" }
+      },
+  },
+  {
+    "shellRaining/hlchunk.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local opts = require("custom.configs.hlchunk").opts
+      require("hlchunk").setup(opts)
+    end
+  },
+  {
     "supermaven-inc/supermaven-nvim",
     lazy = false,
     config = function()
