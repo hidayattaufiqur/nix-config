@@ -122,7 +122,19 @@
     tldr
     syncthing
     btop
+
+    # TA experimentation tools 
     curlHTTP3
+    wrk
+    nghttp3
+    ngtcp2
+    cmake
+    libbpf
+    autoconf
+    automake
+    libtool
+    gnat
+    libclang
 
     # Nix utilities
     nix-tree
