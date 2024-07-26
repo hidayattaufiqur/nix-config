@@ -37,6 +37,7 @@
     spotify-player
     zotero
     vlc
+    rofi-wayland
 
     # Dev apps 
     bruno
@@ -48,12 +49,15 @@
     imhex
     zed-editor
 
+    # Terminal apps
+    yazi # a TUI file manager
+
     # Nix utilities
     dconf2nix
 
     # Linux utilities
     logiops
-    rofi-wayland
+    ueberzugpp # a dependency to draw images on terminal for yazi 
 
     # LSP
     basedpyright

@@ -78,6 +78,11 @@ let
 
     set -ga update-environment EDITOR
 
+    # this is for yazi image preview on terminal [https://yazi-rs.github.io/docs/image-preview#tmux]
+    set -g allow-passthrough on
+    set -ga update-environment TERM
+    set -ga update-environment TERM_PROGRAM
+
     # TMUX plugins 
     set -g @plugin 'artemave/tmux_super_fingers'
     set -g @super-fingers-key f
