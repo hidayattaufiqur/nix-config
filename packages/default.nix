@@ -69,6 +69,7 @@
     gnome-latex
     gnome-tweaks
     gnome3.gnome-session
+    gnome-pomodoro
   ];
 
   packages = with pkgs; [
