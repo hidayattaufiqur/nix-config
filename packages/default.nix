@@ -65,12 +65,15 @@
     # Gnome
     gnome.gnome-remote-desktop
     andromeda-gtk-theme
+    gnome-latex
+    gnome-tweaks
+    gnome3.gnome-session
+    gnome.gnome-software
   ];
 
   packages = with pkgs; [
     # Basic Apps
     gimp
-    gnome3.gnome-session
     gnome-connections
     freerdp
     remmina
