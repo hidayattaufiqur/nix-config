@@ -20,15 +20,16 @@
     app-hider
     compiz-alike-magic-lamp-effect
     just-perfection
-    resource-monitor # unsupported version in Nix repo
+    # resource-monitor # unsupported version in Nix repo
     dash-to-dock
     blur-my-shell
     appindicator
     quick-settings-tweaker
     rounded-window-corners
     tiling-assistant
-    hide-top-bar
-    peek-top-bar-on-fullscreen
+    focus # transparent inactive windows
+    cronomix # a todo, pomodoro, stopwatch, and alarms app
+    space-bar # i3-like workspace indicator
   ];
 
   unstablePackages = with upkgs; [
@@ -69,7 +70,6 @@
     gnome-latex
     gnome-tweaks
     gnome3.gnome-session
-    gnome-pomodoro
   ];
 
   packages = with pkgs; [
