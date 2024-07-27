@@ -24,7 +24,7 @@
 
       # nix command aliases
       hmupdate="home-manager build switch";
-      nix-clean="nix-store --optimise && nix-store --gc";
+      nix-clean="nix-store --optimise --show-trace && nix-store --gc --show-trace";
       config="nvim /etc/nixos/configuration.nix";
       check-storage="nix-tree";
       upgrade="sudo nixos-rebuild switch --show-trace";
