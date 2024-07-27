@@ -7,13 +7,14 @@ inputs = {
   nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
   home-manager = {
     url = "github:nix-community/home-manager/release-24.05";
-    # inputs.nixpkgs.follows = "nixpkgs";
+    # inputs.nixpkgs.follows = "nixpkgs"; # this will follow 24.11 instead of 24.05
   };
   sops-nix.url = "github:Mic92/sops-nix";
   nur.url = "github:nix-community/NUR";
+  yazi.url = "github:sxyazi/yazi";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix, yazi }@inputs:
   let
     system = "x86_64-linux";
 
@@ -40,7 +41,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
 
     specialArgs = inputs // { inherit system pkgs ppkgs upkgs; };
     # TODO: make the modules import work so that it can be re-used accross hosts
-    # modules = [ nur.nixosModules.nur sops-nix.nixosModules.sops home-manager.nixosModules.home-manager ];
+    # modules = [ nur.nixosModules.nur sops-nix.nixosModules.sops home-manager.nixosModules.home-manager ]; 
   in
   {
     nixosConfigurations = {
