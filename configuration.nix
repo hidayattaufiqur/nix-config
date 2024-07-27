@@ -182,7 +182,7 @@
     (import ./packages { pkgs = pkgs; } ).packages 
     ++ (import ./packages { upkgs = upkgs; } ).unstablePackages
     ++ (import ./packages { pkgs = pkgs; } ).gnomePackages
-    ++ (import ./packages { pkgs = pkgs; } ).gnomeExtensions
+    ++ (import ./packages { upkgs = upkgs; } ).gnomeExtensions
     ++ (import ./packages { config = config; } ).nurPackages
     ++ (import ./packages { pkgs = pkgs; upkgs = upkgs; } ).nodePackages
   ;

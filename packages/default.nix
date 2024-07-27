@@ -15,7 +15,7 @@
     gnome-remote-desktop
   ];
 
-  gnomeExtensions = with pkgs.gnomeExtensions; [
+  gnomeExtensions = with upkgs.gnomeExtensions; [
     # Gnome extensions
     app-hider
     compiz-alike-magic-lamp-effect
@@ -33,7 +33,7 @@
   ];
 
   unstablePackages = with upkgs; [
-    # Basic Apps
+    # Basic apps
     whatsapp-for-linux
     spotify-player
     zotero
@@ -64,7 +64,7 @@
     # LSP
     basedpyright
     
-    # Gnome
+    # Gnome apps
     gnome.gnome-remote-desktop
     andromeda-gtk-theme
     gnome-latex
