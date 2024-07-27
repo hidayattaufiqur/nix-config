@@ -9,12 +9,11 @@
 
 /*****----- Configuration -----*****/
 configuration {
-	modi:                       "drun,window,calc,filebrowser,emoji";
+	modi:                       "drun,window,calc,emoji";
     show-icons:                 false;
     display-drun:               " Apps";
     display-calc:               "⌨ Calc";
     display-run:                " Run";
-    display-filebrowser:        " Files";
     display-window:             " Windows";
     display-emoji:              "🗿Emoji";
     drun-display-format:        "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";
@@ -58,7 +57,7 @@ window {
     location:                    center;
     anchor:                      center;
     fullscreen:                  false;
-    width:                       650px;
+    width:                       700px;
     x-offset:                    0px;
     y-offset:                    0px;
 
