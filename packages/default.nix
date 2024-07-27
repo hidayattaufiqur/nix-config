@@ -78,7 +78,8 @@
     # spotify-tui # unmaintained as per nixpkgs version 24.05
     telegram-desktop
     discord
-    cinnamon.nemo
+    cinnamon.nemo-with-extensions
+    cinnamon.nemo-fileroller
     stremio
     gparted
     obs-studio
