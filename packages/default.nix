@@ -48,6 +48,7 @@
     httpstat
     imhex
     zed-editor
+    texlivePackages.latexmk
 
     # Terminal apps
     yazi # a TUI file manager
@@ -68,7 +69,6 @@
     gnome-latex
     gnome-tweaks
     gnome3.gnome-session
-    gnome.gnome-software
   ];
 
   packages = with pkgs; [
