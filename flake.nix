@@ -28,14 +28,14 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
     ppkgs = import nixpkgs-prev { 
       inherit system;
       config = {
-        allowunfree = true;
+        allowUnfree = true;
       };
     };
 
     upkgs = import nixpkgs-unstable {
       inherit system;
       config = {
-        allowunfree = true;
+        allowUnfree = true;
       };
     };
 
