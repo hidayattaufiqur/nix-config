@@ -53,6 +53,8 @@
 
     # Terminal apps
     yazi # a TUI file manager
+    cpu-x # cpu-z like app for linux
+    geekbench
 
     # Nix utilities
     dconf2nix
