@@ -118,6 +118,7 @@
     python3
     commitizen
     cz-cli
+    mosh
 
     libgcc
     gcc

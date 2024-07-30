@@ -79,6 +79,7 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
     # Linux utilities 
+    mosh
     xclip
     libstdcxx5
     ngrep

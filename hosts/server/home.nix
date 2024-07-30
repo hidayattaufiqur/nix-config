@@ -24,6 +24,7 @@
   };
 
     home.packages = with pkgs; [
+      mosh
     # # adds the "hello" command to your environment. it prints a friendly
     # # "hello, world!" when run.
     # pkgs.hello
