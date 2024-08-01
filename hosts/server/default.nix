@@ -144,6 +144,8 @@
     python311Packages.pip
     python311Packages.virtualenv
     python311Packages.gunicorn
+    python311Packages.python-magic
+    python311Packages.flask
 
     ## LSP servers
     nodePackages_latest.pyright
