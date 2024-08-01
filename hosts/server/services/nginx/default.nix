@@ -33,12 +33,12 @@ in
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_set_header X-Forwarded-Host $host;
             proxy_set_header X-Forwarded-Prefix /;
-            proxy_set_header Content-Type application/json;
 
             proxy_connect_timeout       300;
             proxy_send_timeout          300;
             proxy_read_timeout          300;
             send_timeout                300;
+            client_max_body_size 20M;
           '';
         };
       };
