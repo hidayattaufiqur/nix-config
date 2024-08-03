@@ -97,7 +97,8 @@
     blanket
     libreoffice    
     mendeley
-    texliveBasic
+    texliveFull
+    zathura
 
     # Dev apps 
     sops
