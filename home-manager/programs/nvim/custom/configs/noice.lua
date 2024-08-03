@@ -8,6 +8,14 @@ M.opts = {
       ["vim.lsp.util.stylize_markdown"] = true,
       ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
     },
+    popupmenu = {
+      enabled = true, -- enables the Noice popupmenu UI
+      ---@type 'nui'|'cmp'
+      backend = "nui", -- backend to use to show regular cmdline completions
+      ---@type NoicePopupmenuItemKind|false
+      -- Icons for completion item kinds (see defaults at noice.config.icons.kinds)
+      kind_icons = {}, -- set to `false` to disable icons
+    },
     hover = {
       enabled = false,
       silent = false, -- set to true to not show a message if hover is not available
@@ -32,7 +40,7 @@ M.opts = {
     command_palette = true, -- position the cmdline and popupmenu together
     long_message_to_split = true, -- long messages will be sent to a split
     inc_rename = false, -- enables an input dialog for inc-rename.nvim
-    lsp_doc_border = false, -- add a border to hover docs and signature help
+    lsp_doc_border = true, -- add a border to hover docs and signature help
   },
 }
 
