@@ -10,28 +10,13 @@ M.opts = {
     },
     popupmenu = {
       enabled = true, -- enables the Noice popupmenu UI
-      ---@type 'nui'|'cmp'
       backend = "nui", -- backend to use to show regular cmdline completions
-      ---@type NoicePopupmenuItemKind|false
-      -- Icons for completion item kinds (see defaults at noice.config.icons.kinds)
-      kind_icons = {}, -- set to `false` to disable icons
     },
     hover = {
       enabled = false,
-      silent = false, -- set to true to not show a message if hover is not available
-      view = nil, -- when nil, use defaults from documentation
-      opts = {}, -- merged with defaults from documentation
     },
     signature = {
       enabled = false,
-      auto_open = {
-        enabled = true,
-        trigger = true, -- Automatically show signature help when typing a trigger character from the LSP
-        luasnip = true, -- Will open signature help when jumping to Luasnip insert nodes
-        throttle = 50, -- Debounce lsp signature help request by 50ms
-      },
-      view = nil, -- when nil, use defaults from documentation
-      opts = {}, -- merged with defaults from documentation
     },
   },
   -- you can enable a preset for easier configuration

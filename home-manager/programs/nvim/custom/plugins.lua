@@ -1,10 +1,20 @@
 ---@diagnostic disable: different-requires
 local plugins = {
   {
+    "lervag/vimtex",
+    lazy = false,     -- we don't want to lazy load VimTeX
+    -- tag = "v2.15", -- uncomment to pin to a specific release
+    init = function()
+      -- VimTeX configuration goes here, e.g.
+      vim.g.vimtex_view_method = "zathura"
+      vim.cmd[[set conceallevel=2]]
+      vim.cmd[[let g:tex_conceal='abdmg']]
+    end
+  },
+  {
     "MunifTanjim/nui.nvim",
     config = function()
         local Menu = require("nui.menu")
-
         vim.ui.select = function(items, opts, on_choice)
             vim.validate({
                 items = { items, 'table', false },
