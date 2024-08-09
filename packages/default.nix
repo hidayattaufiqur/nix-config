@@ -39,6 +39,7 @@
     zotero
     vlc
     rofi-wayland
+    microsoft-edge-dev
 
     # Dev apps 
     bruno
