@@ -14,6 +14,7 @@ let
     # dev 
     postgresql
     gephi
+    protege
 
     # linux utilities
     radeontop
