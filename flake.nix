@@ -11,10 +11,10 @@ inputs = {
   };
   sops-nix.url = "github:Mic92/sops-nix";
   nur.url = "github:nix-community/NUR";
-  yazi.url = "github:sxyazi/yazi";
+  # yazi.url = "github:sxyazi/yazi";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix, yazi }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix }@inputs:
   let
     system = "x86_64-linux";
 

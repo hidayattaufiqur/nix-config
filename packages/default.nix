@@ -62,7 +62,7 @@
 
     # Linux utilities
     logiops
-    ueberzugpp # a dependency to draw images on terminal for yazi 
+    # ueberzugpp # a dependency to draw images on terminal for yazi 
 
     # LSP
     basedpyright
