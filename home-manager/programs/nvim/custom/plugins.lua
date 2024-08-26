@@ -1,6 +1,14 @@
 ---@diagnostic disable: different-requires
 local plugins = {
   {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      local opts = require("custom.configs.todo-comments").opts
+      require("todo-comments").setup(opts)
+    end,
+  },
+  {
     "lervag/vimtex",
     lazy = false,     -- we don't want to lazy load VimTeX
     -- tag = "v2.15", -- uncomment to pin to a specific release
