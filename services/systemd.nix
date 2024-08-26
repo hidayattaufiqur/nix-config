@@ -2,7 +2,7 @@
 let
   ontology-be = "/home/nixos-server/Fun/Projects/ontology-BE";
   blogablog = "/home/nixos-server/Fun/Projects/blogAblog/";
-  vitesse = "/home/nixos-server/Fun/Projects/vitesse/dist";
+  hidayattaufiqurDev = "/home/nixos-server/Fun/Projects/hidayattaufiqur.dev/dist";
   eigen-tc = "/home/nixos-server/Fun/Projects/e-be-tc";
 in
 {
@@ -40,14 +40,14 @@ in
     };
   };
     
-  systemd.services.vitesse = {
+  systemd.services.hidayattaufiqurDev = {
     description = "systemd unit to run personal site";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       User = "nixos-server";
       Group = "users";
-      WorkingDirectory = vitesse;
+      WorkingDirectory = hidayattaufiqurDev;
       Environment = [
         "PATH=/home/nixos-server/.nix-profile/bin:/etc/profiles/per-user/nixos-server/bin:/nix/var/nix/profiles/default/bin:/run/current-system/sw/bin:/usr/bin"
       ];

@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   ontology-be = "/home/nixos-server/Fun/Projects/ontology-BE";
-  vitesse = "/home/nixos-server/Fun/Projects/vitesse/dist";
+  hidayattaufiqurDev = "/home/nixos-server/Fun/Projects/hidayattaufiqur.dev/dist";
 in
 {
   services.nginx = {
