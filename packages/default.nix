@@ -51,6 +51,7 @@
     imhex
     zed-editor
     texlivePackages.latexmk
+    atac
 
     # Terminal apps
     yazi # a TUI file manager
@@ -142,6 +143,8 @@
     ## Python packages
     python311Packages.pip
     python311Packages.virtualenv
+    python311Packages.autopep8
+    python311Packages.yapf
 
     ## LSP servers
     nodePackages_latest.pyright

@@ -278,7 +278,7 @@
   networking.firewall = { 
     enable = true;
     trustedInterfaces = [ "tailscale0" ];
-    allowedTCPPorts = [ 22 80 3389 ];
+    allowedTCPPorts = [ 22 80 3389 5000 ];
     allowedUDPPorts = [ config.services.tailscale.port 22 80 3389 ];
   };
 
