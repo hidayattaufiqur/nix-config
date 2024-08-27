@@ -2,6 +2,7 @@
 local plugins = {
   {
     "folke/todo-comments.nvim",
+    lazy = false,
     dependencies = { "nvim-lua/plenary.nvim" },
     config = function()
       local opts = require("custom.configs.todo-comments").opts

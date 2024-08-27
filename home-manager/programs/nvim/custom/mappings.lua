@@ -1,4 +1,4 @@
--- local mapping = require('core.mappings')
+local mapping = require('core.mappings')
 --
 -- mapping.copilot = {
 --   i = {
@@ -12,4 +12,11 @@
 --   }
 -- }
 --
--- return mapping
+
+mapping.todo = {
+  n = {
+    ["<leader>ft"] = {"<cmd>TodoTelescope<cr>", "Telescope Todos"},
+  }
+}
+
+return mapping
