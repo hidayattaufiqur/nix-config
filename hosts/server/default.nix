@@ -11,7 +11,8 @@
 
         # TODO: only import services that are needed
        ./../../services # import everything
-       ./../../services/prometheus_node_exporter.nix
+       ./../../services/prometheus_node_exporter.nix 
+       ./../../services/grafana.nix
 
        ./services
     ];
