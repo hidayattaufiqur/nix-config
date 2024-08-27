@@ -40,26 +40,29 @@
     vlc
     rofi-wayland
     microsoft-edge-dev
+    spotify
+    telegram-desktop
 
     # Dev apps 
     bruno
     go
-    semgrep
+    semgrep # a CLI tool for finding vulnerabalities in code
     neovim
-    vim
-    httpstat
     imhex
+    vim
     zed-editor
     texlivePackages.latexmk
-    atac
+    atac # a TUI API client
+    gobang # a TUI database manager
 
     # Terminal apps
     yazi # a TUI file manager
     cpu-x # cpu-z like app for linux
     geekbench
+    httpstat
 
     # Nix utilities
-    dconf2nix
+    dconf2nix # a tool to convert dconf settings to nix
 
     # Linux utilities
     logiops
@@ -84,7 +87,6 @@
     remmina
     qbittorrent
     # spotify-tui # unmaintained as per nixpkgs version 24.05
-    telegram-desktop
     discord
     cinnamon.nemo-with-extensions
     cinnamon.nemo-fileroller
@@ -95,7 +97,6 @@
     blender
     thunderbird
     brave
-    spotify
     blanket
     libreoffice    
     mendeley
@@ -121,7 +122,7 @@
     python3
     commitizen
     cz-cli
-    mosh
+    mosh # a UDP-based SSH client
 
     libgcc
     gcc
