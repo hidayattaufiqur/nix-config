@@ -154,7 +154,7 @@
   # Disable default Gnome apps
   environment.gnome.excludePackages = with pkgs.gnome; [
     cheese      # photo booth
-    # epiphany    # web browser
+    epiphany    # web browser
     simple-scan # document scanner
     yelp        # help viewer
     geary       # email client
