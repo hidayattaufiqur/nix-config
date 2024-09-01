@@ -21,9 +21,6 @@ let
     glxinfo
     nvtopPackages.amd
 
-    # basic
-    firefox
-        
     # media 
     davinci-resolve
  ];

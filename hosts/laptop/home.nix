@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, pinnedPkgs, ... }:
 let
   nvchad = with pkgs; callPackage ../nvchad/default.nix { };
 in
@@ -20,6 +20,7 @@ in
     (import ../../home-manager/programs/tmux.nix)
     (import ../../home-manager/programs/mimeapps.nix)
     (import ../../home-manager/programs/dconf-laptop.nix)
+    (import ../../home-manager/programs/firefox.nix { pinnedPkgs = pinnedPkgs; })
   ];
 
   programs = { 

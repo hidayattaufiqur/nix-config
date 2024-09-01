@@ -1,4 +1,4 @@
-{ pkgs ? null, upkgs ? null, config ? null, ... }:
+{ pkgs ? null, upkgs ? null, config ? null, pinnedPkgs ? null, ... }:
 {
   nurPackages = with config.nur; [
     # packages from Nur community
@@ -30,6 +30,12 @@
     focus # transparent inactive windows
     cronomix # a todo, pomodoro, stopwatch, and alarms app
     space-bar # i3-like workspace indicator
+  ];
+
+  # ------------------------------------------------------------------------------
+
+  pinnedPkgs = with pinnedPkgs; [
+    firefoxpwa
   ];
 
   unstablePackages = with upkgs; [

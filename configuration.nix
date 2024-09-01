@@ -1,7 +1,7 @@
 # Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, upkgs, ... }:
+{ config, pkgs, upkgs, pinnedPkgs, ... }:
 
 {
   # Configure network proxy if necessary
@@ -185,6 +185,7 @@
     ++ (import ./packages { upkgs = upkgs; } ).gnomeExtensions
     ++ (import ./packages { config = config; } ).nurPackages
     ++ (import ./packages { pkgs = pkgs; upkgs = upkgs; } ).nodePackages
+    ++ (import ./packages { pinnedPkgs = pinnedPkgs; } ).pinnedPkgs
   ;
 
   # Some programs need SUID wrappers, can be configured further or are
