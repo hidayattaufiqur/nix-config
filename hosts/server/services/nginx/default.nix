@@ -6,6 +6,12 @@ in
 {
   services.nginx = {
     virtualHosts = {
+      "teknofest.proclub.tech" = {
+        locations."/" = {
+          proxyPass = "http://localhost:3000";
+        };
+      };
+
       "hidayattaufiqur.dev" = {
         locations."/" = {
           proxyPass = "http://localhost:1977";
@@ -78,19 +84,6 @@ in
             proxy_set_header X-Forwarded-Prefix /portainer/;
 
             rewrite ^/portainer/(.*) /$1 break;
-            '';
-        };
-
-        locations."/grafana/" = {
-            proxyPass = "http://100.124.68.110/grafana/";
-            proxyWebsockets = true;
-            extraConfig = ''
-              proxy_set_header X-Real-IP $remote_addr;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header X-Forwarded-Proto $scheme;
-              proxy_set_header X-Forwarded-Host $host;
-              proxy_set_header Upgrade $http_upgrade;
-              proxy_set_header Connection "upgrade";
             '';
         };
       };
