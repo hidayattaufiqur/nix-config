@@ -83,6 +83,9 @@
     gnome-latex
     gnome-tweaks
     gnome3.gnome-session
+
+    # Games
+    moonlight-qt
   ];
 
   packages = with pkgs; [
