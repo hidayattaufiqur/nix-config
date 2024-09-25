@@ -1,15 +1,15 @@
-{ upkgs, ... }: 
+{ pkgs, ... }: 
 {
   services.sunshine = {
     enable = true;
-    package = upkgs.sunshine;
+    package = pkgs.sunshine;
   };
 
   security.wrappers.sunshine = {
       owner = "root";
       group = "root";
       capabilities = "cap_sys_admin+p";
-      source = "${upkgs.sunshine}/bin/sunshine";
+      source = "${pkgs.sunshine}/bin/sunshine";
   };
 
   services.avahi.publish.enable = true;
