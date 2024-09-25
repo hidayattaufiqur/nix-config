@@ -14,6 +14,7 @@ in
   ./../../services/psql.nix
   ./../../services/ssh.nix
   ./../../services/tailscale.nix
+  ./../../services/sunshine.nix 
   ./../../services/interception_tool.nix
 
   ./hardware-configuration

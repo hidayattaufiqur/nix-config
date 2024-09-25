@@ -29,7 +29,8 @@ in
   imports = [ # Include the results of the hardware scan.
   ../../configuration.nix 
   ./../../services/psql.nix
-  ./../../services/ssh.nix
+  ./../../services/ssh.nix 
+  ./../../services/sunshine.nix
   ./../../services/tailscale.nix
   ./../../services/interception_tool.nix
 
