@@ -2,7 +2,6 @@
 {
   nurPackages = with config.nur; [
     # packages from Nur community
-    repos.c0deaddict.cameractrls
   ];
 
   nodePackages = [
@@ -12,7 +11,6 @@
   ];
 
   gnomePackages = with pkgs.gnome; [
-    gnome-remote-desktop
   ];
 
   gnomeExtensions = with upkgs.gnomeExtensions; [
@@ -40,6 +38,7 @@
 
   unstablePackages = with upkgs; [
     # Basic apps
+    brave
     whatsapp-for-linux
     spotify-player
     zotero
@@ -78,11 +77,9 @@
     basedpyright
     
     # Gnome apps
-    gnome.gnome-remote-desktop
     andromeda-gtk-theme
-    gnome-latex
     gnome-tweaks
-    gnome3.gnome-session
+    gnome-session
 
     # Games
     moonlight-qt
@@ -105,7 +102,6 @@
     calibre
     blender
     thunderbird
-    brave
     blanket
     libreoffice    
     mendeley
