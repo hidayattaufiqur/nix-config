@@ -10,13 +10,13 @@ inputs = {
     url = "github:nix-community/home-manager/release-24.05";
     # inputs.nixpkgs.follows = "nixpkgs"; # this will follow 24.11 instead of 24.05
   };
-  sops-nix.url = "github:Mic92/sops-nix";
-  nur.url = "github:nix-community/NUR";
+  # sops-nix.url = "github:Mic92/sops-nix";
+  # nur.url = "github:nix-community/NUR";
 
   # yazi.url = "github:sxyazi/yazi";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, sops-nix, nixpkgs-6e99f2a2 }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs-6e99f2a2 }@inputs:
   let
     system = "x86_64-linux";
 
@@ -48,7 +48,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         };
     };
 
-    specialArgs = inputs // { inherit system pkgs ppkgs upkgs pinnedPkgs; };
+    specialArgs = { inherit system pkgs ppkgs upkgs pinnedPkgs; };
     # TODO: make the modules import work so that it can be re-used accross hosts
     # modules = [ nur.nixosModules.nur sops-nix.nixosModules.sops home-manager.nixosModules.home-manager ]; 
   in
@@ -59,8 +59,8 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/laptop
-          nur.nixosModules.nur
-          sops-nix.nixosModules.sops
+          # nur.nixosModules.nur
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -78,8 +78,8 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/desktop
-          nur.nixosModules.nur
-          sops-nix.nixosModules.sops
+          # nur.nixosModules.nur
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -97,7 +97,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/server
-          sops-nix.nixosModules.sops
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -115,7 +115,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/gce-nixos-asia-southeast1-b
-          sops-nix.nixosModules.sops
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -133,7 +133,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/gce-nixos-asia-southeast1-b-monitoring
-          sops-nix.nixosModules.sops
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
@@ -151,7 +151,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nur, so
         system = system;
         modules = [
           ./hosts/gce-nixos-us-central1-a
-          sops-nix.nixosModules.sops
+          # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {
