@@ -2,5 +2,6 @@
   imports = [
    ./nginx
    ./systemd
+   ./redis
   ];
 }

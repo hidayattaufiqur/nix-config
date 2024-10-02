@@ -13,7 +13,7 @@
        ./../../services # import everything
        ./../../services/prometheus_node_exporter.nix 
        ./../../services/grafana.nix
-      ./../../services/prometheus.nix
+       ./../../services/prometheus.nix
 
        ./services
     ];
@@ -122,6 +122,7 @@
     dos2unix 
 
     # Dev apps 
+    redis
     go
     gofumpt
     blackfire
