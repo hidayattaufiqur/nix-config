@@ -30,6 +30,7 @@ in
   ../../configuration.nix 
   ./../../services/psql.nix
   ./../../services/ssh.nix 
+  ./../../services/redis.nix
   ./../../services/sunshine.nix
   ./../../services/tailscale.nix
   ./../../services/interception_tool.nix
