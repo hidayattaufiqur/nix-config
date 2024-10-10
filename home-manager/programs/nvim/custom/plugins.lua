@@ -9,17 +9,17 @@ local plugins = {
       require("todo-comments").setup(opts)
     end,
   },
-  {
-    "lervag/vimtex",
-    lazy = false,     -- we don't want to lazy load VimTeX
-    -- tag = "v2.15", -- uncomment to pin to a specific release
-    init = function()
-      -- VimTeX configuration goes here, e.g.
-      vim.g.vimtex_view_method = "zathura"
-      vim.cmd[[set conceallevel=2]]
-      vim.cmd[[let g:tex_conceal='abdmg']]
-    end
-  },
+  -- {
+  --   "lervag/vimtex",
+  --   lazy = false,     -- we don't want to lazy load VimTeX
+  --   -- tag = "v2.15", -- uncomment to pin to a specific release
+  --   init = function()
+  --     -- VimTeX configuration goes here, e.g.
+  --     vim.g.vimtex_view_method = "zathura"
+  --     vim.cmd[[set conceallevel=2]]
+  --     vim.cmd[[let g:tex_conceal='abdmg']]
+  --   end
+  -- },
   {
     "MunifTanjim/nui.nvim",
     config = function()
@@ -125,17 +125,17 @@ local plugins = {
       require("supermaven-nvim").setup(opts)
     end,
   },
-  {
-    "zbirenbaum/copilot.lua",
-    lazy = false,
-    event = "InsertEnter",
-    cmd = "Copilot",
-    build = ":Copilot auth",
-    config = function()
-      local opts = require("custom.configs.copilot").opts
-      require("copilot").setup(opts)
-    end,
-  },
+  -- {
+  --   "zbirenbaum/copilot.lua",
+  --   lazy = false,
+  --   event = "InsertEnter",
+  --   cmd = "Copilot",
+  --   build = ":Copilot auth",
+  --   config = function()
+  --     local opts = require("custom.configs.copilot").opts
+  --     require("copilot").setup(opts)
+  --   end,
+  -- },
   {
     "Pocco81/auto-save.nvim",
     lazy = false,
