@@ -4,6 +4,7 @@ let
    darktable
    rawtherapee
    neovim
+   lmstudio
  ];
 
  packages = with pkgs; [
