@@ -23,11 +23,12 @@
     blur-my-shell
     appindicator
     quick-settings-tweaker
-    rounded-window-corners
+    rounded-window-corners-reborn
     tiling-assistant
     focus # transparent inactive windows
     cronomix # a todo, pomodoro, stopwatch, and alarms app
     space-bar # i3-like workspace indicator
+    dynamic-panel # a dynamic top panel for gnome
   ];
 
   # ------------------------------------------------------------------------------
@@ -44,9 +45,10 @@
     zotero
     vlc
     rofi-wayland
-    microsoft-edge-dev
+    microsoft-edge
     spotify
     telegram-desktop
+    qbittorrent
 
     # Dev apps 
     bruno
@@ -91,7 +93,6 @@
     gnome-connections
     freerdp
     remmina
-    qbittorrent
     # spotify-tui # unmaintained as per nixpkgs version 24.05
     discord
     cinnamon.nemo-with-extensions
