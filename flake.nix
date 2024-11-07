@@ -83,6 +83,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs
           home-manager.nixosModules.home-manager
           {
             home-manager = {
+              backupFileExtension = "backup"; # this will move existing files by appending the given file extension rather than exiting with an error.
               useUserPackages = true;
               useGlobalPkgs = true; 
               extraSpecialArgs = specialArgs;
