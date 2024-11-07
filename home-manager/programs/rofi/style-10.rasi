@@ -20,8 +20,8 @@ configuration {
 }
 
 /*****----- Global Properties -----*****/
-@import                          "shared/colors.rasi"
-@import                          "shared/fonts.rasi"
+@import                          "colors/onedark.rasi"
+@import                          "launchers/type-1/shared/fonts.rasi"
 
 * {
     border-colour:               var(selected);
