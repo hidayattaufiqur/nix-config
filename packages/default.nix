@@ -10,7 +10,8 @@
     upkgs.nodePackages_latest.typescript-language-server
   ];
 
-  gnomePackages = with pkgs.gnome; [
+  gnomePackages = with pkgs.gnomeExtensions; [
+    tiling-assistant # the upkgs version is not supported yet (version 49)
   ];
 
   gnomeExtensions = with upkgs.gnomeExtensions; [
@@ -24,7 +25,6 @@
     appindicator
     quick-settings-tweaker
     rounded-window-corners-reborn
-    tiling-assistant
     focus # transparent inactive windows
     cronomix # a todo, pomodoro, stopwatch, and alarms app
     space-bar # i3-like workspace indicator
@@ -55,7 +55,7 @@
     go
     semgrep # a CLI tool for finding vulnerabalities in code
     neovim
-    imhex
+    imhex 
     vim
     zed-editor
     texlivePackages.latexmk
@@ -72,7 +72,7 @@
     dconf2nix # a tool to convert dconf settings to nix
 
     # Linux utilities
-    logiops
+    logiops # a tool for my mx master mouse
     # ueberzugpp # a dependency to draw images on terminal for yazi 
 
     # LSP
@@ -89,6 +89,7 @@
 
   packages = with pkgs; [
     # Basic Apps
+    # (callPackage ./hanabi/default.nix{}).hanabi
     gimp
     gnome-connections
     freerdp
