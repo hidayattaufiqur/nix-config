@@ -123,4 +123,14 @@ lspconfig.ccls.setup{
   capabilities = capabilities,
 }
 
+lspconfig.rust_analyzer.setup{
+  settings = {
+    ['rust-analyzer'] = {
+      diagnostics = {
+        enable = false;
+      }
+    }
+  }
+}
+
 return M

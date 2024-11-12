@@ -161,6 +161,7 @@
     golangci-lint
     gopls
     lua-language-server
+    rust-analyzer
 
     # Linux utilities 
     jq
