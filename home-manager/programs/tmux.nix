@@ -6,8 +6,9 @@ let
     unbind '"'
     unbind %
 
-    bind | split-window -h
-    bind - split-window -v
+    bind | split-window -h -c "#{pane_current_path}"
+    bind - split-window -v -c "#{pane_current_path}"
+    bind c new-window -c "#{pane_current_path}"
 
     set -g default-terminal "tmux-256color"
     set -ga terminal-overrides ",*256col*:Tc"
@@ -111,7 +112,7 @@ in
      ];
 
     keyMode = "vi";
-    historyLimit = 7000;
+    historyLimit = 20000;
     baseIndex = 1; 
     extraConfig = tmuxCustomConf;
   };
