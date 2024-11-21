@@ -21,7 +21,7 @@ configuration {
 
 /*****----- Global Properties -----*****/
 @import                          "colors/onedark.rasi"
-@import                          "launchers/type-1/shared/fonts.rasi"
+@import                          "fonts.rasi"
 
 * {
     border-colour:               var(selected);
