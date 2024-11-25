@@ -59,7 +59,6 @@ in
     pkgs.xdotool
     pkgs.wtype
     pkgs.zip 
-    pkgs.qbittorrent
     pkgs.winbox
 
     # # it is sometimes useful to fine-tune packages, for example, by applying
