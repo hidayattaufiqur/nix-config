@@ -20,4 +20,5 @@ mason.ensure_installed = {
   "dockerls",
   "bashls",
   "sqlls",
+  -- TODO: add java mason
 }

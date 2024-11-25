@@ -155,7 +155,7 @@
     python311Packages.yapf
 
     ## LSP servers
-    nodePackages_latest.pyright
+    pyright
     ccls 
     nil
     golangci-lint

@@ -133,4 +133,6 @@ lspconfig.rust_analyzer.setup{
   }
 }
 
+-- TODO: add java lsp
+
 return M

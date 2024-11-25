@@ -44,7 +44,7 @@
 
   hardware.opengl = {
     enable = true;
-    driSupport = true;
+    # driSupport = true; # disabled due to it no longer has any effect as per 24.11 Nix packages release
     driSupport32Bit = true;
     package = pkgs.mesa.drivers;
     package32 = pkgs.pkgsi686Linux.mesa.drivers;

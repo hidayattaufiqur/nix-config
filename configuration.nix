@@ -59,7 +59,7 @@
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  sound.enable = true;
+  # sound.enable = true; # disabled due to it no longer has any effect as per 24.11 Nix packages release
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -293,7 +293,7 @@
  
   # Package overlays 
   nix = { 
-    package = pkgs.nixFlakes; 
+    package = pkgs.nixVersions.stable; 
     extraOptions = "experimental-features = nix-command flakes";
   };
 }
