@@ -49,8 +49,8 @@
     package = pkgs.mesa.drivers;
     package32 = pkgs.pkgsi686Linux.mesa.drivers;
 
-    extraPackages = [ pkgs.mesa.opencl pkgs.rocmPackages.clr.icd pkgs.amdvlk ];
-    extraPackages32 = [ pkgs.driversi686Linux.amdvlk ];
+    extraPackages = [ pkgs.mesa.opencl pkgs.rocmPackages.clr.icd ]; # removing amdvlk for now to avoid gnome 47 border bug [https://www.reddit.com/r/gnome/comments/1fixysh/gnome_47_is_anyone_else_affected/]
+    # extraPackages32 = [ pkgs.driversi686Linux.amdvlk ];
   };
 
   fileSystems."/" =
