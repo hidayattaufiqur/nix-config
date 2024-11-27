@@ -24,6 +24,12 @@ let
 
     # media 
     davinci-resolve
+    droidcam
+    (wrapOBS {
+      plugins = with obs-studio-plugins; [
+        droidcam-obs
+      ];
+    })
  ];
 in
 {
