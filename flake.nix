@@ -48,7 +48,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs
         };
     };
 
-    specialArgs = { inherit system pkgs ppkgs upkgs pinnedPkgs; };
+    specialArgs = { inherit pkgs upkgs pinnedPkgs; };
     # TODO: make the modules import work so that it can be re-used accross hosts
     # modules = [ nur.nixosModules.nur sops-nix.nixosModules.sops home-manager.nixosModules.home-manager ]; 
   in

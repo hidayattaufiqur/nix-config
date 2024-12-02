@@ -1,7 +1,4 @@
 { config, pkgs, pinnedPkgs, ... }:
-let
-  nvchad = with pkgs; callPackage ../nvchad/default.nix { };
-in
 {
   home.username = "nixos";
   home.homeDirectory = "/home/nixos";
