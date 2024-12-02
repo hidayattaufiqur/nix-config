@@ -1,7 +1,6 @@
 { upkgs, pkgs, ... }:
 let 
   packages = with pkgs; [
-    freerdp 
   ];
 
   unstablePackages = with upkgs; [
@@ -14,7 +13,7 @@ in
   ./../../services/psql.nix
   ./../../services/ssh.nix
   ./../../services/tailscale.nix
-  ./../../services/sunshine.nix 
+  # ./../../services/sunshine.nix 
   ./../../services/interception_tool.nix
 
   ./hardware-configuration
@@ -33,7 +32,7 @@ in
   };
 
   nixpkgs.overlays = [
-    (final: prev: {
+    /* (final: prev: {
       postman = prev.postman.overrideAttrs(old: rec {
         version = "20230716100528";
         src = final.fetchurl {
@@ -42,6 +41,6 @@ in
           name = "${old.pname}-${version}.tar.gz";
         };
       });
-    })
+    }) */
   ];
 }

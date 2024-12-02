@@ -1,6 +1,7 @@
 { upkgs, pkgs, lib, ... }:
 let 
  unstablePackages = with upkgs; [
+   geekbench
    darktable
    rawtherapee
    neovim

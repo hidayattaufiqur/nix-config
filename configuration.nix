@@ -45,16 +45,6 @@
     xkbVariant = "";
   };
 
-  # Enable XRDP for remote desktop
-  services.xrdp = {
-    enable = true;
-    defaultWindowManager = "gnome-remote-desktop";
-    # defaultWindowManager = "${pkgs.gnome3.gnome-session}/bin/gnome-session";
-    openFirewall = true;
-  };
-  
-  services.gnome.gnome-remote-desktop.enable = true;
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
 

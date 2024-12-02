@@ -40,7 +40,6 @@
   unstablePackages = with upkgs; [
     # Basic apps
     brave
-    whatsapp-for-linux
     spotify-player
     zotero
     vlc
@@ -58,14 +57,12 @@
     imhex 
     vim
     zed-editor
-    texlivePackages.latexmk
     atac # a TUI API client
     gobang # a TUI database manager
 
     # Terminal apps
     yazi # a TUI file manager
     cpu-x # cpu-z like app for linux
-    geekbench
     httpstat
 
     # Nix utilities
@@ -107,7 +104,6 @@
     blanket
     libreoffice    
     mendeley
-    texliveFull
     zathura
 
     # Dev apps 
