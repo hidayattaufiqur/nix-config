@@ -88,9 +88,6 @@
     # Basic Apps
     # (callPackage ./hanabi/default.nix{}).hanabi
     gimp
-    gnome-connections
-    freerdp
-    remmina
     # spotify-tui # unmaintained as per nixpkgs version 24.05
     discord
     cinnamon.nemo-with-extensions
