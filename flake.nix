@@ -10,13 +10,15 @@ inputs = {
     url = "github:nix-community/home-manager/release-24.11";
     # inputs.nixpkgs.follows = "nixpkgs"; # this will follow 24.11 instead of 24.05
   };
+  disko.url = "github:nix-community/disko";
+  disko.inputs.nixpkgs.follows = "nixpkgs";
   # sops-nix.url = "github:Mic92/sops-nix";
   # nur.url = "github:nix-community/NUR";
 
   # yazi.url = "github:sxyazi/yazi";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs-6e99f2a2 }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs-6e99f2a2, disko }@inputs:
   let
     system = "x86_64-linux";
 
@@ -97,6 +99,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs
         specialArgs = specialArgs;
         system = system;
         modules = [
+          disko.nixosModules.disko
           ./hosts/server
           # sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager

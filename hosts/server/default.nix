@@ -2,12 +2,12 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, ... }:
+{ config, pkgs, modulesPath, ... }:
 
 {
   imports =
     [ 
-       <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
+       # <nixpkgs/nixos/modules/virtualisation/google-compute-image.nix>
 
         # TODO: only import services that are needed
        ./../../services # import everything
@@ -15,12 +15,24 @@
        ./../../services/grafana.nix
        ./../../services/prometheus.nix
 
+       (modulesPath + "/installer/scan/not-detected.nix")
+       (modulesPath + "/profiles/qemu-guest.nix")
+       ./disk-config.nix
+
        ./services
     ];
 
   networking = {
-    hostName = "nixos-server"; # Define your hostname.
+    hostName = "server"; # Define your hostname.
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
+    interfaces.eth0 = { 
+      useDHCP = false;
+      ipv4.addresses = [ {
+        address = "103.59.160.113";
+        prefixLength = 24;
+      } ];
+    };
+    defaultGateway = "103.59.160.1";
     # search = [ "tailede36.ts.net" ];
     # Pick only one of the below networking options.
     # wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -151,7 +163,7 @@
     python311Packages.flask
 
     ## LSP servers
-    nodePackages_latest.pyright
+    basedpyright
     nil
     golangci-lint
     gopls
@@ -205,7 +217,7 @@
 
   # Package overlays 
   nix = { 
-    package = pkgs.nixFlakes; 
+    package = pkgs.nixVersions.stable; 
     extraOptions = "experimental-features = nix-command flakes";
   };
 

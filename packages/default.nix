@@ -48,6 +48,7 @@
     spotify
     telegram-desktop
     qbittorrent
+    kdePackages.kdenlive
 
     # Dev apps 
     bruno
