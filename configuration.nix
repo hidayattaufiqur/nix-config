@@ -208,10 +208,14 @@
      options = "--delete-older-than- 7d";
     }; 
 
-   settings.keep-outputs = "true";
-   settings.keep-derivations = "true";
-   settings.trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
-   settings.substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+   
+   settings = { 
+     trusted-users = [ "root" "nixos" "nixos-box" "nixos-server" ];
+     keep-outputs = "true";
+     keep-derivations = "true";
+     trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
+     substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+   };
   }; 
 
   boot.supportedFilesystems = [ "ntfs" ];

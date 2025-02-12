@@ -67,6 +67,7 @@
      openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl+CaHy7I2ix+tLbvSkBHnvRuCI2Tyma+tmpBUcpTjt hidayattaufiqur@gmail.com"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMoOWiNt2HdzK/2tNy0XP72ugiiYMqRtHkj3gc2rSivL hidayattaufiqur@gmail.com"
      ];
    };
 
@@ -76,14 +77,12 @@
      extraGroups = [ "networkmanager" "wheel" "docker" "nginx" ]; 
      packages = with pkgs; [
         postgresql  
-        tree
-        neovim
-        git
      ];
      shell = pkgs.zsh;
      openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl+CaHy7I2ix+tLbvSkBHnvRuCI2Tyma+tmpBUcpTjt hidayattaufiqur@gmail.com"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMoOWiNt2HdzK/2tNy0XP72ugiiYMqRtHkj3gc2rSivL hidayattaufiqur@gmail.com"
      ];
    };
 
@@ -121,9 +120,7 @@
     tree
     tldr
     cron
-    noisetorch 
     ripgrep 
-    logiops
     tldr
     syncthing
     btop
@@ -131,18 +128,15 @@
     # Nix utilities
     nix-tree
     nix-index
-    dos2unix 
 
     # Dev apps 
     redis
     go
     gofumpt
-    blackfire
     lazygit
     rustup
     redis
     perl
-    vscode
     gpp
     gcc9
     docker
@@ -154,6 +148,7 @@
     google-cloud-sdk
     python3
     nginx
+    ollama
 
     ## Python packages
     python311Packages.pip
@@ -161,6 +156,7 @@
     python311Packages.gunicorn
     python311Packages.python-magic
     python311Packages.flask
+    python312Packages.lxml
 
     ## LSP servers
     basedpyright
@@ -196,7 +192,7 @@
     gc = { 
      automatic = true; 
      dates = "weekly"; 
-     options = "--delete-older-than- 7d";
+     options = "--delete-older-than- 3d";
     }; 
 
    settings.keep-outputs = "true";

@@ -55,6 +55,7 @@
     go
     semgrep # a CLI tool for finding vulnerabalities in code
     neovim
+    vimPlugins.nvim-treesitter
     imhex 
     vim
     zed-editor
@@ -147,6 +148,7 @@
     python311Packages.virtualenv
     python311Packages.autopep8
     python311Packages.yapf
+    python312Packages.lxml
 
     ## LSP servers
     pyright
