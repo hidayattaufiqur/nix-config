@@ -23,14 +23,14 @@
 
       # nix command aliases
       hmupdate="home-manager build switch";
-      nix-clean="time nix-store --optimise --show-trace && nix-store --gc --show-trace && nix-collect-garbage --show-trace";
+      nix-clean="time nix-store --optimise -v && nix-store --gc -v && nix-collect-garbage -v";
       config="nvim /etc/nixos/configuration.nix";
       check-storage="nix-tree";
-      upgrade="time sudo nixos-rebuild switch --show-trace";
-      test-upgrade="time sudo nixos-rebuild test --show-trace";
+      upgrade="time sudo nixos-rebuild switch -v";
+      test-upgrade="time sudo nixos-rebuild test -v";
 
-      upgrade-server="time nixos-rebuild switch --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure --show-trace";
-      test-upgrade-server="time nixos-rebuild test --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure --show-trace";
+      upgrade-server="time nixos-rebuild switch --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure -v";
+      test-upgrade-server="time nixos-rebuild test --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure -v";
       
       # shell aliases
       ll="ls -al";
