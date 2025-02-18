@@ -142,7 +142,7 @@
   nixpkgs.config.allowUnfree = true;
 
   # Disable default Gnome apps
-  environment.gnome.excludePackages = with pkgs.gnome; [
+  environment.gnome.excludePackages = with pkgs; [
     cheese      # photo booth
     epiphany    # web browser
     simple-scan # document scanner
@@ -153,8 +153,8 @@
     gnome-characters 
     gnome-contacts
     gnome-maps 
-    pkgs.gnome-connections
-    pkgs.gedit  # text editor
+    gnome-connections
+    gedit  # text editor
   ];
 
   environment.shellAliases = {
