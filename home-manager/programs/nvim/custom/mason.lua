@@ -6,7 +6,7 @@ mason.ensure_installed = {
   "golangci_lint_ls",
   "html",
   "basedpyright",
-  "tsserver",
+  "ts_ls",
   "nil_ls",
   "jsonls",
   "clangd",

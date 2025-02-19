@@ -17,7 +17,7 @@ local servers = {
   "golangci_lint_ls",
   "html",
   "basedpyright",
-  "tsserver",
+  "ts_ls",
   "nil_ls",
   "astro"
 }
@@ -79,7 +79,7 @@ end
     },
  }
 
-lspconfig.tsserver.setup{
+lspconfig.ts_ls.setup{
   on_attach = on_attach,
   capabilities = capabilities,
 }
@@ -87,6 +87,20 @@ lspconfig.tsserver.setup{
 lspconfig.basedpyright.setup{
   on_attach = on_attach,
   capabilities = capabilities,
+  settings = {
+    python = {
+      analysis = {
+        autoSearchPaths = true,
+        autoImportCompletions = true,
+        logLevel = "hint",
+        diagnosticMode = "openFilesOnly",
+        useLibraryCodeForTypes = true,
+        typeCheckingMode = "strict",
+        reportUnusedImport = true,
+        reportMissingImports = true,
+      },
+   },
+  }
 }
 
 lspconfig.nil_ls.setup{
