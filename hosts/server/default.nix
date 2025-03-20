@@ -104,19 +104,15 @@
     busybox
     speedtest-cli
     gnumake42
-    xdotool
     rar 
     unrar
     zip
     unzip
     neofetch
-    tlp
     git
     wget
     htop
-    usbutils
     oh-my-zsh
-    zsh-powerlevel10k
     tree
     tldr
     cron
@@ -168,8 +164,10 @@
 
   # Open ports in the firewall.
    networking.firewall.trustedInterfaces = [ "eth0" ];
-   networking.firewall.allowedTCPPorts = [ 22 80 443 2342 3022 2489 5000 5432 9001 9443 9090 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 2342 3022 2489 5000 5432 9001 9443 9090 ];
+
+  # FIXME: hide away exposed ports
+   networking.firewall.allowedTCPPorts = [ 22 80 443 2342 3000 3022 2489 5000 5432 9001 9443 9090 ];
+   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 2342 3000 3022 2489 5000 5432 9001 9443 9090 ];
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
@@ -203,11 +201,6 @@
 
   boot.supportedFilesystems = [ "ntfs" ];
 
-  # Grant sudo access without password for specific commands
-  security.sudo.configFile = '' 
-    nixos-box ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff
-    nixos ALL = NOPASSWD: /sbin/halt, /sbin/reboot, /sbin/poweroff, /run/current-system/sw/bin/reboot
-  '';
   security.polkit.enable = true;
   
 

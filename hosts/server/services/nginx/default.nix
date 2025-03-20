@@ -1,32 +1,33 @@
 { pkgs, ... }:
 let
   ontology-be = "/home/nixos-server/Fun/Projects/ontology-BE";
-  hidayattaufiqurDev = "/home/nixos-server/Fun/Projects/hidayattaufiqur.dev/dist";
 in
 {
   services.nginx = {
     virtualHosts = {
-      "teknofest.proclub.tech" = {
-        locations."/" = {
-          proxyPass = "http://localhost:3000";
-        };
-      };
-
       "hidayattaufiqur.dev" = {
         locations."/" = {
           proxyPass = "http://localhost:1977";
         };
       };
 
-      "eigen-tc-api.hidayattaufiqur.dev" = {
+      "chat.hidayattaufiqur.dev" = {
         locations."/" = {
-          proxyPass = "http://localhost:7342";
+          proxyPass = "http://127.0.0.1:3000";
           extraConfig = ''
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-          '';
+          # Add WebSocket support (Necessary for version 0.5.0 and up)
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+
+          # (Optional) Disable proxy buffering for better streaming response from models
+          proxy_buffering off;
+        '';
         };
       };
 
