@@ -1,1 +1,13 @@
 TODO
+*.swp
+*.bak
+*.log
+.cache/
+build/
+node_modules/
+*.img
+*.iso
+# never ignore core nix files:
+!flake.nix
+!flake.lock
+!configuration.nix
