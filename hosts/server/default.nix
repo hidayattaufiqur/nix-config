@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, modulesPath, ... }:
+{ config, pkgs, upkgs, modulesPath, ... }:
 
 {
   imports =
@@ -83,6 +83,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFl+CaHy7I2ix+tLbvSkBHnvRuCI2Tyma+tmpBUcpTjt hidayattaufiqur@gmail.com"
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMoOWiNt2HdzK/2tNy0XP72ugiiYMqRtHkj3gc2rSivL hidayattaufiqur@gmail.com"
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMN+6euukSpWncbYN+wczXPi+frMcp2osbEg0zi2VUf2 9dots\hidayat.taufiqur@9D-ID-HIDAYAT"
      ];
    };
 
@@ -108,7 +109,7 @@
     unrar
     zip
     unzip
-    neofetch
+    fastfetch
     git
     wget
     htop
@@ -118,14 +119,14 @@
     cron
     ripgrep 
     tldr
-    syncthing
     btop
 
-    # Nix utilities
+    ## Nix utilities
     nix-tree
     nix-index
 
-    # Dev apps 
+    ## Dev apps 
+    upkgs.opencode
     redis
     go
     gofumpt
@@ -137,22 +138,24 @@
     gcc9
     docker
     docker-compose
-    jdk
+    # jdk
     redis
     nodejs_20
     neovim 
-    google-cloud-sdk
+    # google-cloud-sdk
     python3
     nginx
     ollama
 
     ## Python packages
-    python311Packages.pip
-    python311Packages.virtualenv
-    python311Packages.gunicorn
-    python311Packages.python-magic
-    python311Packages.flask
-    python312Packages.lxml
+    # python311Packages.pip
+    # python311Packages.virtualenv
+    # python311Packages.gunicorn
+    # python311Packages.python-magic
+    # python311Packages.flask
+    # python312Packages.lxml
+    # python312Packages.certbot
+    uv
 
     ## LSP servers
     basedpyright
@@ -186,7 +189,7 @@
     settings.experimental-features = [ "nix-command" "flakes" ];
 
     # Enable nix auto optimise store 
-    settings.auto-optimise-store = true; 
+    settings.auto-optimise-store = false; 
     gc = { 
      automatic = true; 
      dates = "weekly"; 
@@ -200,9 +203,6 @@
   }; 
 
   boot.supportedFilesystems = [ "ntfs" ];
-
-  security.polkit.enable = true;
-  
 
   # Package overlays 
   nix = { 

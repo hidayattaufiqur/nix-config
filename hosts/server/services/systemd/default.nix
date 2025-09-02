@@ -1,6 +1,6 @@
 {
   imports = [
-    ./llmsherpa.nix
+    # ./llmsherpa.nix
   ];
 }
 
