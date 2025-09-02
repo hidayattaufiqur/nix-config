@@ -201,7 +201,7 @@
     settings.experimental-features = [ "nix-command" "flakes" ];
 
     # Enable nix auto optimise store 
-    settings.auto-optimise-store = true; 
+    settings.auto-optimise-store = false; 
     gc = { 
      automatic = true; 
      dates = "weekly"; 
@@ -296,7 +296,7 @@
  
   # Package overlays 
   nix = { 
-    package = pkgs.nixVersions.stable; 
+   package = pkgs.nixVersions.stable; 
     extraOptions = "experimental-features = nix-command flakes";
   };
 }
