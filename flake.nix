@@ -105,6 +105,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-prev, nixpkgs-unstable, nixpkgs
           home-manager.nixosModules.home-manager
           {
             home-manager = {
+              backupFileExtension = "backup";
               useUserPackages = true;
               useGlobalPkgs = true; 
               extraSpecialArgs = specialArgs;

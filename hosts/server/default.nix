@@ -165,12 +165,7 @@
     lua-language-server
   ];
 
-  # Open ports in the firewall.
-   networking.firewall.trustedInterfaces = [ "eth0" ];
-
-  # FIXME: hide away exposed ports
-   networking.firewall.allowedTCPPorts = [ 22 80 443 2342 3000 3022 2489 5000 5432 9001 9443 9090 ];
-   networking.firewall.allowedUDPPorts = [ config.services.tailscale.port 22 80 443 2342 3000 3022 2489 5000 5432 9001 9443 9090 ];
+  # Firewall configured in hosts/server/services/firewall.
 
   environment.variables = {
     SUDO_EDITOR = "nvim";

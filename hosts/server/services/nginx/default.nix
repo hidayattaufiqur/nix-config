@@ -4,6 +4,12 @@
   security.acme.defaults.email = "hidayattaufiqur@gmail.com";
 
   services.nginx = {
+    # Harden and optimize nginx with sensible defaults
+    recommendedGzipSettings = true;
+    recommendedOptimisation = true;
+    recommendedProxySettings = true;
+    recommendedTlsSettings = true;
+    serverTokens = false;
     virtualHosts = {
       "hidayattaufiqur.dev" = {
         locations."/" = {
@@ -12,8 +18,6 @@
       };
 
       "chat.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
         listenAddresses = [ "0.0.0.0" ];
 
         locations."/" = {
@@ -125,11 +129,11 @@
       #   };
       # };
 
-      # "blogablog.hidayattaufiqur.dev" = {
-      #   locations."/" = {
-      #     proxyPass = "http://127.0.0.1:3000";
-      #   };
-      # };
+      "blogablog.hidayattaufiqur.dev" = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:4000";
+        };
+      };
       #
       # "tools.hidayattaufiqur.dev" = {
       #   locations."/cockpit/" = {

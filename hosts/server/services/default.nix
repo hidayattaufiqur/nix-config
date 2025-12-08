@@ -3,5 +3,7 @@
    ./nginx
    ./systemd
    ./redis
+   ./psql
+   ./firewall
   ];
 }
