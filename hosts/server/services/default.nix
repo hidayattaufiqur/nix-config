@@ -5,5 +5,6 @@
    ./redis
    ./psql
    ./firewall
+   ./mc
   ];
 }
