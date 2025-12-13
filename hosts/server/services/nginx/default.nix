@@ -11,6 +11,14 @@
     recommendedTlsSettings = true;
     serverTokens = false;
     virtualHosts = {
+      "mc.hidayattaufiqur.dev" = {
+        listenAddresses = [ "0.0.0.0" ];
+
+        locations."/" = {
+          proxyPass = "localhost:25565";
+        };
+      };
+
       "hidayattaufiqur.dev" = {
         locations."/" = {
           proxyPass = "http://localhost:1977";
