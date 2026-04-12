@@ -11,17 +11,39 @@
     recommendedTlsSettings = true;
     serverTokens = false;
     virtualHosts = {
-      "mc.hidayattaufiqur.dev" = {
-        listenAddresses = [ "0.0.0.0" ];
-
-        locations."/" = {
-          proxyPass = "localhost:25565";
-        };
-      };
-
       "hidayattaufiqur.dev" = {
         locations."/" = {
           proxyPass = "http://localhost:1977";
+        };
+      };
+
+      "mc.hidayattaufiqur.dev" = {
+        locations."/" = {
+          proxyPass = "http://localhost:25565";
+        };
+      };
+
+      "mcadmin.hidayattaufiqur.dev" = {
+        listenAddresses = [ "0.0.0.0" ];
+
+        locations."/" = {
+          proxyPass = "http://localhost:3000";
+        };
+      };
+
+      "mcapi.hidayattaufiqur.dev" = {
+        locations."/" = {
+          proxyPass = "http://localhost:8080";
+        };
+
+         locations."/ws/" = {
+          proxyPass = "http://localhost:8080";
+          extraConfig = ''
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+          '';
         };
       };
 
