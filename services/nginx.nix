@@ -6,6 +6,8 @@
     recommendedGzipSettings = true;
     recommendedTlsSettings = true;
     recommendedOptimisation = true;
-    logError = "stderr debug";
+
+    # logRoot = "/var/log/nginx";
+    # logError = "stderr debug";
   };
 }
