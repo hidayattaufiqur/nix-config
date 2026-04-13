@@ -4,11 +4,11 @@
     # packages from Nur community
   ];
 
-  nodePackages = [
-    # pkgs.nodePackages_latest.@astrojs/language-server
-    upkgs.nodePackages."@astrojs/language-server"
-    upkgs.nodePackages_latest.typescript-language-server
-  ];
+  # nodePackages = [
+  #   # pkgs.nodePackages_latest.@astrojs/language-server
+  #   upkgs.nodePackages."@astrojs/language-server"
+  #   upkgs.nodePackages_latest.typescript-language-server
+  # ];
 
   gnomePackages = with pkgs.gnomeExtensions; [
     tiling-assistant # the upkgs version is not supported yet (version 49)
@@ -43,7 +43,7 @@
     spotify-player
     zotero
     vlc
-    rofi-wayland
+    rofi
     microsoft-edge
     spotify
     telegram-desktop
