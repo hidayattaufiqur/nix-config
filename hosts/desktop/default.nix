@@ -1,22 +1,24 @@
 { upkgs, pkgs, lib, ... }:
 let 
  unstablePackages = with upkgs; [
-   geekbench
-   darktable
-   rawtherapee
+   # geekbench
+   # darktable
+   # rawtherapee
+   # lmstudio
+
    neovim
-   lmstudio
+   opencode
  ];
 
  packages = with pkgs; [
     # Gamiiingg
-    lutris
+    # lutris
     protonup-qt
 
     # dev 
     postgresql
-    gephi
-    protege
+    # gephi
+    # protege
 
     # linux utilities
     radeontop
@@ -24,7 +26,7 @@ let
     nvtopPackages.amd
 
     # media 
-    davinci-resolve
+    # davinci-resolve
     droidcam
     (wrapOBS {
       plugins = with obs-studio-plugins; [
@@ -72,9 +74,9 @@ in
   ];
 
   
-  nixpkgs.config.allowUnfreePredicate = upkgs: builtins.elem (lib.getName upkgs) [
-      "davinci-resolve"
-  ];
+  # nixpkgs.config.allowUnfreePredicate = upkgs: builtins.elem (lib.getName upkgs) [
+  #     "davinci-resolve"
+  # ];
 
   nixpkgs.config.allowUnfree = true;
 

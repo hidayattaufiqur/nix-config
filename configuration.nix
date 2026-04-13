@@ -174,14 +174,14 @@
     ++ (import ./packages { pkgs = pkgs; } ).gnomePackages
     ++ (import ./packages { upkgs = upkgs; } ).gnomeExtensions
     ++ (import ./packages { config = config; } ).nurPackages
-    ++ (import ./packages { pkgs = pkgs; upkgs = upkgs; } ).nodePackages
+    # ++ (import ./packages { pkgs = pkgs; upkgs = upkgs; } ).nodePackages
     ++ (import ./packages { pinnedPkgs = pinnedPkgs; } ).pinnedPkgs
   ;
 
-  # install obs-studio with droidcam plugin
-  boot.extraModulePackages = with config.boot.kernelPackages; [
-    v4l2loopback
-  ];
+  # # install obs-studio with droidcam plugin
+  # boot.extraModulePackages = with config.boot.kernelPackages; [
+  #   v4l2loopback
+  # ];
 
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=1 card_label="OBS Cam" exclusive_caps=1
