@@ -14,7 +14,6 @@
        ../../services/prometheus_node_exporter.nix
        ../../services/ssh.nix
        ../../services/tailscale.nix
-       ../../services/ssh.nix
        ../../services/interception_tool.nix
 
        ./services

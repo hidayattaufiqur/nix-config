@@ -1,4 +1,5 @@
-{ pkgs, ... }: 
+{ pkgs, lib, ... }:  
+  
 {
   home.username = "nixos-server"; 
   home.homeDirectory = "/home/nixos-server";
@@ -23,29 +24,23 @@
     };
   };
 
-    home.packages = with pkgs; [
-      mosh
-    # # adds the "hello" command to your environment. it prints a friendly
-    # # "hello, world!" when run.
-    # pkgs.hello
+  # home.sessionVariables = {
+  #   PATH = "${pkgs.nodejs}/bin:" + builtins.getEnv "PATH";
+  # };
+  #
+  # home.activation = {
+  #   installCopilotCli = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  #     if ! command -v copilot &> /dev/null; then
+  #       ${pkgs.nodejs}/bin/npm install -g @github/copilot
+  #     fi
+  #   '';
+  # };
 
-    # # it is sometimes useful to fine-tune packages, for example, by applying
-    # # overrides. you can do that directly here, just don"t forget the
-    # # parentheses. maybe you want to install nerd fonts with a limited number of
-    # # fonts?
-    # (pkgs.nerdfonts.override { fonts = [ "fantasquesansmono" ]; })
-
-    # # you can also create simple shell scripts directly inside your
-    # # configuration. for example, this adds a command "my-hello" to your
-    # # environment:
-    # (pkgs.writeshellscriptbin "my-hello" ""
-    #   echo "hello, ${config.home.username}!"
-    # "")
-    # spotify-tui
+  home.packages = with pkgs; [
+    mosh
   ];
 
   home.stateVersion = "23.11";
 
-  # Let home Manager install and manage itself.
   programs.home-manager.enable = true;
 }

@@ -74,7 +74,7 @@
   security.sudo.wheelNeedsPassword = false;
    users.users.nixos-server = {
      isNormalUser = true;
-     extraGroups = [ "networkmanager" "wheel" "docker" "nginx" ]; 
+     extraGroups = [ "networkmanager" "wheel" "docker" "nginx" "systemd-journal" ]; 
      packages = with pkgs; [
         postgresql  
      ];
@@ -117,35 +117,30 @@
     tree
     tldr
     cron
-    ripgrep 
-    tldr
-    btop
+    ripgrep     btop
 
     ## Nix utilities
     nix-tree
     nix-index
 
     ## Dev apps 
-    upkgs.opencode
     redis
     go
     gofumpt
     lazygit
-    rustup
-    redis
-    perl
+    rustup    perl
     gpp
     gcc9
     docker
     docker-compose
-    # jdk
-    redis
-    nodejs_20
+    # jdk    nodejs_20
     neovim 
     # google-cloud-sdk
     python3
     nginx
     ollama
+    upkgs.opencode
+    upkgs.github-copilot-cli
 
     ## Python packages
     # python311Packages.pip
@@ -179,30 +174,36 @@
   nixpkgs.config.allowUnfree = true;
 
   # Nix configuration settings
-  nix = { 
-    # Enable the Flakes feature and the accompanying new nix command-line tool
-    settings.experimental-features = [ "nix-command" "flakes" ];
-
-    # Enable nix auto optimise store 
-    settings.auto-optimise-store = false; 
-    gc = { 
-     automatic = true; 
-     dates = "weekly"; 
-     options = "--delete-older-than- 3d";
-    }; 
-
-   settings.keep-outputs = "true";
-   settings.keep-derivations = "true";
-   settings.trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
-   settings.substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      auto-optimise-store = false;
+      keep-outputs = true;
+      keep-derivations = true;
+      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
+      substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+    };
+    gc = {
+      automatic = true;
+      dates = "weekly";
+      options = "--delete-older-than 3d";
+    };
   }; 
 
-  boot.supportedFilesystems = [ "ntfs" ];
 
-  # Package overlays 
-  nix = { 
-    package = pkgs.nixVersions.stable; 
-    extraOptions = "experimental-features = nix-command flakes";
+  # Package overlays
+  nix.package = pkgs.nixVersions.stable;
+
+  # SOPS secrets management
+  # The server decrypts secrets using its SSH host key (converted to age format).
+  # Run `sops updatekeys secrets/secrets.yaml` from a machine with the primary
+  # age private key after updating .sops.yaml to re-encrypt for this host.
+  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+
+  sops.secrets."cloudflare/credentialsFile" = {
+    owner = config.services.cloudflared.user;
+    mode = "0400";
   };
 
   system.stateVersion = "23.11"; # Did you read the comment?

@@ -7,4 +7,4 @@ The motivation behind using Nix is to remove the hassle of re-configuring work a
 ### TODO
 - [ ] declaratively add user and database to psql
 - [x] ~split some configs in configuration.nix to make it universal for either local machines and servers~
-- [x] ~finish SOPS setup~
+- [ ] finish SOPS setup (see [PLANS.md](./PLANS.md))
