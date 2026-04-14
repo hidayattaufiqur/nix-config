@@ -6,6 +6,6 @@
    ./psql
    ./firewall
    ./mc
-   # ./mc-management
+   ./mc-management
   ];
 }

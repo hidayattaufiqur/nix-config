@@ -96,7 +96,6 @@
     # more here: [https://github.com/NixOS/nixpkgs/issues/312336]
   };
 
-  users.extraGroups.vboxusers.members = [ "nixos" "nixos-box" ];
 
   # enable nix-ld for pip and friends
   programs.nix-ld.enable = true;
@@ -108,18 +107,6 @@
     zlib # numpy
   ];
 
-  # Enable automatic login for the user.
-  services.xserver.displayManager.autoLogin.enable = true;
-  services.xserver.displayManager.autoLogin.user = "nixos";
-
-  # Disable closing lid to suspend
-  services.logind.extraConfig = ''
-    HandleLidSwitch=ignore
-  '';
-
-  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
-  systemd.services."getty@tty1".enable = false;
-  systemd.services."autovt@tty1".enable = false;
 
   environment.variables = {
     SUDO_EDITOR = "nvim";
@@ -205,7 +192,7 @@
     gc = { 
      automatic = true; 
      dates = "weekly"; 
-     options = "--delete-older-than- 7d";
+     options = "--delete-older-than 7d";
     }; 
 
    
@@ -294,9 +281,6 @@
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "23.05"; # Did you read the comment?
  
-  # Package overlays 
-  nix = { 
-   package = pkgs.nixVersions.stable; 
-    extraOptions = "experimental-features = nix-command flakes";
-  };
+  # Package overlays
+  nix.package = pkgs.nixVersions.stable;
 }

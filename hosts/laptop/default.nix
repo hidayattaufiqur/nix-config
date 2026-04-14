@@ -1,10 +1,7 @@
 { upkgs, pkgs, ... }:
 let 
-  packages = with pkgs; [
-  ];
-
   unstablePackages = with upkgs; [
-   neovim
+    neovim
   ];
 in
 {
@@ -23,7 +20,7 @@ in
     isNormalUser = true;
     description = "swift";
     extraGroups = [ "networkmanager" "wheel" "docker" "logiops" "wireshark"];
-    packages = unstablePackages ++ packages;
+    packages = unstablePackages;
     shell = pkgs.zsh;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOomYBKxrymgfIO1KFLc5POYxUcfO/P58ywRWJ2EwuVV nixos@nixos"
@@ -32,16 +29,17 @@ in
     ];
   };
 
-  nixpkgs.overlays = [
-    /* (final: prev: {
-      postman = prev.postman.overrideAttrs(old: rec {
-        version = "20230716100528";
-        src = final.fetchurl {
-          url = "https://web.archive.org/web/${version}/https://dl.pstmn.io/download/latest/linux_64";
-          sha256 = "sha256-svk60K4pZh0qRdx9+5OUTu0xgGXMhqvQTGTcmqBOMq8=";
-          name = "${old.pname}-${version}.tar.gz";
-        };
-      });
-    }) */
-  ];
+  nixpkgs.overlays = [];
+
+  # Autologin for the laptop user
+  services.xserver.displayManager.autoLogin.enable = true;
+  services.xserver.displayManager.autoLogin.user = "nixos";
+  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
+
+  # Disable closing lid to suspend
+  services.logind.extraConfig = ''
+    HandleLidSwitch=ignore
+  '';
 }

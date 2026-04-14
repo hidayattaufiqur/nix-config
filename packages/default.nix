@@ -1,8 +1,6 @@
 { pkgs ? null, upkgs ? null, config ? null, pinnedPkgs ? null, ... }:
 {
-  nurPackages = with config.nur; [
-    # packages from Nur community
-  ];
+  nurPackages = [];
 
   # nodePackages = [
   #   # pkgs.nodePackages_latest.@astrojs/language-server
@@ -116,9 +114,7 @@
     vscode
     docker
     docker-compose
-    jdk
-    redis
-    nodejs_20
+    jdk    nodejs_20
     jetbrains.datagrip
     google-cloud-sdk
     python3
@@ -190,9 +186,7 @@
     tldr
     cron
     noisetorch 
-    ripgrep 
-    tldr
-    syncthing
+    ripgrep     syncthing
     btop
     xwaylandvideobridge # allow streaming from Wayland to X apps [https://blog.davidedmundson.co.uk/blog/xwaylandvideobridge/]
 

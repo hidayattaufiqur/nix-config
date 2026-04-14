@@ -66,7 +66,7 @@ in
     dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
   };
 
-  nixpkgs.config.permittedinsecurepackages = [
+  nixpkgs.config.permittedInsecurePackages = [
       "electron-12.2.3"
       "steam"
       "steam-original"
@@ -101,4 +101,11 @@ in
   ];
 
   virtualisation.waydroid.enable = true;
+
+  # Autologin for the desktop user
+  services.xserver.displayManager.autoLogin.enable = true;
+  services.xserver.displayManager.autoLogin.user = "nixos-box";
+  # Workaround for GNOME autologin: https://github.com/NixOS/nixpkgs/issues/103746#issuecomment-945091229
+  systemd.services."getty@tty1".enable = false;
+  systemd.services."autovt@tty1".enable = false;
 }
