@@ -114,7 +114,8 @@
     vscode
     docker
     docker-compose
-    jdk    nodejs_20
+    jdk    
+    nodejs_20
     jetbrains.datagrip
     google-cloud-sdk
     python3
@@ -186,7 +187,8 @@
     tldr
     cron
     noisetorch 
-    ripgrep     syncthing
+    ripgrep     
+    syncthing
     btop
     xwaylandvideobridge # allow streaming from Wayland to X apps [https://blog.davidedmundson.co.uk/blog/xwaylandvideobridge/]
 
