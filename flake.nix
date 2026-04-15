@@ -11,11 +11,9 @@ inputs = {
   };
   disko.url = "github:nix-community/disko";
   disko.inputs.nixpkgs.follows = "nixpkgs";
-  sops-nix.url = "github:Mic92/sops-nix";
-  sops-nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko }@inputs:
   let
     system = "x86_64-linux";
 
@@ -89,7 +87,6 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
         modules = [
           disko.nixosModules.disko
           ./hosts/server
-          sops-nix.nixosModules.sops
           home-manager.nixosModules.home-manager
           {
             home-manager = {

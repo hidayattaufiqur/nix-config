@@ -194,17 +194,6 @@
   # Package overlays
   nix.package = pkgs.nixVersions.stable;
 
-  # SOPS secrets management
-  # The server decrypts secrets using its SSH host key (converted to age format).
-  # Run `sops updatekeys secrets/secrets.yaml` from a machine with the primary
-  # age private key after updating .sops.yaml to re-encrypt for this host.
-  sops.defaultSopsFile = ../../secrets/secrets.yaml;
-  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
-
-  sops.secrets."cloudflare/credentialsFile" = {
-    owner = config.services.cloudflared.user;
-    mode = "0400";
-  };
 
   system.stateVersion = "23.11"; # Did you read the comment?
 }
