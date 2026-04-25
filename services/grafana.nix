@@ -5,12 +5,14 @@
       domain = "tools.hidayattaufiqur.dev";
       http_addr = "127.0.0.1";
       http_port = 2342;
-      root_url = "http://tools.hidayattaufiqur.dev/grafana/";
+      root_url = "https://tools.hidayattaufiqur.dev/grafana/";
     };
   };
 
   # nginx reverse proxy
   services.nginx.virtualHosts.${config.services.grafana.settings.server.domain} = {
+    forceSSL = true;
+    enableACME = true;
     locations."/grafana/" = {
         proxyPass = "http://${toString config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}/";
         proxyWebsockets = true;
