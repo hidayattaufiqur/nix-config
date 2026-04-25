@@ -15,6 +15,7 @@ in
     services.prometheus = {
       enable = true;
       port = 9001;
+      retentionTime = "7d";
 
       globalConfig = {
         scrape_interval = "5s";
