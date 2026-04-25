@@ -1,7 +1,8 @@
 keys:
   - &primary age17a38lr94taz6etpgkdexp42cv5xtpge3fnvus7x84wgydjj8f5sqvx8x3h
+  # obtained via: ssh-to-age < /etc/ssh/ssh_host_ed25519_key.pub
+  - &server  age1jm4hay50pvnwz73jnp8agvg9waph9r2yepl4r8aueeg82uxmkdvsc2xhq4
 creation_rules:
   - path_regex: secrets/.*\.yaml$
     key_groups:
-      - age:
-        - *primary
+      - age: [*primary, *server]

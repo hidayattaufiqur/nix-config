@@ -2,7 +2,10 @@
   # Enable postgresql service
   services.postgresql = {
     enable = true;
-    ensureDatabases = [ "postgres" ];
+    ensureDatabases = [ "postgres" "uptime_kuma" ];
+    ensureUsers = [
+      { name = "uptime_kuma"; }
+    ];
     enableTCPIP = true;
     # port = 5432;
     # authentication = pkgs.lib.mkOverride 10 ''

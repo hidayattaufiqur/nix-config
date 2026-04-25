@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, pkgs, upkgs, modulesPath, ... }:
+{ config, pkgs, upkgs, sops-install-secrets, modulesPath, ... }:
 
 {
   imports =
@@ -194,6 +194,13 @@
   # Package overlays
   nix.package = pkgs.nixVersions.stable;
 
+
+  # SOPS secrets management
+  # Override the package so it's built against nixpkgs-unstable (has
+  # buildGo125Module); nixos-24.11 only ships up to buildGo124Module.
+  sops.package = sops-install-secrets;
+  sops.defaultSopsFile = ../../secrets/secrets.yaml;
+  sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
   system.stateVersion = "23.11"; # Did you read the comment?
 }
