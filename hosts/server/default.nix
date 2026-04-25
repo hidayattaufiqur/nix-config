@@ -173,19 +173,27 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  # Cap systemd journal size to prevent log accumulation
+  services.journald.extraConfig = ''
+    SystemMaxUse=300M
+    SystemKeepFree=1G
+    MaxRetentionSec=2week
+  '';
+
   # Nix configuration settings
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
-      auto-optimise-store = false;
-      keep-outputs = true;
-      keep-derivations = true;
+      auto-optimise-store = true;
+      # Free space automatically when nix store grows large
+      min-free = 1073741824;   # trigger GC when < 1 GB free
+      max-free = 5368709120;   # free up to 5 GB when triggered
       trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
       substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
     };
     gc = {
       automatic = true;
-      dates = "weekly";
+      dates = "daily";
       options = "--delete-older-than 3d";
     };
   }; 
