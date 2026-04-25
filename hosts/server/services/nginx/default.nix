@@ -12,18 +12,24 @@
     serverTokens = false;
     virtualHosts = {
       "hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://localhost:1977";
         };
       };
 
       "mc.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://localhost:25565";
         };
       };
 
       "mcadmin.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         listenAddresses = [ "0.0.0.0" ];
 
         locations."/" = {
@@ -32,6 +38,8 @@
       };
 
       "mcapi.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://localhost:8080";
         };
@@ -48,6 +56,8 @@
       };
 
       "chat.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         listenAddresses = [ "0.0.0.0" ];
 
         locations."/" = {
@@ -75,6 +85,8 @@
       };
 
       "n8n.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:5678";
           extraConfig = ''
@@ -160,6 +172,8 @@
       # };
 
       "fno.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:5000";
           extraConfig = ''
@@ -175,6 +189,8 @@
       };
 
       "blogablog.hidayattaufiqur.dev" = {
+        forceSSL = true;
+        enableACME = true;
         locations."/" = {
           proxyPass = "http://127.0.0.1:4000";
         };
