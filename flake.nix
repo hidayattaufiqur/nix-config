@@ -11,9 +11,12 @@ inputs = {
   };
   disko.url = "github:nix-community/disko";
   disko.inputs.nixpkgs.follows = "nixpkgs";
+  sops-nix.url = "github:Mic92/sops-nix";
+  # do NOT set inputs.nixpkgs.follows — let sops-nix use its own nixpkgs
+  # (needs buildGo125Module, not available in 24.11)
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, sops-nix }@inputs:
   let
     system = "x86_64-linux";
 
@@ -39,6 +42,11 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
     };
 
     specialArgs = { inherit pkgs upkgs pinnedPkgs; };
+
+    # Build sops-install-secrets using nixpkgs-unstable (has buildGo125Module).
+    # The system nixpkgs (24.11) only ships up to buildGo124Module, so we
+    # cannot let the sops-nix module build it against the system pkgs.
+    sops-install-secrets = (import "${sops-nix}" { pkgs = upkgs; }).sops-install-secrets;
   in
   {
     nixosConfigurations = {
@@ -82,10 +90,11 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
        };
 
       nixos-server = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs;
+        specialArgs = specialArgs // { inherit sops-install-secrets; };
         system = system;
         modules = [
           disko.nixosModules.disko
+          sops-nix.nixosModules.sops
           ./hosts/server
           home-manager.nixosModules.home-manager
           {
