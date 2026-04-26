@@ -83,7 +83,7 @@
   environment.systemPackages = with pkgs; [
     # Linux utilities 
     xclip
-    libstdcxx5
+    gccNGPackages_15.libstdcxx
     ngrep
     tcpdump
     bat

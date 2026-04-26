@@ -137,7 +137,7 @@
     glibc.dev
 
     # Programming languages
-    libstdcxx5
+    gccNGPackages_15.libstdcxx
     llvmPackages_18.libcxxClang
 
     ## Python packages
