@@ -1,7 +1,11 @@
 { ... }: {
    programs.git = { 
      enable = true; 
-     userName = "Hidayat Taufiqur"; 
-     userEmail = "hidayattaufiqur@gmail.com";
+     settings = {
+       user = {
+       name = "Hidayat Taufiqur";
+       email = "hidayattaufiqur@gmail.com";
+     };
    };
+  };
 }

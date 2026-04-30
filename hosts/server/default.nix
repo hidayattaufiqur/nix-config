@@ -28,11 +28,12 @@
     interfaces.eth0 = { 
       useDHCP = false;
       ipv4.addresses = [ {
-        address = "103.59.160.113";
+        address = "103.59.160.113"; # IMPORTANT: remember to change this for any new server setup
         prefixLength = 24;
       } ];
     };
-    defaultGateway = "103.59.160.1";
+    defaultGateway = "103.59.160.1"; # IMPORTANT: remember to change this for any new server setup
+
     # search = [ "tailede36.ts.net" ];
     # Pick only one of the below networking options.
     # wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -135,7 +136,8 @@
     gcc
     docker
     docker-compose
-    # jdk    nodejs_20
+    # jdk    
+    nodejs_24
     neovim 
     # google-cloud-sdk
     python3
@@ -143,6 +145,7 @@
     ollama
     upkgs.opencode
     upkgs.github-copilot-cli
+    upkgs.claude-code
 
     ## Python packages
     # python311Packages.pip
@@ -190,8 +193,9 @@
       # Free space automatically when nix store grows large
       min-free = 1073741824;   # trigger GC when < 1 GB free
       max-free = 5368709120;   # free up to 5 GB when triggered
-      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
-      substituters = [ "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" ];
+      substituters = [ "https://nixos-cache-proxy.cofob.dev" "https://cache.nixos.org" "https://nix-community.cachix.org" ];
+      trusted-substituters = [ "https://nixos-cache-proxy.cofob.dev" "https://cache.nixos.org" "https://nix-community.cachix.org"  ];
     };
     gc = {
       automatic = true;

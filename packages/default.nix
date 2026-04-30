@@ -115,7 +115,7 @@
     docker
     docker-compose
     jdk    
-    nodejs_20
+    nodejs_24
     jetbrains.datagrip
     google-cloud-sdk
     python3
