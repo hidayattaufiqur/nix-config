@@ -1,13 +1,12 @@
-{ ... }: {
+{ config, pkgs, ... }: {
   programs.zsh = {
     enable = true;
     autosuggestion.enable = true; 
     enableCompletion = true; 
     autocd = true;
-    dotDir = ".config/zsh";
+    dotDir = "${config.home.homeDirectory}/.config/zsh";
     history.extended = true; 
-
-    initExtra = ''
+    initContent = ''
       bindkey '^@' autosuggest-accept;
       export PATH=$HOME/.config/rofi/scripts:$PATH
     ''; 
@@ -64,7 +63,7 @@
     oh-my-zsh = { 
       enable = true;
       theme = "agnoster";
-      custom = "~/.zshrc";
+      # custom = "~/.zshrc";
     };
 
   };
