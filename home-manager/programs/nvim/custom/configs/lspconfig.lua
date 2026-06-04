@@ -95,7 +95,7 @@ lspconfig.basedpyright.setup{
         logLevel = "hint",
         diagnosticMode = "openFilesOnly",
         useLibraryCodeForTypes = true,
-        typeCheckingMode = "strict",
+        typeCheckingMode = "basic",
         reportUnusedImport = true,
         reportMissingImports = true,
       },

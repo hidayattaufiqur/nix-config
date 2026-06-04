@@ -95,7 +95,8 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # Linux utilities 
+    ## Linux utilities 
+    jq
     mosh
     xclip
     gccNGPackages_15.libstdcxx
@@ -138,6 +139,8 @@
     docker-compose
     # jdk    
     nodejs_24
+    bun
+    pnpm
     neovim 
     # google-cloud-sdk
     python3
@@ -146,6 +149,7 @@
     upkgs.opencode
     upkgs.github-copilot-cli
     upkgs.claude-code
+    upkgs.rtk
 
     ## Python packages
     # python311Packages.pip
