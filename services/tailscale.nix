@@ -20,18 +20,18 @@
     serviceConfig.Type = "oneshot";
 
     # have the job run this shell script
-    script = with pkgs; ''
+script = with pkgs; ''
       # wait for tailscaled to settle
       sleep 2
 
       # check if we are already authenticated to tailscale
       status="$(${tailscale}/bin/tailscale status -json | ${jq}/bin/jq -r .BackendState)"
-      if [ $status = "Running" ]; then # if so, then do nothing
-        exit 0
+      if [ $status != "Running" ]; then # if not, authenticate with tailscale
+        ${tailscale}/bin/tailscale up
       fi
 
-      # otherwise authenticate with tailscale
-      ${tailscale}/bin/tailscale up
+      # enable peer relay for the tailnet
+      ${tailscale}/bin/tailscale set --relay-server-port=3478 --advertise-exit-node
     '';
   };
 }
