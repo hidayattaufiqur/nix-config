@@ -1,7 +1,8 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  repoDir = "/home/nixos-server/Fun/mc-management";
+  role = config.services.server-role;
+  repoDir = "${role.homeDir}/Fun/mc-management";
   envFile = "/etc/mc-management.env";
   commonPath = lib.makeBinPath [
     pkgs.bash
@@ -25,7 +26,7 @@ in
 
     serviceConfig = {
       Type = "simple";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = "${repoDir}/management/backend";
       EnvironmentFile = envFile;
@@ -33,7 +34,7 @@ in
         "PATH=${commonPath}"
         "BACKEND_HOST=0.0.0.0"
         "BACKEND_PORT=8080"
-        "SERVER_DIR=/home/nixos-server/Fun/mc-server"
+        "SERVER_DIR=${role.homeDir}/Fun/mc-server"
         "SERVER_CONTROL_MODE=systemd"
         "MC_SERVER_SERVICE_NAME=mc-server"
         "MC_SERVER_SERVICE_SCOPE=system"
@@ -55,7 +56,7 @@ in
 
     serviceConfig = {
       Type = "simple";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = "${repoDir}/management/discord_bot";
       EnvironmentFile = envFile;
@@ -80,7 +81,7 @@ in
 
     serviceConfig = {
       Type = "simple";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = "${repoDir}/management/web";
       EnvironmentFile = envFile;

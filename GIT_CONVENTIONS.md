@@ -34,7 +34,7 @@ Use the host or component being changed:
 | Scope | Covers |
 |-------|--------|
 | `server` | `hosts/server/` — general server config |
-| `nginx` | `hosts/server/services/nginx/` |
+| `nginx` | `services/apps/nginx/` |
 | `flake` | `flake.nix`, `flake.lock` |
 | `secrets` | `.sops.yaml`, `secrets/` |
 | `services` | `services/` — shared service modules |

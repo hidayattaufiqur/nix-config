@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
+let
+  role = config.services.server-role;
+in
 {
   systemd.services.mc-server = {
     description = "Minecraft Spigot Server";
@@ -7,9 +10,9 @@
 
     serviceConfig = {
       Type = "simple";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
-      WorkingDirectory = "/home/nixos-server/Fun/mc-server";
+      WorkingDirectory = "${role.homeDir}/Fun/mc-server";
       ExecStart = "${pkgs.jdk}/bin/java -Xmx2G -Xms1G -jar server.jar nogui";
       Restart = "on-failure";
       RestartSec = "5s";

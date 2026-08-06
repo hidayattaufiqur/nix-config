@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
-  projectDir = "/home/nixos-server/Fun/Projects/nine-dots-hours-dashboard";
+  role = config.services.server-role;
+  projectDir = "${role.homeDir}/Fun/Projects/nine-dots-hours-dashboard";
   publicDir = "${projectDir}/public";
   pathEnv = "${pkgs.nodejs_24}/bin:${pkgs.python3}/bin:/run/current-system/sw/bin";
 in
@@ -11,7 +12,7 @@ in
     wantedBy = [ "multi-user.target" ];
 
     serviceConfig = {
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = projectDir;
       ExecStart = "${pkgs.python3}/bin/python -m http.server 4319 --bind 127.0.0.1 --directory ${publicDir}";
@@ -28,7 +29,7 @@ in
 
     serviceConfig = {
       Type = "oneshot";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = projectDir;
       Environment = [
@@ -48,7 +49,7 @@ in
 
     serviceConfig = {
       Type = "oneshot";
-      User = "nixos-server";
+      User = role.user;
       Group = "users";
       WorkingDirectory = projectDir;
       Environment = [

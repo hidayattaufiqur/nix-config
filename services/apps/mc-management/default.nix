@@ -1,7 +1,8 @@
-{ pkgs, lib, ... }:
+{ config, pkgs, lib, ... }:
 
 let
-  repoDir = "/home/nixos-server/Fun/mc-management";
+  role = config.services.server-role;
+  repoDir = "${role.homeDir}/Fun/mc-management";
   envFile = "/etc/mc-management.env";
   commonPath = lib.makeBinPath [
     pkgs.bash
@@ -39,7 +40,7 @@ in
   security.polkit.extraConfig = ''
     polkit.addRule(function(action, subject) {
       if (
-        subject.user == "nixos-server" &&
+        subject.user == "${role.user}" &&
         action.id == "org.freedesktop.systemd1.manage-units" &&
         action.lookup("unit") == "mc-server.service"
       ) {
