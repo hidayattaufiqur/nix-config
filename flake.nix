@@ -11,12 +11,13 @@ inputs = {
   };
   disko.url = "github:nix-community/disko";
   disko.inputs.nixpkgs.follows = "nixpkgs";
+  hermes-agent.url = "github:NousResearch/hermes-agent";
   sops-nix.url = "github:Mic92/sops-nix";
   # do NOT set inputs.nixpkgs.follows — let sops-nix use its own nixpkgs
   # (needs buildGo125Module, not available in 24.11)
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, hermes-agent, sops-nix }@inputs:
   let
     system = "x86_64-linux";
 
@@ -115,6 +116,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
          modules = [
            disko.nixosModules.disko
            sops-nix.nixosModules.sops
+           hermes-agent.nixosModules.default
            ./hosts/smolpanda
            home-manager.nixosModules.home-manager
            {

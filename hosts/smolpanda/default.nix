@@ -9,5 +9,6 @@
     ./packages.nix
     ./workloads.nix
     ./public.nix
+    ./hermes.nix
   ];
 }
