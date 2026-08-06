@@ -1,6 +1,7 @@
-{ ... }:
+{ config, ... }:
 let
-  projectDir = "/home/nixos-server/Fun/Projects/tasks2notion";
+  role = config.services.server-role;
+  projectDir = "${role.homeDir}/Fun/Projects/tasks2notion";
 in
 {
   systemd.services.tasks2notion = {
@@ -10,7 +11,7 @@ in
 
     serviceConfig = {
       Type             = "oneshot";
-      User             = "nixos-server";
+      User             = role.user;
       Group            = "users";
       WorkingDirectory = projectDir;
       EnvironmentFile  = "${projectDir}/.env";

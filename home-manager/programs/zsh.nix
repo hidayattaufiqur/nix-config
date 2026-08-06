@@ -28,8 +28,8 @@
       upgrade="time sudo nixos-rebuild switch -v";
       test-upgrade="time sudo nixos-rebuild test -v";
 
-      upgrade-server="time nixos-rebuild switch --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure -v";
-      test-upgrade-server="time nixos-rebuild test --flake .#nixos-server --target-host gce-nix --build-host gce-nix --fast --use-remote-sudo --impure -v";
+      upgrade-server="time nixos-rebuild switch --flake .#smolpanda --target-host smolpanda@103.74.5.153 --use-remote-sudo --impure -v";
+      test-upgrade-server="time nixos-rebuild test --flake .#smolpanda --target-host smolpanda@103.74.5.153 --use-remote-sudo --impure -v";
       
       # shell aliases
       ll="ls -al";

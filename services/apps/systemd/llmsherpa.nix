@@ -1,6 +1,7 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
-  nlmingestor = "/home/nixos-server/Fun/Projects/nlm-ingestor";
+  role = config.services.server-role;
+  nlmingestor = "${role.homeDir}/Fun/Projects/nlm-ingestor";
 in
 {
   # systemd.services.nlmingestor-tika = {

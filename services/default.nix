@@ -1,5 +1,6 @@
 {
   imports = [
+    ./server-role.nix
     ./ssh.nix
     ./psql.nix
     ./nginx.nix

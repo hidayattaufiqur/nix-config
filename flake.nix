@@ -89,7 +89,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
           ];
        };
 
-      nixos-server = nixpkgs.lib.nixosSystem {
+       nixos-server = nixpkgs.lib.nixosSystem {
         specialArgs = specialArgs // { inherit sops-install-secrets; };
         system = system;
         modules = [
@@ -107,7 +107,27 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
             };
           }
         ];
+        };
+
+       smolpanda = nixpkgs.lib.nixosSystem {
+         specialArgs = specialArgs // { inherit sops-install-secrets; };
+         system = system;
+         modules = [
+           disko.nixosModules.disko
+           sops-nix.nixosModules.sops
+           ./hosts/smolpanda
+           home-manager.nixosModules.home-manager
+           {
+             home-manager = {
+               backupFileExtension = "backup";
+               useUserPackages = true;
+               useGlobalPkgs = true;
+               extraSpecialArgs = specialArgs;
+               users.smolpanda = import ./hosts/smolpanda/home.nix;
+             };
+           }
+         ];
        };
-    };
+     };
   };
 }
