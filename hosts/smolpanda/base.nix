@@ -37,6 +37,8 @@ in
   # https://smolpanda.<tailnet>.ts.net:4443, reachable solely via tailnet
   # (firewall trusts tailscale0) and gated by tailnet ACLs. serve config is
   # persisted by tailscaled, so this unit mainly establishes it (idempotent).
+  # HTTP on :8443 works on all plans (WireGuard already encrypts the tunnel);
+  # HTTPS :4443 activates once the account plan supports TLS certs.
   systemd.services.tailscale-serve = {
     description = "Serve opencode-web over the tailnet via tailscale serve";
     wantedBy = [ "multi-user.target" ];
@@ -45,7 +47,13 @@ in
       Type = "oneshot";
       Restart = "on-failure";
       RestartSec = "10s";
-      ExecStart = "${pkgs.tailscale}/bin/tailscale serve --bg --https=4443 http://127.0.0.1:4096";
+      # Idempotent: reset first so a stale mount can't cause
+      # "cannot serve multiple types for a single mount point" (seen when
+      # --http and --https target the same mount '/'), which aborted the
+      # whole nixos-rebuild switch. HTTPS :4443 only — the :8443 HTTP
+      # workaround was retired once TLS certs started working. Serve HTTPS
+      # is tailnet-only by default (funnel is the opt-in for public).
+      ExecStart = "${pkgs.tailscale}/bin/tailscale serve reset && ${pkgs.tailscale}/bin/tailscale serve --bg --https=4443 http://127.0.0.1:4096";
     };
   };
 
