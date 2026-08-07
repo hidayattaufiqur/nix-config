@@ -15,7 +15,11 @@
       config.sops.secrets."hermes-extra".path
     ];
     settings = {
-      model.default = "opencode-go/deepseek-v4-flash";
+      # Work/primary model: GitHub Copilot via Hermes' copilot provider
+      # (token COPILOT_GITHUB_TOKEN in the sops hermes-env/.env). The user
+      # prefers Copilot for work over the opencode-go relay. Model id
+      # claude-sonnet-4.6 verified against api.githubcopilot.com.
+      model.default = "copilot/claude-sonnet-4.6";
       web.backend = "tavily";
       web.extract_backend = "tavily";
       # Vision analysis backend: OpenCode Go is the only credential on this
