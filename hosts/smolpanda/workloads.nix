@@ -17,8 +17,6 @@
     ../../services/apps/systemd
     ../../services/apps/redis
     ../../services/apps/psql
-    ../../services/apps/mc
-    ../../services/apps/mc-management
     ../../services/uptime-kuma/default.nix
   ];
 
@@ -38,12 +36,13 @@
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
-  # Public surface: SSH, HTTP(S), Minecraft. Tighten once Tailscale is in.
+  # Public surface: SSH, HTTP(S). Minecraft ports (25565/25575/19132)
+  # removed 2026-08-08 with the MC stack disable.
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "tailscale0" ];
-    allowedTCPPorts = [ 22 80 443 25565 25575 ];
-    allowedUDPPorts = [ 19132 25565 25575 ];
+    allowedTCPPorts = [ 22 80 443 ];
+    allowedUDPPorts = [ ];
     checkReversePath = "loose";
   };
 }

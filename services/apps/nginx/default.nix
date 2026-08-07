@@ -19,41 +19,7 @@
         };
       };
 
-      "mc.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        locations."/" = {
-          proxyPass = "http://localhost:25565";
-        };
-      };
-
-      "mcadmin.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        listenAddresses = [ "0.0.0.0" ];
-
-        locations."/" = {
-          proxyPass = "http://localhost:3000";
-        };
-      };
-
-      "mcapi.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        locations."/" = {
-          proxyPass = "http://localhost:8080";
-        };
-
-         locations."/ws/" = {
-          proxyPass = "http://localhost:8080";
-          extraConfig = ''
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection "upgrade";
-            proxy_set_header Host $host;
-          '';
-        };
-      };
+      # MC vhosts (mc/mcadmin/mcapi) removed 2026-08-08 with MC stack disable.
 
       "chat.hidayattaufiqur.dev" = {
         forceSSL = true;
