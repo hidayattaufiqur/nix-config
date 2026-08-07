@@ -47,7 +47,23 @@
       };
       discord = {
         require_mention = true;
-        free_response_channels = [ 1534949307168460862 ];
+        # Channels where the bot responds without @mention.
+        # Home (general) + work + infra + projects channels.
+        free_response_channels = [
+          1534949307168460862   # Home (general)
+          1535217253543575603   # work
+          1535217296174485545   # infra (nix, servers, tooling)
+          1535217343179923456   # projects
+        ];
+        # One thread per conversation, so sessions stay cleanly separated
+        # per channel+thread (session keys on chat_id + thread_id).
+        auto_thread = true;
+        # Per-channel system prompts: each channel gets its own context.
+        channel_prompts = {
+          "1535217253543575603" = "This is the WORK channel (Nine Dots / D365FO). For D365FO & X++ tasks use the d365fo-architect and d365fo-developer skills; for timesheets/tasks use bc-timesheet-prep and nine-dots-task-breakdown. Communicate in English.";
+          "1535217296174485545" = "This is the INFRA channel (NixOS, servers, Hermes/opencode tooling). Use nixos-* skills and declarative NixOS-native solutions; keep answers concise and operational.";
+          "1535217343179923456" = "This is the PROJECTS channel (side projects and personal software).";
+        };
       };
     };
   };
