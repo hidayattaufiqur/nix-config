@@ -16,7 +16,9 @@ in
 
   services.tailscale.enable = true;
 
-  # opencode web UI (headless), reachable via the tailnet (firewall trusts tailscale0).
+  # opencode web UI (headless). Bound to loopback only — exposed over the
+  # tailnet via `tailscale serve` (HTTPS, tailnet-only, ACL-gated). Raw API
+  # must never be reachable on the tailnet without going through serve.
   systemd.services.opencode-web = {
     description = "opencode web UI";
     wantedBy = [ "multi-user.target" ];
@@ -25,9 +27,25 @@ in
       User = "smolpanda";
       Group = "users";
       WorkingDirectory = "/home/smolpanda";
-      ExecStart = "${upkgs.opencode}/bin/opencode web --hostname 0.0.0.0 --port 4096";
+      ExecStart = "${upkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4096";
       Restart = "on-failure";
       RestartSec = "3s";
+    };
+  };
+
+  # Expose opencode-web over the tailnet only: tailscale serve gives HTTPS on
+  # https://smolpanda.<tailnet>.ts.net:4443, reachable solely via tailnet
+  # (firewall trusts tailscale0) and gated by tailnet ACLs. serve config is
+  # persisted by tailscaled, so this unit mainly establishes it (idempotent).
+  systemd.services.tailscale-serve = {
+    description = "Serve opencode-web over the tailnet via tailscale serve";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "tailscaled.service" "opencode-web.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      ExecStart = "${pkgs.tailscale}/bin/tailscale serve --bg --https=4443 http://127.0.0.1:4096";
     };
   };
 
