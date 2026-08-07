@@ -32,10 +32,11 @@ in
       RestartSec = "3s";
       # Memory caps added 2026-08-08: steady state ~800M but peaked at 3G
       # (Bun runtime + in-heap session state; no swap on this box). Soft
-      # reclaim above 1G; hard kill at 1.5G — service auto-restarts, session
-      # state persists in ~/.local/share/opencode DB.
-      MemoryHigh = "1024M";
-      MemoryMax = "1536M";
+      # reclaim above 2G; hard kill at 2.5G — service auto-restarts, session
+      # state persists in ~/.local/share/opencode DB. Bumped 1G/1.5G -> 2G/2.5G
+      # after live usage approached the old hard cap.
+      MemoryHigh = "2048M";
+      MemoryMax = "2560M";
     };
   };
 
