@@ -15,18 +15,18 @@
       config.sops.secrets."hermes-extra".path
     ];
     settings = {
-      # Work/primary model: GitHub Copilot via Hermes' copilot provider
-      # (token COPILOT_GITHUB_TOKEN in the sops hermes-env/.env). The user
-      # prefers Copilot for work over the opencode-go relay. Model id
-      # claude-sonnet-4.6 verified against api.githubcopilot.com.
-      model.default = "copilot/claude-sonnet-4.6";
+      # Global model: opencode-go relay (deepseek-v4-flash verified against
+      # https://opencode.ai/zen/go/v1). The WORK channel is overridden to
+      # Copilot via discord.channel_overrides below — Copilot is WORK-ONLY
+      # (company resource; never used for home/infra/projects channels).
+      model.default = "opencode-go/deepseek-v4-flash";
       web.backend = "tavily";
       web.extract_backend = "tavily";
-      # Vision analysis backend: OpenCode Go is the only credential on this
-      # box, and minimax-m3 is the cheapest OpenCode Go model verified to
-      # accept image input (glm-5.2/gpt-5.6-luna are text-only in this
-      # deployment despite accepting image_url). Without this, auxiliary.vision
-      # resolves to nothing and vision_analyze is dropped from sessions.
+      # Vision analysis backend: personal opencode-go minimax-m3, GLOBAL.
+      # Hermes has no per-channel aux vision, and Copilot must stay
+      # work-only, so vision is personal in every channel (user decision).
+      # minimax-m3 is the cheapest OpenCode Go model verified to accept
+      # image input (glm-5.2/gpt-5.6-luna are text-only in this deployment).
       auxiliary.vision = {
         provider = "opencode-go";
         model = "minimax-m3";
@@ -67,6 +67,16 @@
           "1535217253543575603" = "This is the WORK channel (Nine Dots / D365FO). For D365FO & X++ tasks use the d365fo-architect and d365fo-developer skills; for timesheets/tasks use bc-timesheet-prep and nine-dots-task-breakdown. Communicate in English.";
           "1535217296174485545" = "This is the INFRA channel (NixOS, servers, Hermes/opencode tooling). Use nixos-* skills and declarative NixOS-native solutions; keep answers concise and operational.";
           "1535217343179923456" = "This is the PROJECTS channel (side projects and personal software).";
+        };
+        # Copilot is WORK-ONLY: the work channel (and its auto-threads,
+        # which inherit via parent_id lookup) runs on Copilot; every other
+        # channel stays on the personal opencode-go/deepseek stack.
+        # Threads created in a channel inherit the parent channel's override.
+        channel_overrides = {
+          "1535217253543575603" = {   # work
+            provider = "copilot";
+            model = "claude-sonnet-4.6";
+          };
         };
       };
     };
