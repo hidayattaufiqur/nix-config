@@ -8,6 +8,6 @@
   imports = [
     ../../services/apps/nginx
     ../../services/uptime-kuma/nginx.nix
-    ../../services/grafana.nix
+    # grafana disabled 2026-08-08 — unused (module kept in services/grafana.nix)
   ];
 }

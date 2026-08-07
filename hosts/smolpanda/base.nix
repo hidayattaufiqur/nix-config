@@ -30,6 +30,12 @@ in
       ExecStart = "${upkgs.opencode}/bin/opencode web --hostname 127.0.0.1 --port 4096";
       Restart = "on-failure";
       RestartSec = "3s";
+      # Memory caps added 2026-08-08: steady state ~800M but peaked at 3G
+      # (Bun runtime + in-heap session state; no swap on this box). Soft
+      # reclaim above 1G; hard kill at 1.5G — service auto-restarts, session
+      # state persists in ~/.local/share/opencode DB.
+      MemoryHigh = "1024M";
+      MemoryMax = "1536M";
     };
   };
 
