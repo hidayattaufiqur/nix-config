@@ -10,7 +10,10 @@
     workingDirectory = "/home/smolpanda/hermes-work";
     extraDependencyGroups = [ "messaging" ];
     extraPackages = [ upkgs.opencode ];
-    environmentFiles = [ config.sops.secrets."hermes-env".path ];
+    environmentFiles = [
+      config.sops.secrets."hermes-env".path
+      config.sops.secrets."hermes-extra".path
+    ];
     settings = {
       model.default = "opencode-go/deepseek-v4-flash";
       web.backend = "tavily";
@@ -54,10 +57,14 @@
   systemd.services.hermes-agent.environment.HOME = lib.mkForce "/home/smolpanda";
   systemd.services.hermes-agent.serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
 
-  # Restart the gateway when the generated config.yaml content changes
-  # (auxiliary.vision, mcp_servers, ...). Without this, a nixos-rebuild switch
-  # regenerates config.yaml but the running process never re-reads it.
-  systemd.services.hermes-agent.restartTriggers = [ "/var/lib/hermes/.hermes/config.yaml" ];
+  # Restart the gateway when the generated config.yaml or the merged .env
+  # changes (auxiliary.vision, mcp_servers, secrets from sops, ...). Without
+  # this, a nixos-rebuild switch regenerates them but the running process
+  # never re-reads them.
+  systemd.services.hermes-agent.restartTriggers = [
+    "/var/lib/hermes/.hermes/config.yaml"
+    "/var/lib/hermes/.hermes/.env"
+  ];
   # First MCP startup may need to download the notion npm package via npx.
   systemd.services.hermes-agent.serviceConfig.TimeoutStartSec = "300";
 
@@ -95,4 +102,13 @@
   };
 
   sops.secrets."hermes-env" = { };
+  # Extra Hermes secrets (NOTION_TOKEN, TAVILY_API_KEY) in their own sops file.
+  # Encrypted for the host ssh key (so sops-nix decrypts it at build) AND the
+  # user's age key at ~/.config/sops/age/keys.txt (so the agent can edit it
+  # without root). Kept separate from hermes-env because sops CLI cannot use
+  # ssh keys as age identities (sops-nix can), so edits to hermes-env would
+  # require root.
+  sops.secrets."hermes-extra" = {
+    sopsFile = ../../secrets/secrets-extra.yaml;
+  };
 }
