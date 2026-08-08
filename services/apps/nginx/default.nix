@@ -21,83 +21,89 @@
 
       # MC vhosts (mc/mcadmin/mcapi) removed 2026-08-08 with MC stack disable.
 
-      "chat.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        listenAddresses = [ "0.0.0.0" ];
+      # chat.hidayattaufiqur.dev — DISABLED 2026-08-08 (dead backend :3000,
+      # gone with MC stack removal). Re-enable by uncommenting.
+      # "chat.hidayattaufiqur.dev" = {
+      #   forceSSL = true;
+      #   enableACME = true;
+      #   listenAddresses = [ "0.0.0.0" ];
+      #
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:3000";
+      #     extraConfig = ''
+      #     # Add WebSocket support (Necessary for version 0.5.0 and up)
+      #     proxy_http_version 1.1;
+      #     proxy_set_header Upgrade $http_upgrade;
+      #     proxy_set_header Connection "upgrade";
+      #
+      #     proxy_set_header Host $host;
+      #     proxy_set_header X-Real-IP $remote_addr;
+      #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      #     proxy_set_header X-Forwarded-Proto $scheme;
+      #
+      #     # (Optional) Disable proxy buffering for better streaming response from models
+      #     proxy_buffering off;
+      #
+      #     # increaing timeouts for long running requests
+      #     proxy_send_timeout 2400;
+      #     proxy_read_timeout 2400;
+      #     proxy_connect_timeout 2400;
+      #   '';
+      #   };
+      # };
 
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:3000";
-          extraConfig = ''
-          # Add WebSocket support (Necessary for version 0.5.0 and up)
-          proxy_http_version 1.1;
-          proxy_set_header Upgrade $http_upgrade;
-          proxy_set_header Connection "upgrade";
+      # n8n.hidayattaufiqur.dev — DISABLED 2026-08-08 (backend :5678 not
+      # running). Re-enable by uncommenting.
+      # "n8n.hidayattaufiqur.dev" = {
+      #   forceSSL = true;
+      #   enableACME = true;
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:5678";
+      #     extraConfig = ''
+      #       proxy_http_version 1.1;
+      #       proxy_set_header   Upgrade $http_upgrade;
+      #       proxy_set_header   Connection "upgrade";
+      #       proxy_set_header   Host $host;
+      #       proxy_set_header   X-Real-IP $remote_addr;
+      #       proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+      #       proxy_set_header   X-Forwarded-Proto $scheme;
+      #     '';
+      #   };
+      #
+      #   locations."/mcp/" = {
+      #       proxyPass = "http://127.0.0.1:5678";
+      #       extraConfig = ''
+      #         proxy_http_version 1.1;
+      #         proxy_set_header   Host $host;
+      #         proxy_buffering    off;
+      #         proxy_cache        off;
+      #         gzip               off;
+      #         proxy_read_timeout 3600;
+      #         proxy_send_timeout 3600;
+      #       '';
+      #     };
+      # };
 
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-
-          # (Optional) Disable proxy buffering for better streaming response from models
-          proxy_buffering off;
-
-          # increaing timeouts for long running requests
-          proxy_send_timeout 2400;
-          proxy_read_timeout 2400;
-          proxy_connect_timeout 2400;
-        '';
-        };
-      };
-
-      "n8n.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:5678";
-          extraConfig = ''
-            proxy_http_version 1.1;
-            proxy_set_header   Upgrade $http_upgrade;
-            proxy_set_header   Connection "upgrade";
-            proxy_set_header   Host $host;
-            proxy_set_header   X-Real-IP $remote_addr;
-            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header   X-Forwarded-Proto $scheme;
-          '';
-        };
-
-        locations."/mcp/" = {
-            proxyPass = "http://127.0.0.1:5678";
-            extraConfig = ''
-              proxy_http_version 1.1;
-              proxy_set_header   Host $host;
-              proxy_buffering    off;
-              proxy_cache        off;
-              gzip               off;
-              proxy_read_timeout 3600;
-              proxy_send_timeout 3600;
-            '';
-          };
-      };
-
-      "notionmcp.hidayattaufiqur.dev" = {
-        forceSSL = true;
-        enableACME = true;
-        listenAddresses = [ "0.0.0.0" ];
-
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:6969";
-          extraConfig = ''
-            proxy_http_version 1.1;
-              proxy_set_header   Host $host;
-              proxy_buffering    off;
-              proxy_cache        off;
-              gzip               off;
-              proxy_read_timeout 3600;
-              proxy_send_timeout 3600;
-          '';
-        };
-      };
+      # notionmcp.hidayattaufiqur.dev — DISABLED 2026-08-08 (backend :6969 not
+      # running). Re-enable by uncommenting.
+      # "notionmcp.hidayattaufiqur.dev" = {
+      #   forceSSL = true;
+      #   enableACME = true;
+      #   listenAddresses = [ "0.0.0.0" ];
+      #
+      #   locations."/" = {
+      #     proxyPass = "http://127.0.0.1:6969";
+      #     extraConfig = ''
+      #       proxy_http_version 1.1;
+      #         proxy_set_header   Host $host;
+      #         proxy_buffering    off;
+      #         proxy_cache        off;
+      #         gzip               off;
+      #         proxy_read_timeout 3600;
+      #         proxy_send_timeout 3600;
+      #     '';
+      #   };
+      # };
 
       # "api.hidayattaufiqur.dev" = {
       #   root = ontology-be;
