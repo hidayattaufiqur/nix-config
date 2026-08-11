@@ -16,6 +16,22 @@ in
 
   services.tailscale.enable = true;
 
+  # Advertise smolpanda as a tailnet exit node. Idempotent — just re-applies
+  # the pref on every boot so it survives prefs resets. Enabling other nodes
+  # to actually USE it requires the tailnet admin to approve the exit node
+  # (or an ACL that allows exit node use).
+  systemd.services.tailscale-exit-node = {
+    description = "Advertise smolpanda as Tailscale exit node";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "tailscaled.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      Restart = "on-failure";
+      RestartSec = "10s";
+      ExecStart = "${pkgs.tailscale}/bin/tailscale set --advertise-exit-node";
+    };
+  };
+
   # opencode web UI (headless). Bound to loopback only — exposed over the
   # tailnet via `tailscale serve` (HTTPS, tailnet-only, ACL-gated). Raw API
   # must never be reachable on the tailnet without going through serve.
