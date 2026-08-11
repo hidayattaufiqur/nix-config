@@ -18,6 +18,7 @@
     ../../services/apps/redis
     ../../services/apps/psql
     ../../services/uptime-kuma/default.nix
+    ./hermes-kb.nix
   ];
 
   # Run all server workloads under the smolpanda account.

@@ -50,7 +50,6 @@
     bun
     pnpm
     neovim
-    python3
     nginx
     ollama
     upkgs.opencode
@@ -60,6 +59,11 @@
 
     ## Python
     uv
+    # Wrapped python with the KB stack importable (psycopg2 + llama-cpp-python).
+    # Plain python3Packages.* as system packages only expose their bin/, not
+    # their lib/ to python3 — wrapping is required for `import psycopg2`.
+    (python3.withPackages (ps: [ ps.psycopg2 ps.llama-cpp-python ]))
+    llama-cpp
 
     ## LSP servers
     basedpyright
