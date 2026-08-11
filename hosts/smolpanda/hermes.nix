@@ -1,5 +1,58 @@
 { config, lib, pkgs, upkgs, ... }:
 
+let
+  # ── Worker gateways (per-profile systemd services) ──────────────────────
+  # The 7 worker profiles each run their own gateway so they can connect to
+  # Discord as their own bot (mastermind = default profile, managed by
+  # services.hermes-agent above). Each service runs the same `hermes` bash
+  # wrapper as the mastermind (which exports HERMES_BUNDLED_PLUGINS etc.), but
+  # scoped to the worker's HERMES_HOME via `--profile`.
+  hermesPkg = config.services.hermes-agent.package;
+  workerProfiles = [
+    "d365fo-architect"
+    "d365fo-reviewer"
+    "secretary"
+    "software-engineer"
+    "security-reviewer"
+    "infra"
+    "devils-advocate"
+  ];
+  workerGateway = name: {
+    description = "Hermes Agent Gateway - ${name} worker";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    path = [ hermesPkg pkgs.git pkgs.coreutils ];
+    environment = {
+      HOME = "/home/smolpanda";
+      HERMES_HOME = "/var/lib/hermes/.hermes/profiles/${name}";
+    };
+    serviceConfig = {
+      Type = "simple";
+      User = "smolpanda";
+      Group = "users";
+      WorkingDirectory = "/var/lib/hermes/.hermes/profiles/${name}";
+      ExecStart = "${hermesPkg}/bin/hermes --profile ${name} gateway run";
+      Restart = "always";
+      RestartSec = "5";
+      UMask = "0007";
+      NoNewPrivileges = true;
+      ProtectSystem = "strict";
+      ProtectHome = false;
+      ReadWritePaths = [
+        "/home/smolpanda"
+        "/var/lib/hermes"
+      ];
+      PrivateTmp = true;
+      TimeoutStartSec = "300";
+    };
+    restartTriggers = [
+      "/var/lib/hermes/.hermes/profiles/${name}/config.yaml"
+      "/var/lib/hermes/.hermes/profiles/${name}/.env"
+      "/var/lib/hermes/.hermes/profiles/${name}/SOUL.md"
+    ];
+  };
+in
 {
   services.hermes-agent = {
     enable = true;
@@ -20,6 +73,23 @@
       # Copilot via discord.channel_overrides below — Copilot is WORK-ONLY
       # (company resource; never used for home/infra/projects channels).
       model.default = "opencode-go/deepseek-v4-flash";
+      # Mastermind orchestration: the default profile is the CEO. It needs the
+      # kanban toolset so it can decompose goals and route cards to the worker
+      # profiles (d365fo-architect, d365fo-reviewer, secretary, software-engineer,
+      # security-reviewer, infra, devils-advocate). Workers get the kanban tools
+      # auto-injected by the dispatcher; only the orchestrator opts in here.
+      toolsets = [ "hermes-cli" "kanban" ];
+      # Kanban: dispatch inside the gateway (default), orchestrator is the
+      # default profile (empty orchestrator_profile falls back to it).
+      kanban = {
+        dispatch_in_gateway = true;
+        orchestrator_profile = "";
+        auto_decompose = true;
+      };
+      # Give slow remote MCP servers (microsoft_learn ~10s handshake) time to
+      # land in the first-turn tool snapshot; the join returns instantly when
+      # discovery completes, so fast servers cost ~0.
+      mcp_discovery_timeout = 15;
       web.backend = "tavily";
       web.extract_backend = "tavily";
       # Vision analysis backend: personal opencode-go minimax-m3, GLOBAL.
@@ -34,12 +104,20 @@
       # MCP servers ported from the user's opencode setup (~/.config/opencode/opencode.json).
       # - microsoft_learn: official Microsoft Learn MCP (remote, no auth) — used by the
       #   d365fo-developer / d365fo-troubleshooter skills.
+      #   NOTE: the endpoint is SLOW from this box (~10s cold handshake), so the gateway
+      #   defaults (discovery 1.5s, keepalive 180s) don't fit it. Tuned below:
+      #   connect_timeout 30 / timeout 90 / keepalive_interval 30 + global
+      #   mcp_discovery_timeout 15. A wedged default-timeout connection made
+      #   gateway restarts hang on MCP shutdown (2026-08-07) — these knobs fix that.
       # - notion: Notion MCP for the Nine Dots task DBs (bc-timesheet-prep,
       #   nine-dots-task-breakdown). The token is interpolated from the Hermes
       #   .env secrets file (${VAR} placeholder) so it never lands in the nix store.
       mcp_servers = {
         microsoft_learn = {
           url = "https://learn.microsoft.com/api/mcp";
+          connect_timeout = 30;
+          timeout = 90;
+          keepalive_interval = 30;
         };
         notion = {
           command = "npx";
@@ -84,19 +162,56 @@
 
   # Run with full access to the smolpanda home so Hermes can drive the user's
   # opencode CLI (auth in ~/.local/share/opencode) and reach git/ssh configs.
-  systemd.services.hermes-agent.environment.HOME = lib.mkForce "/home/smolpanda";
-  systemd.services.hermes-agent.serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
-
-  # Restart the gateway when the generated config.yaml or the merged .env
-  # changes (auxiliary.vision, mcp_servers, secrets from sops, ...). Without
-  # this, a nixos-rebuild switch regenerates them but the running process
-  # never re-reads them.
-  systemd.services.hermes-agent.restartTriggers = [
-    "/var/lib/hermes/.hermes/config.yaml"
-    "/var/lib/hermes/.hermes/.env"
+  # Worker gateways (defined at top of file): each worker profile runs its own
+  # gateway systemd service so it connects to Discord as its own bot.
+  # Single mkMerge so it composes with the module's own systemd.services defs.
+  systemd.services = lib.mkMerge [
+    (lib.mergeAttrsList (map (name: {
+      "hermes-gateway-${name}" = workerGateway name;
+    }) workerProfiles))
+    {
+      hermes-agent = {
+        environment.HOME = lib.mkForce "/home/smolpanda";
+        serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
+        # Restart the gateway when the generated config.yaml or the merged .env
+        # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
+        # Without this, a nixos-rebuild switch regenerates them but the running
+        # process never re-reads them.
+        restartTriggers = [
+          "/var/lib/hermes/.hermes/config.yaml"
+          "/var/lib/hermes/.hermes/.env"
+          "/run/secrets/hermes-extra"
+        ];
+        serviceConfig.TimeoutStartSec = "300";
+      };
+      # Root rebuild trigger for the Hermes agent. The agent writes
+      # /home/smolpanda/.hermes/rebuild-trigger; this .path unit sees the file
+      # appear and the oneshot applies the flake as root — the agent never needs
+      # sudo (its unit runs NoNewPrivileges). The service deletes the trigger
+      # first so each write fires exactly one rebuild.
+      hermes-rebuild = {
+        description = "Rebuild the smolpanda NixOS system from the local flake";
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+          WorkingDirectory = "/home/smolpanda/nix-config";
+          Environment = "PATH=${pkgs.nix}/bin:${pkgs.git}/bin:${pkgs.coreutils}/bin:/run/current-system/sw/bin";
+          # Snapshot the flake into a root-owned location: Nix refuses to open
+          # a git repo owned by another user, so the agent's repo
+          # (/home/smolpanda) must be copied before the root switch can read it.
+          ExecStartPre = [
+            "${pkgs.coreutils}/bin/rm -f /home/smolpanda/.hermes/rebuild-trigger"
+            "${pkgs.coreutils}/bin/rm -rf /root/.hermes-rebuild-flake"
+            "${pkgs.coreutils}/bin/cp -r /home/smolpanda/nix-config /root/.hermes-rebuild-flake"
+            "${pkgs.coreutils}/bin/chown -R root:root /root/.hermes-rebuild-flake"
+          ];
+          ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /root/.hermes-rebuild-flake#smolpanda";
+        };
+      };
+    }
   ];
-  # First MCP startup may need to download the notion npm package via npx.
-  systemd.services.hermes-agent.serviceConfig.TimeoutStartSec = "300";
 
   # Root rebuild trigger for the Hermes agent. The agent writes
   # /home/smolpanda/.hermes/rebuild-trigger; this .path unit sees the file
@@ -107,28 +222,6 @@
     description = "Watch for the Hermes rebuild trigger file";
     wantedBy = [ "multi-user.target" ];
     pathConfig.PathExists = "/home/smolpanda/.hermes/rebuild-trigger";
-  };
-
-  systemd.services.hermes-rebuild = {
-    description = "Rebuild the smolpanda NixOS system from the local flake";
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-    serviceConfig = {
-      Type = "oneshot";
-      User = "root";
-      WorkingDirectory = "/home/smolpanda/nix-config";
-      Environment = "PATH=${pkgs.nix}/bin:${pkgs.git}/bin:${pkgs.coreutils}/bin:/run/current-system/sw/bin";
-      # Snapshot the flake into a root-owned location: Nix refuses to open a
-      # git repo owned by another user, so the agent's repo (/home/smolpanda)
-      # must be copied before the root switch can read it.
-      ExecStartPre = [
-        "${pkgs.coreutils}/bin/rm -f /home/smolpanda/.hermes/rebuild-trigger"
-        "${pkgs.coreutils}/bin/rm -rf /root/.hermes-rebuild-flake"
-        "${pkgs.coreutils}/bin/cp -r /home/smolpanda/nix-config /root/.hermes-rebuild-flake"
-        "${pkgs.coreutils}/bin/chown -R root:root /root/.hermes-rebuild-flake"
-      ];
-      ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /root/.hermes-rebuild-flake#smolpanda";
-    };
   };
 
   sops.secrets."hermes-env" = { };
