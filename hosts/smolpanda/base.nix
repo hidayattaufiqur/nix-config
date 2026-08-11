@@ -32,6 +32,19 @@ in
     };
   };
 
+  # zram swap (added 2026-08-11): in-RAM compressed swap so opencode-web's
+  # 2.16 GiB memory peaks spill into zram instead of thrashing the MemoryHigh
+  # soft cap. No disk swap exists on this box. Size pinned to exactly 2 GiB:
+  # zram-generator computes min(50% of ram, memoryMax) — memoryMax wins here.
+  # zstd = default algorithm, good ratio + speed. Declarative, survives reboot.
+  # NOTE: option is TOP-LEVEL `zramSwap` in nixos-25.11 (renamed from
+  # services.zramSwap; the services.* path no longer exists in this nixpkgs).
+  zramSwap = {
+    enable = true;
+    memoryMax = 2147483648; # 2 GiB in bytes — explicit, not % of RAM
+    algorithm = "zstd";
+  };
+
   # opencode web UI (headless). Bound to loopback only — exposed over the
   # tailnet via `tailscale serve` (HTTPS, tailnet-only, ACL-gated). Raw API
   # must never be reachable on the tailnet without going through serve.
