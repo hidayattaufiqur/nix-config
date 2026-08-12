@@ -7,6 +7,7 @@ let
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMoOWiNt2HdzK/2tNy0XP72ugiiYMqRtHkj3gc2rSivL hidayattaufiqur@gmail.com"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMN+6euukSpWncbYN+wczXPi+frMcp2osbEg0zi2VUf2"
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINPL16Sma3ichRfxFlGtFAu7Y4uKQcRzQIo4G8N4YHKQ box@Box"
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEBNBlgk6xkzE6ftX1+D0Fuquw6jO0CDyVipKMVe5TNQ pixel8-termux"
   ];
 in
 {
