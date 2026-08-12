@@ -69,16 +69,47 @@ in
     };
   };
 
+  # opencode2 (v2 beta) server API. v2 dropped the `web` subcommand — the
+  # browser surface is the hosted Console (console.opencode.ai) + Electron
+  # desktop app, which pair with this local API server. Bound to loopback
+  # only, exposed over the tailnet via tailscale serve (:4444). Unlike v1,
+  # the v2 API REQUIRES basic auth: credentials come from
+  # ~/.config/opencode2-server.env (OPENCODE_SERVER_USERNAME/PASSWORD,
+  # mode 600, created by the agent during install). Mirrors opencode-web's
+  # unit shape and memory caps; sessions persist in ~/.local/share/opencode.
+  systemd.services.opencode2-web = {
+    description = "opencode2 v2 beta server API";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network.target" "tailscaled.service" ];
+    serviceConfig = {
+      User = "smolpanda";
+      Group = "users";
+      WorkingDirectory = "/home/smolpanda";
+      EnvironmentFile = "/home/smolpanda/.config/opencode2-server.env";
+      ExecStart = "/home/smolpanda/.bun/bin/opencode2 serve --hostname 127.0.0.1 --port 4097";
+      Restart = "on-failure";
+      RestartSec = "3s";
+      # Same caps as opencode-web: soft reclaim above 2G, hard kill at 2.5G.
+      # Native binary should run far lighter than v1's Bun runtime; caps are
+      # a safety backstop (zram 2GiB absorbs peaks, no disk swap).
+      MemoryHigh = "2048M";
+      MemoryMax = "2560M";
+    };
+  };
+
   # Expose opencode-web over the tailnet only: tailscale serve gives HTTPS on
   # https://smolpanda.<tailnet>.ts.net:4443, reachable solely via tailnet
   # (firewall trusts tailscale0) and gated by tailnet ACLs. serve config is
   # persisted by tailscaled, so this unit mainly establishes it (idempotent).
   # HTTP on :8443 works on all plans (WireGuard already encrypts the tunnel);
-  # HTTPS :4443 activates once the account plan supports TLS certs.
+  # HTTPS :4443 activates once the account plan supports TLS certs. The v2
+  # beta API is served alongside on :4444 -> 127.0.0.1:4097 (separate port,
+  # separate mount — avoids the "multiple types for a single mount point"
+  # conflict).
   systemd.services.tailscale-serve = {
-    description = "Serve opencode-web over the tailnet via tailscale serve";
+    description = "Serve opencode-web + opencode2 over the tailnet via tailscale serve";
     wantedBy = [ "multi-user.target" ];
-    after = [ "tailscaled.service" "opencode-web.service" ];
+    after = [ "tailscaled.service" "opencode-web.service" "opencode2-web.service" ];
     serviceConfig = {
       Type = "oneshot";
       Restart = "on-failure";
@@ -86,7 +117,7 @@ in
       # Idempotent: reset first so a stale mount can't cause
       # "cannot serve multiple types for a single mount point" (seen when
       # --http and --https target the same mount '/'), which aborted the
-      # whole nixos-rebuild switch. HTTPS :4443 only — the :8443 HTTP
+      # whole nixos-rebuild switch. HTTPS :4443/:4444 only — the :8443 HTTP
       # workaround was retired once TLS certs started working. Serve HTTPS
       # is tailnet-only by default (funnel is the opt-in for public).
       #
@@ -95,11 +126,12 @@ in
       # argv to one process), so a one-line `reset && serve --bg ...` chain
       # silently degraded to reset-only and the serve mounts were never
       # (re)applied by the unit — they were riding on persisted tailscaled
-      # state. Type=oneshot runs ExecStart entries sequentially, so two
-      # entries gives reset-then-serve semantics.
+      # state. Type=oneshot runs ExecStart entries sequentially, so three
+      # entries gives reset-then-serve-then-serve semantics.
       ExecStart = [
         "${pkgs.tailscale}/bin/tailscale serve reset"
         "${pkgs.tailscale}/bin/tailscale serve --bg --https=4443 http://127.0.0.1:4096"
+        "${pkgs.tailscale}/bin/tailscale serve --bg --https=4444 http://127.0.0.1:4097"
       ];
     };
   };
