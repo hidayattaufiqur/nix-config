@@ -136,6 +136,7 @@ in
           1535217253543575603   # work
           1535217296174485545   # infra (nix, servers, tooling)
           1535217343179923456   # projects
+          1537124050546204824   # upskilling (D365FO program)
         ];
         # One thread per conversation, so sessions stay cleanly separated
         # per channel+thread (session keys on chat_id + thread_id).
@@ -145,6 +146,7 @@ in
           "1535217253543575603" = "This is the WORK channel (Nine Dots / D365FO). For D365FO & X++ tasks use the d365fo-architect and d365fo-developer skills; for timesheets/tasks use bc-timesheet-prep and nine-dots-task-breakdown. Communicate in English.";
           "1535217296174485545" = "This is the INFRA channel (NixOS, servers, Hermes/opencode tooling). Use nixos-* skills and declarative NixOS-native solutions; keep answers concise and operational.";
           "1535217343179923456" = "This is the PROJECTS channel (side projects and personal software).";
+          "1537124050546204824" = "This is the UPSKILLING channel (D365FO technical upskilling program). Hands-on: modules M0-M9 of the curriculum (D365FO_Upskilling_Curriculum.md), real perf challenges with before/after measurements. Use the d365fo-architect skill and the ~/d365fo-src source mirror; keep answers practical and session-oriented.";
         };
         # Copilot is WORK-ONLY: the work channel (and its auto-threads,
         # which inherit via parent_id lookup) runs on Copilot; every other
