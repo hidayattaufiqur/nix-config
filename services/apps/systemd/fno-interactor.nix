@@ -8,6 +8,14 @@ in
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
 
+    # The agent cannot `systemctl restart` this unit (polkit-denied), so the
+    # root hermes-rebuild switch is the restart path. Restart whenever the
+    # project's lockfile changes between switches (npm installs), so
+    # dependency updates (e.g. vite CVEs) take effect on the next rebuild.
+    restartTriggers = [
+      "${role.homeDir}/Fun/Projects/fno-interactor/package-lock.json"
+    ];
+
     serviceConfig = {
       User = role.user;
       Group = "users";
