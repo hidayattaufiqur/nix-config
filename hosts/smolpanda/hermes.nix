@@ -2,18 +2,19 @@
 
 let
   # ── Worker gateways (per-profile systemd services) ──────────────────────
-  # The 7 worker profiles each run their own gateway so they can connect to
+  # The 6 worker profiles each run their own gateway so they can connect to
   # Discord as their own bot (mastermind = default profile, managed by
   # services.hermes-agent above). Each service runs the same `hermes` bash
   # wrapper as the mastermind (which exports HERMES_BUNDLED_PLUGINS etc.), but
   # scoped to the worker's HERMES_HOME via `--profile`.
   hermesPkg = config.services.hermes-agent.package;
+  # janus = security/code-review worker (renamed from security-reviewer,
+  # merged with the retired d365fo-reviewer 2026-08-14).
   workerProfiles = [
     "d365fo-architect"
-    "d365fo-reviewer"
     "secretary"
     "software-engineer"
-    "security-reviewer"
+    "janus"
     "infra"
     "devils-advocate"
   ];
@@ -26,6 +27,8 @@ let
     environment = {
       HOME = "/home/smolpanda";
       HERMES_HOME = "/var/lib/hermes/.hermes/profiles/${name}";
+      # Browser tool binary for worker gateways (playwright E2E checks).
+      AGENT_BROWSER_EXECUTABLE_PATH = "/home/smolpanda/.local/bin/chromium-fhs";
     };
     serviceConfig = {
       Type = "simple";
@@ -73,10 +76,13 @@ in
       # Copilot via discord.channel_overrides below — Copilot is WORK-ONLY
       # (company resource; never used for home/infra/projects channels).
       model.default = "opencode-go/deepseek-v4-flash";
+      # Mastermind reasoning effort: max for the orchestrator/CEO profile;
+      # workers default to high (set per-profile in their config.yaml).
+      agent.reasoning_effort = "max";
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
-      # profiles (d365fo-architect, d365fo-reviewer, secretary, software-engineer,
-      # security-reviewer, infra, devils-advocate). Workers get the kanban tools
+      # profiles (d365fo-architect, secretary, software-engineer, janus, infra,
+      # devils-advocate). Workers get the kanban tools
       # auto-injected by the dispatcher; only the orchestrator opts in here.
       toolsets = [ "hermes-cli" "kanban" ];
       # Kanban: dispatch inside the gateway (default), orchestrator is the
