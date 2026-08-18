@@ -79,6 +79,66 @@ in
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "max";
+      # Clarify (Discord interactive input) window: user decision 2026-08-16.
+      # 15 min to answer (900s), 5 min warning nudge (300s), then the agent
+      # proceeds with the recommended default instead of hanging for an hour.
+      clarify_timeout = 900;
+      gateway_timeout_warning = 300;
+      # AgentRouter (https://agentrouter.org) — OpenAI + Anthropic-Messages endpoints.
+      # Additive providers; models: gpt-5.6-sol, claude-opus-4-8, claude-opus-5.
+      providers = {
+        agentrouter-openai = {
+          api = "https://agentrouter.org/v1";
+          name = "AgentRouter OpenAI";
+          key_env = "AGENTROUTER_API_KEY";
+          transport = "chat_completions";
+          default_model = "gpt-5.6-sol";
+          models = [ "gpt-5.6-sol" ];
+          # AgentRouter requires a Claude-CLI client fingerprint (UA + chains)
+          # alongside the Bearer key; plain curl/Hermes UA gets 401. Mirrors
+          # ~/.config/opencode/plugins/agentrouter-headers.js.
+          extra_headers = {
+            "User-Agent" = "claude-cli/1.0.108 (external, cli)";
+            "anthropic-version" = "2023-06-01";
+            "anthropic-beta" = "claude-code-20250219,oauth-2025-04-20";
+            "anthropic-dangerous-direct-browser-access" = "true";
+            "x-app" = "cli";
+            "x-stainless-lang" = "js";
+            "x-stainless-package-version" = "0.55.1";
+            "x-stainless-os" = "Windows";
+            "x-stainless-arch" = "x64";
+            "x-stainless-runtime" = "node";
+            "x-stainless-runtime-version" = "v22.0.0";
+          };
+        };
+        agentrouter-claude = {
+          api = "https://agentrouter.org";
+          name = "AgentRouter Claude";
+          key_env = "AGENTROUTER_API_KEY";
+          transport = "anthropic_messages";
+          default_model = "claude-opus-5";
+          models = [ "claude-opus-4-8" "claude-opus-5" ];
+          extra_headers = {
+            "User-Agent" = "claude-cli/1.0.108 (external, cli)";
+            "anthropic-version" = "2023-06-01";
+            "anthropic-beta" = "claude-code-20250219,oauth-2025-04-20";
+            "anthropic-dangerous-direct-browser-access" = "true";
+            "x-app" = "cli";
+            "x-stainless-lang" = "js";
+            "x-stainless-package-version" = "0.55.1";
+            "x-stainless-os" = "Windows";
+            "x-stainless-arch" = "x64";
+            "x-stainless-runtime" = "node";
+            "x-stainless-runtime-version" = "v22.0.0";
+          };
+        };
+      };
+      # Agnostic failover: if opencode-go (primary) rate-limits/errors mid-turn,
+      # swap to AgentRouter automatically, restore primary next turn.
+      fallback_providers = [
+        { provider = "agentrouter-claude"; model = "claude-opus-5"; }
+        { provider = "agentrouter-openai"; model = "gpt-5.6-sol"; }
+      ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
       # profiles (d365fo-architect, secretary, software-engineer, janus, infra,
