@@ -10,6 +10,11 @@ node_modules/
 *.iso
 result
 result-*
+# Vendored upstream hermes-agent checkout used as the patched flake input
+# (see flake.nix hermes-agent comment, card t_bdc26d91). The tree == upstream
+# rev 1b1975781 + vendor/hermes-pr-guard.patch. Kept out of the parent repo;
+# the diff lives in vendor/hermes-pr-guard.patch and the flake comment above.
+vendor/hermes-agent/
 # never ignore core nix files:
 !flake.nix
 !flake.lock

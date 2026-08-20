@@ -11,7 +11,15 @@ inputs = {
   };
   disko.url = "github:nix-community/disko";
   disko.inputs.nixpkgs.follows = "nixpkgs";
-  hermes-agent.url = "github:NousResearch/hermes-agent";
+  # hermes-agent: pinned upstream at rev 1b1975781 (0.20.1) but OVERRIDDEN to a
+  # local vendored checkout so we can carry a one-line upstream fix. The bug:
+  # kanban check_respawn_guard rule 4 `active_pr` had no escape for an operator
+  # re-queue, so a kanban_unblock of a card whose comments mention a PR url was
+  # silently ignored for the full 24h window, stranding fno-interactor boards
+  # (2026-08-20; card t_bdc26d91). The vendored tree == upstream @ 1b1975781
+  # plus the single patch in vendor/hermes-pr-guard.patch (mirrors the rule-3
+  # recent_success requeue escape into rule 4).
+  hermes-agent.url = "path:/home/smolpanda/nix-config/vendor/hermes-agent";
   sops-nix.url = "github:Mic92/sops-nix";
   # do NOT set inputs.nixpkgs.follows — let sops-nix use its own nixpkgs
   # (needs buildGo125Module, not available in 24.11)
