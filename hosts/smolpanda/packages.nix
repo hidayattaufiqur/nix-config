@@ -36,6 +36,7 @@
     nix-index
 
     ## Dev apps
+    gh # GitHub CLI
     redis
     go
     gofumpt

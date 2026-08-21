@@ -223,6 +223,10 @@ in
             provider = "copilot";
             model = "claude-sonnet-4.6";
           };
+          "1537124050546204824" = {   # upskilling
+            provider = "copilot";
+            model = "claude-sonnet-4.6";
+          };
         };
       };
     };
