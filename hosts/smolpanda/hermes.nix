@@ -10,14 +10,35 @@ let
   hermesPkg = config.services.hermes-agent.package;
   # janus = security/code-review worker (renamed from security-reviewer,
   # merged with the retired d365fo-reviewer 2026-08-14).
+  # Worker profiles are named after the AGENT (atlas, janus, dossier, nix,
+  # pandr, eris), not the role. Exception: Hermes the mastermind runs from the
+  # module-managed default profile dir (/var/lib/hermes/.hermes).
   workerProfiles = [
-    "d365fo-architect"
-    "secretary"
-    "software-engineer"
+    "atlas"
+    "dossier"
+    "nix"
     "janus"
-    "infra"
-    "devils-advocate"
+    "pandr"
+    "eris"
   ];
+  # ── Ponytail plugin state (intentionally imperative) ────────────────────
+  # ponytail (github.com/DietrichGebert/ponytail) is a per-turn ruleset
+  # injector, NOT an MCP server — its MCP wrapper cannot enforce every turn,
+  # so it lives as a hermes CLI-managed plugin in each profile's state dir,
+  # not under settings.mcp_servers or extraPlugins. Intended state per
+  # profile (mirror: ~/.config/opencode/agent/<name>.md embeds + global
+  # ~/.config/opencode/AGENTS.md):
+  #   hermes (mastermind) installed, NOT enabled
+  #   dossier             not installed
+  #   atlas               installed + enabled
+  #   nix                 installed + enabled
+  #   janus               installed + enabled
+  #   pandr               installed + enabled
+  #   eris                installed + enabled
+  # Install/enable with:
+  #   HERMES_HOME=/var/lib/hermes/.hermes[/profiles/<name>] \
+  #     hermes plugins install DietrichGebert/ponytail --enable
+  # Ruleset source of truth: ~/Fun/Projects/MCP/ponytail.
   workerGateway = name: {
     description = "Hermes Agent Gateway - ${name} worker";
     after = [ "network-online.target" ];
@@ -132,16 +153,25 @@ in
             "x-stainless-runtime-version" = "v22.0.0";
           };
         };
+        opencode-zen = {
+          api = "https://opencode.ai/zen/v1";
+          name = "OpenCode Zen";
+          key_env = "OPENCODE_GO_API_KEY";
+          transport = "chat_completions";
+          default_model = "big-pickle";
+          models = [ "big-pickle" "hy3-free" "mimo-v2.5-free" "deepseek-v4-flash-free" ];
+        };
       };
       # Agnostic failover: if opencode-go (primary) rate-limits/errors mid-turn,
-      # swap to AgentRouter automatically, restore primary next turn.
+      # prefer Zen free models first, then restore primary next turn.
       fallback_providers = [
+        { provider = "opencode-zen"; model = "big-pickle"; }
         { provider = "agentrouter-claude"; model = "claude-opus-5"; }
         { provider = "agentrouter-openai"; model = "gpt-5.6-sol"; }
       ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
-      # profiles (d365fo-architect, secretary, software-engineer, janus, infra,
+      # profiles (atlas, dossier, nix, janus, pandr,
       # devils-advocate). Workers get the kanban tools
       # auto-injected by the dispatcher; only the orchestrator opts in here.
       toolsets = [ "hermes-cli" "kanban" ];
