@@ -122,7 +122,7 @@ in
           key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
           default_model = "stealth/ox-alpha";
-          models = [ "stealth/ox-alpha" "deepseek/deepseek-v4-flash" "deepseek/deepseek-v4-pro" ];
+          models = [ "stealth/ox-alpha" "xiaomi/mimo-v2.5" "deepseek/deepseek-v4-flash" ];
         };
         opencode-go = {
           api = "https://opencode.ai/go/v1";
@@ -144,8 +144,8 @@ in
       # Agnostic failover: same-wallet first (commandcode), dry opencode
       # wallets last. 2026-08-22: Go wallet empty until opencode resets.
       fallback_providers = [
+        { provider = "commandcode"; model = "xiaomi/mimo-v2.5"; }
         { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
-        { provider = "commandcode"; model = "deepseek/deepseek-v4-pro"; }
       ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
