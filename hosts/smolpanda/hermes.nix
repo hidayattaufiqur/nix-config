@@ -163,14 +163,16 @@ in
       mcp_discovery_timeout = 15;
       web.backend = "tavily";
       web.extract_backend = "tavily";
-      # Vision analysis backend: personal opencode-go minimax-m3, GLOBAL.
+      # Vision analysis backend: commandcode deepseek-v4-flash-vision-exp, GLOBAL.
       # Hermes has no per-channel aux vision, and Copilot must stay
       # work-only, so vision is personal in every channel (user decision).
-      # minimax-m3 is the cheapest OpenCode Go model verified to accept
-      # image input (glm-5.2/gpt-5.6-luna are text-only in this deployment).
+      # 2026-08-22: moved off opencode-go/minimax-m3 — Go wallet ran dry
+      # (Insufficient balance). deepseek-v4-flash-vision-exp is on the
+      # CommandCode Provider plan (same key as the main brain). Revisit
+      # if opencode credits get topped up.
       auxiliary.vision = {
-        provider = "opencode-go";
-        model = "minimax-m3";
+        provider = "commandcode";
+        model = "deepseek/deepseek-v4-flash-vision-exp";
       };
       # MCP servers ported from the user's opencode setup (~/.config/opencode/opencode.json).
       # - microsoft_learn: official Microsoft Learn MCP (remote, no auth) — used by the
