@@ -92,11 +92,10 @@ in
       config.sops.secrets."hermes-extra".path
     ];
     settings = {
-      # Global model: opencode-go relay (deepseek-v4-flash verified against
-      # https://opencode.ai/zen/go/v1). The WORK channel is overridden to
-      # Copilot via discord.channel_overrides below — Copilot is WORK-ONLY
-      # (company resource; never used for home/infra/projects channels).
-      model.default = "opencode-go/deepseek-v4-flash";
+      # Global model: CommandCode Provider API (stealth/ox-alpha, max reasoning).
+      # Work + upskilling channels are overridden to Copilot/claude-sonnet-4.6 below.
+      # Fallback: opencode-go/deepseek-v4-flash for quota/rate-limit spills.
+      model.default = "stealth/ox-alpha";
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "max";
@@ -105,53 +104,30 @@ in
       # proceeds with the recommended default instead of hanging for an hour.
       clarify_timeout = 900;
       gateway_timeout_warning = 300;
-      # AgentRouter (https://agentrouter.org) — OpenAI + Anthropic-Messages endpoints.
-      # Additive providers; models: gpt-5.6-sol, claude-opus-4-8, claude-opus-5.
+      # CommandCode Provider API — primary inference for all crew.
+      # Endpoints: OpenAI-compat at https://api.commandcode.ai/provider/v1 (chat_completions)
+      #            Anthropic-compat at https://api.commandcode.ai/provider/v1/messages
+      # Key: COMMANDCODE_API_KEY (in hermes-extra sops secret).
+      # Primary model: stealth/ox-alpha (0xAlpha) at max reasoning.
+      # Fallback model: deepseek/deepseek-v4-flash.
+      # AgentRouter removed — too unreliable in Hermes harness (EmptyStreamError + 401s).
+      # Use opencode CLI for AgentRouter if ever needed.
       providers = {
-        agentrouter-openai = {
-          api = "https://agentrouter.org/v1";
-          name = "AgentRouter OpenAI";
-          key_env = "AGENTROUTER_API_KEY";
+        commandcode = {
+          api = "https://api.commandcode.ai/provider/v1";
+          name = "CommandCode";
+          key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
-          default_model = "gpt-5.6-sol";
-          models = [ "gpt-5.6-sol" ];
-          # AgentRouter requires a Claude-CLI client fingerprint (UA + chains)
-          # alongside the Bearer key; plain curl/Hermes UA gets 401. Mirrors
-          # ~/.config/opencode/plugins/agentrouter-headers.js.
-          extra_headers = {
-            "User-Agent" = "claude-cli/1.0.108 (external, cli)";
-            "anthropic-version" = "2023-06-01";
-            "anthropic-beta" = "claude-code-20250219,oauth-2025-04-20";
-            "anthropic-dangerous-direct-browser-access" = "true";
-            "x-app" = "cli";
-            "x-stainless-lang" = "js";
-            "x-stainless-package-version" = "0.55.1";
-            "x-stainless-os" = "Windows";
-            "x-stainless-arch" = "x64";
-            "x-stainless-runtime" = "node";
-            "x-stainless-runtime-version" = "v22.0.0";
-          };
+          default_model = "stealth/ox-alpha";
+          models = [ "stealth/ox-alpha" "deepseek/deepseek-v4-flash" "deepseek/deepseek-v4-pro" ];
         };
-        agentrouter-claude = {
-          api = "https://agentrouter.org";
-          name = "AgentRouter Claude";
-          key_env = "AGENTROUTER_API_KEY";
-          transport = "anthropic_messages";
-          default_model = "claude-opus-5";
-          models = [ "claude-opus-4-8" "claude-opus-5" ];
-          extra_headers = {
-            "User-Agent" = "claude-cli/1.0.108 (external, cli)";
-            "anthropic-version" = "2023-06-01";
-            "anthropic-beta" = "claude-code-20250219,oauth-2025-04-20";
-            "anthropic-dangerous-direct-browser-access" = "true";
-            "x-app" = "cli";
-            "x-stainless-lang" = "js";
-            "x-stainless-package-version" = "0.55.1";
-            "x-stainless-os" = "Windows";
-            "x-stainless-arch" = "x64";
-            "x-stainless-runtime" = "node";
-            "x-stainless-runtime-version" = "v22.0.0";
-          };
+        opencode-go = {
+          api = "https://opencode.ai/go/v1";
+          name = "OpenCode Go";
+          key_env = "OPENCODE_GO_API_KEY";
+          transport = "chat_completions";
+          default_model = "deepseek-v4-flash";
+          models = [ "deepseek-v4-flash" "minimax-m3" ];
         };
         opencode-zen = {
           api = "https://opencode.ai/zen/v1";
@@ -162,12 +138,11 @@ in
           models = [ "big-pickle" "hy3-free" "mimo-v2.5-free" "deepseek-v4-flash-free" ];
         };
       };
-      # Agnostic failover: if opencode-go (primary) rate-limits/errors mid-turn,
-      # prefer Zen free models first, then restore primary next turn.
+      # Agnostic failover: CommandCode primary → opencode-go deepseek-v4-flash secondary.
+      # If CommandCode rate-limits, falls back to opencode-go. Zen as last resort.
       fallback_providers = [
-        { provider = "opencode-zen"; model = "big-pickle"; }
-        { provider = "agentrouter-claude"; model = "claude-opus-5"; }
-        { provider = "agentrouter-openai"; model = "gpt-5.6-sol"; }
+        { provider = "opencode-go"; model = "deepseek-v4-flash"; }
+        { provider = "opencode-zen"; model = "deepseek-v4-flash-free"; }
       ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
