@@ -92,10 +92,13 @@ in
       config.sops.secrets."hermes-extra".path
     ];
     settings = {
-      # Global model: CommandCode Provider API (stealth/ox-alpha, max reasoning).
-      # Work + upskilling channels are overridden to Copilot/claude-sonnet-4.6 below.
-      # Fallback: opencode-go/deepseek-v4-flash for quota/rate-limit spills.
-      model.default = "stealth/ox-alpha";
+      # Global model: CommandCode Provider API — fully qualified
+      # provider/model so bare 'ox-alpha' never fuzzy-matches onto
+      # opencode-go's catalog (which has ox-alpha-free) for NEW sessions.
+      # Work + upskilling channels stay Copilot via channel_overrides below.
+      # Fallback: commandcode deepseek-v4-flash (same wallet), then
+      # opencode-go/zen only as distant backups.
+      model.default = "commandcode/stealth/ox-alpha";
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "max";
@@ -138,11 +141,11 @@ in
           models = [ "big-pickle" "hy3-free" "mimo-v2.5-free" "deepseek-v4-flash-free" ];
         };
       };
-      # Agnostic failover: CommandCode primary → opencode-go deepseek-v4-flash secondary.
-      # If CommandCode rate-limits, falls back to opencode-go. Zen as last resort.
+      # Agnostic failover: same-wallet first (commandcode), dry opencode
+      # wallets last. 2026-08-22: Go wallet empty until opencode resets.
       fallback_providers = [
-        { provider = "opencode-go"; model = "deepseek-v4-flash"; }
-        { provider = "opencode-zen"; model = "deepseek-v4-flash-free"; }
+        { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
+        { provider = "commandcode"; model = "deepseek/deepseek-v4-pro"; }
       ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
