@@ -8,16 +8,17 @@ let
   # wrapper as the mastermind (which exports HERMES_BUNDLED_PLUGINS etc.), but
   # scoped to the worker's HERMES_HOME via `--profile`.
   hermesPkg = config.services.hermes-agent.package;
-  # janus = security/code-review worker (renamed from security-reviewer,
-  # merged with the retired d365fo-reviewer 2026-08-14).
-  # Worker profiles are named after the AGENT (atlas, janus, dossier, nix,
-  # pandr, eris), not the role. Exception: Hermes the mastermind runs from the
-  # module-managed default profile dir (/var/lib/hermes/.hermes).
+  # Worker profiles are named after the AGENT (atlas, gate-keeper, dossier,
+  # nix, pandr, eris), not the role. Exception: Hermes the mastermind runs from
+  # the module-managed default profile dir (/var/lib/hermes/.hermes).
+  # gate-keeper = security/code-review worker (renamed from janus 2026-08-23;
+  # janus itself was renamed from security-reviewer and merged with the
+  # retired d365fo-reviewer 2026-08-14).
   workerProfiles = [
     "atlas"
     "dossier"
     "nix"
-    "janus"
+    "gate-keeper"
     "pandr"
     "eris"
   ];
@@ -32,7 +33,7 @@ let
   #   dossier             not installed
   #   atlas               installed + enabled
   #   nix                 installed + enabled
-  #   janus               installed + enabled
+  #   gate-keeper         installed + enabled
   #   pandr               installed + enabled
   #   eris                installed + enabled
   # Install/enable with:
@@ -98,10 +99,10 @@ in
       # Work + upskilling channels stay Copilot via channel_overrides below.
       # Fallback: commandcode deepseek-v4-flash (same wallet), then
       # opencode-go/zen only as distant backups.
-      model.default = "commandcode/stealth/ox-alpha";
+      model.default = "commandcode/deepseek/deepseek-v4-flash";
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
-      agent.reasoning_effort = "max";
+      agent.reasoning_effort = "high";
       # Clarify (Discord interactive input) window: user decision 2026-08-16.
       # 15 min to answer (900s), 5 min warning nudge (300s), then the agent
       # proceeds with the recommended default instead of hanging for an hour.
@@ -121,35 +122,23 @@ in
           name = "CommandCode";
           key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
-          default_model = "stealth/ox-alpha";
-          models = [ "stealth/ox-alpha" "xiaomi/mimo-v2.5" "deepseek/deepseek-v4-flash" ];
+          default_model = "xiaomi/mimo-v2.5";
+          models = [ "xiaomi/mimo-v2.5" "deepseek/deepseek-v4-flash" ];
         };
         opencode-go = {
           api = "https://opencode.ai/go/v1";
           name = "OpenCode Go";
           key_env = "OPENCODE_GO_API_KEY";
           transport = "chat_completions";
-          default_model = "deepseek-v4-flash";
-          models = [ "deepseek-v4-flash" "minimax-m3" ];
-        };
-        opencode-zen = {
-          api = "https://opencode.ai/zen/v1";
-          name = "OpenCode Zen";
-          key_env = "OPENCODE_GO_API_KEY";
-          transport = "chat_completions";
-          default_model = "big-pickle";
-          models = [ "big-pickle" "hy3-free" "mimo-v2.5-free" "deepseek-v4-flash-free" ];
         };
       };
-      # Agnostic failover: same-wallet first (commandcode), dry opencode
-      # wallets last. 2026-08-22: Go wallet empty until opencode resets.
       fallback_providers = [
         { provider = "commandcode"; model = "xiaomi/mimo-v2.5"; }
         { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
       ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
-      # profiles (atlas, dossier, nix, janus, pandr,
+      # profiles (atlas, dossier, nix, gate-keeper, pandr,
       # devils-advocate). Workers get the kanban tools
       # auto-injected by the dispatcher; only the orchestrator opts in here.
       toolsets = [ "hermes-cli" "kanban" ];
