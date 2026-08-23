@@ -6,6 +6,7 @@
     ./nine-dots-hours-dashboard.nix
     ./keep2notion.nix
     ./tasks2notion.nix
+    ./notion-graph-sync.nix
     ./nix-clean.nix
     # Minecraft stack disabled 2026-08-08 — not in use (server, backend,
     # discord bot, web dashboard). Re-enable by uncommenting:
