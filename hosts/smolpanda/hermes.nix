@@ -91,15 +91,19 @@ in
     environmentFiles = [
       config.sops.secrets."hermes-env".path
       config.sops.secrets."hermes-extra".path
+      config.sops.templates."hermes-9router.env".path
+      config.sops.templates."hermes-hindsight.env".path
     ];
     settings = {
       # Global model: CommandCode Provider API — fully qualified
       # provider/model so bare 'ox-alpha' never fuzzy-matches onto
       # opencode-go's catalog (which has ox-alpha-free) for NEW sessions.
       # Work + upskilling channels stay Copilot via channel_overrides below.
-      # Fallback: commandcode deepseek-v4-flash (same wallet), then
-      # opencode-go/zen only as distant backups.
-      model.default = "commandcode/deepseek/deepseek-v4-flash";
+      # Primary traffic now routes via 9router (local OpenAI-compat proxy) so
+      # model changes happen in the 9router Combo without editing hermes.nix.
+      # Use the explicit Combo model so 9router's hermes-agent failover order
+      # (commandcode -> agentrouter -> opencode-go -> free) is guaranteed.
+      model.default = "9router/hermes-agent";
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "high";
@@ -108,11 +112,16 @@ in
       # proceeds with the recommended default instead of hanging for an hour.
       clarify_timeout = 900;
       gateway_timeout_warning = 300;
+
+      security = {
+        allow_data_training_tiers_noninteractive = true;
+      };
+
       # CommandCode Provider API — primary inference for all crew.
       # Endpoints: OpenAI-compat at https://api.commandcode.ai/provider/v1 (chat_completions)
       #            Anthropic-compat at https://api.commandcode.ai/provider/v1/messages
       # Key: COMMANDCODE_API_KEY (in hermes-extra sops secret).
-      # Primary model: stealth/ox-alpha (0xAlpha) at max reasoning.
+      # Primary model: meta/muse-spark-1.2-contributor (smarter + cheaper than deepseek)
       # Fallback model: deepseek/deepseek-v4-flash.
       # AgentRouter removed — too unreliable in Hermes harness (EmptyStreamError + 401s).
       # Use opencode CLI for AgentRouter if ever needed.
@@ -122,8 +131,8 @@ in
           name = "CommandCode";
           key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
-          default_model = "xiaomi/mimo-v2.5";
-          models = [ "xiaomi/mimo-v2.5" "deepseek/deepseek-v4-flash" ];
+          default_model = "meta/muse-spark-1.2-contributor";
+          models = [ "meta/muse-spark-1.2-contributor" "deepseek/deepseek-v4-flash" "xiaomi/mimo-v2.5" ];
         };
         opencode-go = {
           api = "https://opencode.ai/go/v1";
@@ -131,17 +140,33 @@ in
           key_env = "OPENCODE_GO_API_KEY";
           transport = "chat_completions";
         };
+        "9router" = {
+          api = "http://127.0.0.1:20128/v1";
+          name = "9Router";
+          key_env = "NINE_ROUTER_API_KEY";
+          transport = "chat_completions";
+          default_model = "hermes-agent";
+          models = [ "hermes-agent" ];
+        };
       };
-      fallback_providers = [
-        { provider = "commandcode"; model = "xiaomi/mimo-v2.5"; }
-        { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
-      ];
+      # fallback_providers = [
+      #   { provider = "9router"; model = "hermes-agent"; }
+      #   { provider = "commandcode"; model = "meta/muse-spark-1.2-contributor"; }
+      #   { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
+      # ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
       # profiles (atlas, dossier, nix, gate-keeper, pandr,
       # devils-advocate). Workers get the kanban tools
       # auto-injected by the dispatcher; only the orchestrator opts in here.
       toolsets = [ "hermes-cli" "kanban" ];
+      memory.provider = "hindsight";
+      memory.hindsight = {
+        mode = "cloud";
+        api_url = "http://127.0.0.1:8888";
+        bank_id = "hermes-agent";
+        recall_budget = "mid";
+      };
       # Kanban: dispatch inside the gateway (default), orchestrator is the
       # default profile (empty orchestrator_profile falls back to it).
       kanban = {
@@ -304,5 +329,25 @@ in
   # require root.
   sops.secrets."hermes-extra" = {
     sopsFile = ../../secrets/secrets-extra.yaml;
+  };
+  sops.secrets."9router-api-key" = {
+    sopsFile = ../../secrets/secrets-extra.yaml;
+  };
+  sops.templates."hermes-9router.env" = {
+    content = "NINE_ROUTER_API_KEY=${config.sops.placeholder."9router-api-key"}";
+  };
+  sops.secrets."hindsight-access-key" = {
+    sopsFile = ../../secrets/secrets-extra.yaml;
+  };
+  sops.templates."hermes-hindsight.env" = {
+    content = ''
+      HINDSIGHT_MODE=cloud
+      HINDSIGHT_API_URL=http://127.0.0.1:8888
+      HINDSIGHT_API_KEY=${config.sops.placeholder."hindsight-access-key"}
+      HINDSIGHT_BANK_ID=hermes-agent
+      HINDSIGHT_AUTO_RECALL=true
+      HINDSIGHT_AUTO_RETAIN=true
+      HINDSIGHT_RECALL_BUDGET=mid
+    '';
   };
 }

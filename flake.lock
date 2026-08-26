@@ -51,8 +51,8 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1787240413,
-        "narHash": "sha256-5LDUHfC5+Qmhp6AotqH1P9pETwXeuP/f5hzLRJ8xyzA=",
+        "lastModified": 1787717125,
+        "narHash": "sha256-/8F3SVbWbqRvbkdxpMKv31KisPMlxEcYjYlgqiRd6ws=",
         "path": "/home/smolpanda/nix-config/vendor/hermes-agent",
         "type": "path"
       },

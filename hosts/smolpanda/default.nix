@@ -10,5 +10,9 @@
     ./workloads.nix
     ./public.nix
     ./hermes.nix
+    ./9router.nix
+    ./9router-offpeak.nix
+    ./browser-use.nix
+    ./hindsight.nix
   ];
 }
