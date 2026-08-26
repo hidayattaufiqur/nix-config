@@ -86,7 +86,7 @@ in
     createUser = false;
     addToSystemPackages = true;
     workingDirectory = "/home/smolpanda/hermes-work";
-    extraDependencyGroups = [ "messaging" "anthropic" ];
+    extraDependencyGroups = [ "messaging" "anthropic" "hindsight" ];
     extraPackages = [ upkgs.opencode ];
     environmentFiles = [
       config.sops.secrets."hermes-env".path
