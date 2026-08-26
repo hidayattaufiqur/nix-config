@@ -30,6 +30,7 @@
     cron
     ripgrep
     btop
+    sops
 
     ## Nix utilities
     nix-tree

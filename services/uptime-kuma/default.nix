@@ -1,8 +1,14 @@
+# uptime-kuma — DISABLED 2026-08-26 (OOM declutter, user decision). User
+# thought it was already off; it was running since Aug 14. Stop + remove the
+# import (workloads.nix) + the public nginx proxy (public.nix). Re-enable by
+# restoring the import + services.uptime-kuma block if uptime monitoring is
+# wanted again.
+
 { config, lib, pkgs, ... }:
 
 {
   services.uptime-kuma = {
-    enable = true;
+    enable = false;
     settings = {
       UPTIME_KUMA_HOST = "127.0.0.1";
       UPTIME_KUMA_PORT = "3001";

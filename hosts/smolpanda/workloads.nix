@@ -17,7 +17,8 @@
     ../../services/apps/systemd
     ../../services/apps/redis
     ../../services/apps/psql
-    ../../services/uptime-kuma/default.nix
+    # uptime-kuma removed 2026-08-26 (OOM declutter) — its nginx proxy lives
+    # in ./public.nix and was removed there too.
     ./hermes-kb.nix
   ];
 

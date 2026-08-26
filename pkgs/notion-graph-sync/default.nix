@@ -2,6 +2,10 @@
 # of a Notion workspace via the API and emits a privacy-gated graph-data.json.
 # No build step: Node >= 23.6 runs the .ts sources directly (native type
 # stripping), so we just ship the src tree next to a node wrapper.
+#
+# 2026-08-26 (user decision): the APP source lives OUT of nix-config, in
+# ~/Fun/Projects/notion-graph-sync (nix-config only configures the server, it
+# does not store apps/scripts). This derivation builds from that path.
 {
   lib,
   stdenvNoCC,
@@ -12,7 +16,8 @@ stdenvNoCC.mkDerivation {
   pname = "notion-graph-sync";
   version = "1.0.0";
 
-  src = ./.;
+  # App source lives outside nix-config (user decision 2026-08-26).
+  src = /home/smolpanda/Fun/Projects/notion-graph-sync;
 
   nativeBuildInputs = [ makeWrapper ];
 
