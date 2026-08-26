@@ -29,24 +29,36 @@
 { pkgs, ... }:
 let
   combo = "hermes-agent";
-  # Off-peak: full list as stored in the DB today.
+  # Off-peak canonical order (2026-08-26 evening, agreed with user):
+  #   * oc/* free tier first — muse-free has the best success rate
+  #   * ocg/deepseek-v4-flash early — OpenCode Go is flat-rate, strong model
+  #   * cmc/stealth/ox-alpha KEPT — free & unlimited (45/45 success over 24h)
+  #   * cmc/meta/muse-spark mid — paid but NOT time-priced
+  #   * agentrouter demoted to LAST — deterministic "sensitive words detected"
+  #     500s on big tool-heavy histories turned them into retry-storm
+  #     generators (88 POSTs / 0 successes on deepseek-v4f alone)
+  #   * cmc/deepseek/deepseek-v4-flash intentionally ABSENT — CommandCode
+  #     weekly quota ceiling; the peak filter below strips it automatically
+  #     if it is ever re-added through the dashboard.
   offpeakModels = [
-    "agentrouter/gpt-5.6-sol"
-    "agentrouter/claude-opus-5"
-    "agentrouter/deepseek-v4f"
     "oc/muse-spark-1.2-contributor-free"
     "oc/deepseek-v4-flash-free"
+    "ocg/deepseek-v4-flash"
+    "cmc/stealth/ox-alpha"
     "oc/x-preview-f-free"
     "oc/laguna-s-2.1-free"
     "oc/mimo-v2.5-free"
-    "cmc/stealth/ox-alpha"
-    "ocg/deepseek-v4-flash"
     "ocg/muse-spark-1.2-contributor"
     "cmc/meta/muse-spark-1.2-contributor"
-    "cmc/deepseek/deepseek-v4-flash"
+    "agentrouter/gpt-5.6-sol"
+    "agentrouter/claude-opus-5"
+    "agentrouter/deepseek-v4f"
   ];
-  # Peak: drop the two paid deepseek entries, keep everything else.
-  peakModels = builtins.filter (m: m != "ocg/deepseek-v4-flash" && m != "cmc/deepseek/deepseek-v4-flash") offpeakModels;
+  # Peak: strip EVERY CommandCode deepseek variant (doubled-price windows).
+  # Name-based filter, so protection survives dashboard edits that re-add
+  # cmc/deepseek. With cmc/deepseek absent from the canonical list this
+  # equals the off-peak list and the swaps become harmless no-ops.
+  peakModels = builtins.filter (m: builtins.match ".*cmc/.*deepseek.*" m == null) offpeakModels;
   # Node script executed inside the container (writable /app/data bind).
   swapNode = pkgs.writeText "9router-offpeak-swap.mjs" ''
     import { createRequire } from "module";
