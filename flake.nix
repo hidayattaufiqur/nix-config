@@ -62,8 +62,6 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
     sops-install-secrets = (import "${sops-nix}" { pkgs = upkgs; }).sops-install-secrets;
   in
   {
-    packages.x86_64-linux.notion-graph-sync = pkgs.callPackage ./pkgs/notion-graph-sync { };
-
     nixosConfigurations = {
       nixos = nixpkgs.lib.nixosSystem {
         specialArgs = specialArgs;
