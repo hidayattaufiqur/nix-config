@@ -88,7 +88,8 @@
       enable = true;
       onBoot = "ignore";
       onShutdown = "shutdown";
-      qemu.ovmf.enable = true;
+      # deprecated in nixpkgs 25.11, kept for history (OVMF now shipped with QEMU by default)
+      # qemu.ovmf.enable = true;
       qemu.runAsRoot = true;
     };
     docker.enable = true;
@@ -149,8 +150,15 @@
   }; 
 
   # Installing fonts
+  # deprecated in nixpkgs 25.11: nerdfonts (single package + override) replaced by per-font attrs under nerd-fonts
+  # kept for history:
+  # fonts.packages = with pkgs; [
+  #   (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" "RobotoMono" ]; })
+  # ];
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" "RobotoMono" ]; })
+    nerd-fonts.fira-code
+    nerd-fonts.droid-sans-mono
+    nerd-fonts.roboto-mono
   ];
 
   # List packages installed in system profile. To search, run:

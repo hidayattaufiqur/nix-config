@@ -58,7 +58,8 @@
     vim
     zed-editor
     atac # a TUI API client
-    gobang # a TUI database manager
+    # gobang # removed in nixpkgs 25.11 (unmaintained upstream), kept for history — use lazysql or rainfrog instead
+    # a TUI database manager
 
     # Terminal apps
     yazi # a TUI file manager
@@ -76,7 +77,7 @@
     basedpyright
     
     # Gnome apps
-    andromeda-gtk-theme
+    # andromeda-gtk-theme # removed in nixpkgs 25.11 (depended on removed gtk-engine-murrine/GTK2), kept for history
     gnome-tweaks
     gnome-session
 
@@ -90,9 +91,10 @@
     gimp
     # spotify-tui # unmaintained as per nixpkgs version 24.05
     discord
-    cinnamon.nemo-with-extensions
-    cinnamon.nemo-fileroller
-    stremio
+    nemo-with-extensions
+    nemo-fileroller
+    # stremio # removed in nixpkgs 25.11 (pulls insecure qtwebengine-5.15, unmaintained upstream), kept for history
+    # re-enable by adding "qtwebengine-5.15.19" to nixpkgs.config.permittedInsecurePackages if desired
     gparted
     obs-studio
     calibre
@@ -190,7 +192,8 @@
     ripgrep     
     syncthing
     btop
-    xwaylandvideobridge # allow streaming from Wayland to X apps [https://blog.davidedmundson.co.uk/blog/xwaylandvideobridge/]
+    # xwaylandvideobridge # removed in nixpkgs 25.11 (KDE Gear 5 EOL), kept for history — Plasma 6 screen sharing covers this
+    # allow streaming from Wayland to X apps [https://blog.davidedmundson.co.uk/blog/xwaylandvideobridge/]
 
     # Nix utilities
     nix-tree

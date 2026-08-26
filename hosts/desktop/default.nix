@@ -22,7 +22,8 @@ let
 
     # linux utilities
     radeontop
-    glxinfo
+    # glxinfo # deprecated in nixpkgs 25.11, renamed to mesa-demos, kept for history
+    mesa-demos
     nvtopPackages.amd
 
     # media 
