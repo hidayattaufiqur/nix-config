@@ -15,7 +15,7 @@ inputs = {
   # local vendored checkout so we can carry a one-line upstream fix. The bug:
   # kanban check_respawn_guard rule 4 `active_pr` had no escape for an operator
   # re-queue, so a kanban_unblock of a card whose comments mention a PR url was
-  # silently ignored for the full 24h window, stranding fno-interactor boards
+  # silently ignored for the full 24h window, stranding fno-navigator boards
   # (2026-08-20; card t_bdc26d91). The vendored tree == upstream @ 1b1975781
   # plus the single patch in vendor/hermes-pr-guard.patch (mirrors the rule-3
   # recent_success requeue escape into rule 4).

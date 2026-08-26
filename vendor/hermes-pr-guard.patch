@@ -11,7 +11,7 @@ index 05a1873..1aada15 100644
 +    #    deliberate operator re-run — honor it instead of deferring. Without
 +    #    this, a human kanban_unblock of a card whose history mentions a PR is
 +    #    silently overridden by the guard for the whole 24h window (fno-
-+    #    interactor boards stalled this way on 2026-08-20; card t_bdc26d91).
++    #    navigator boards stalled this way on 2026-08-20; card t_bdc26d91).
      pr_cutoff = now - _RESPAWN_GUARD_PR_WINDOW
 +    pr_comment_at = None
      for c in conn.execute(
