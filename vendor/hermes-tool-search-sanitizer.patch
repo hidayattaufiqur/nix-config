@@ -1,0 +1,57 @@
+diff --git a/agent/agent_runtime_helpers.py b/agent/agent_runtime_helpers.py
+index a9bf1a1..cd9032e 100644
+--- a/agent/agent_runtime_helpers.py
++++ b/agent/agent_runtime_helpers.py
+@@ -3497,6 +3497,52 @@ def sanitize_api_messages(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]
+             elif isinstance(tc, dict):
+                 tc["function"] = {"name": _EMPTY_NAME_SENTINEL, "arguments": "{}"}
+ 
++    # --- Drop deferred tool-search calls (tool_search) and their results ---
++    # ``tool_search`` is Hermes' deferred tool-loading meta-tool: the model
++    # emits a call, Hermes loads the real tools, and the turn continues with
++    # the actual tool calls. The call is NOT part of the outgoing ``tools``
++    # definition. Strict OpenAI-compatible providers (CommandCode's
++    # Responses-API conversion for meta/muse-spark etc.) validate every
++    # replayed assistant tool_call's ``arguments`` against the declared tools
++    # and reject the undeclared ``tool_search`` with HTTP 400
++    # "`input[N]` missing required field `arguments`" — poisoning long threads
++    # whose history contains such calls (#task t_f794c2ae). The replay value
++    # is nil (the search already happened; the results are in tool history),
++    # so drop both the call and its matching tool result from the wire copy.
++    _DEFERRED_TOOL_SEARCH_NAMES = ("tool_search", "tool_search_multi")
++    deferred_search_ids: set = set()
++    for msg in messages:
++        if msg.get("role") != "assistant":
++            continue
++        for tc in msg.get("tool_calls") or []:
++            fn = tc.get("function") if isinstance(tc, dict) else None
++            name = fn.get("name") if isinstance(fn, dict) else None
++            if name in _DEFERRED_TOOL_SEARCH_NAMES:
++                cid = _ra().AIAgent._get_tool_call_id_static(tc)
++                if cid:
++                    deferred_search_ids.add(cid)
++    if deferred_search_ids:
++        kept: List[Dict[str, Any]] = []
++        dropped_search = 0
++        for msg in messages:
++            if msg.get("role") == "tool" and (msg.get("tool_call_id") or "").strip() in deferred_search_ids:
++                dropped_search += 1
++                continue
++            if msg.get("role") == "assistant" and msg.get("tool_calls"):
++                tcs = [tc for tc in msg["tool_calls"]
++                       if _ra().AIAgent._get_tool_call_id_static(tc) not in deferred_search_ids]
++                if len(tcs) != len(msg["tool_calls"]):
++                    dropped_search += 1
++                    msg = {**msg, "tool_calls": tcs} if tcs else {
++                        k: v for k, v in msg.items() if k != "tool_calls"
++                    }
++            kept.append(msg)
++        messages = kept
++        _ra().logger.debug(
++            "Pre-call sanitizer: dropped %d deferred tool_search call/result item(s)",
++            dropped_search,
++        )
++
+     surviving_call_ids: set = set()
+     for msg in messages:
+         if msg.get("role") == "assistant":
