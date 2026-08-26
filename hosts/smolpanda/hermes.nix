@@ -14,12 +14,13 @@ let
   # gate-keeper = security/code-review worker (renamed from janus 2026-08-23;
   # janus itself was renamed from security-reviewer and merged with the
   # retired d365fo-reviewer 2026-08-14).
+  # 2026-08-26 (OOM declutter, user decision): nix, gate-keeper and pandr
+  # gateways disabled — user talks to eris (this bot), atlas (research/plan),
+  # and dossier (docs) directly. Their profile dirs stay; re-add by restoring
+  # the name here.
   workerProfiles = [
     "atlas"
     "dossier"
-    "nix"
-    "gate-keeper"
-    "pandr"
     "eris"
   ];
   # ── Ponytail plugin state (intentionally imperative) ────────────────────
@@ -103,7 +104,8 @@ in
       # model changes happen in the 9router Combo without editing hermes.nix.
       # Use the explicit Combo model so 9router's hermes-agent failover order
       # (commandcode -> agentrouter -> opencode-go -> free) is guaranteed.
-      model.default = "9router/hermes-agent";
+      # model.default = "9router/hermes-agent";
+      model.default = "opencode-go/deepseek-v4-flash"; 
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "high";
@@ -131,7 +133,6 @@ in
           name = "CommandCode";
           key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
-          default_model = "meta/muse-spark-1.2-contributor";
           models = [ "meta/muse-spark-1.2-contributor" "deepseek/deepseek-v4-flash" "xiaomi/mimo-v2.5" ];
         };
         opencode-go = {
@@ -139,6 +140,7 @@ in
           name = "OpenCode Go";
           key_env = "OPENCODE_GO_API_KEY";
           transport = "chat_completions";
+          models = [ "meta/muse-spark-1.2-contributor" "deepseek/deepseek-v4-flash" ];
         };
         "9router" = {
           api = "http://127.0.0.1:20128/v1";

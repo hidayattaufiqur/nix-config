@@ -55,69 +55,50 @@ in
   # ~/.local/share/opencode/opencode-stable.db (untouched by this removal).
   # Re-enable by restoring the unit + :4443 mount if v1 history is ever needed.
 
-  # opencode2 (v2 beta) server API. v2 dropped the `web` subcommand — the
-  # browser surface is the hosted Console (console.opencode.ai) + Electron
-  # desktop app, which pair with this local API server. Bound to loopback
-  # only, exposed over the tailnet via tailscale serve (:4444). Unlike v1,
-  # the v2 API REQUIRES basic auth: credentials come from
-  # ~/.config/opencode2-server.env (OPENCODE_SERVER_USERNAME/PASSWORD,
-  # mode 600, created by the agent during install). Mirrors opencode-web's
-  # unit shape and memory caps; sessions persist in ~/.local/share/opencode.
-  systemd.services.opencode2-web = {
-    description = "opencode2 v2 beta server API";
+  # opencode2 (v2 beta) server API — DISABLED 2026-08-26 (OOM declutter, user
+  # decision). Nobody connects to :4097 (ss: no sockets), the TUI runs as its
+  # own `opencode` process (not via this server), and the unit OOM-killed
+  # (9/KILL) on 2026-08-24. Sessions persist in ~/.local/share/opencode —
+  # untouched. Re-enable by restoring this block if the hosted Console or
+  # desktop app needs the local API again.
+
+  # Memory cap for opencode sessions launched ad-hoc (tmux/hermes-work, e.g.
+  # `opencode -s ses_...`). Sessions are bun processes that balloon to 1GB+ RSS
+  # and 18GB VmSize, OOMing the 8GB box (seen 2026-08-26 15:43 — two
+  # .opencode-wrapp killed, took systemd+dbus with them). Launch sessions via
+  # `systemd-run --scope --unit=opencode-session@<n> ...` to inherit the cap.
+  systemd.slices.opencode = {
     wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" "tailscaled.service" ];
+  };
+  systemd.services."opencode-session@" = {
+    description = "opencode session (memory-capped)";
     serviceConfig = {
-      User = "smolpanda";
-      Group = "users";
-      WorkingDirectory = "/home/smolpanda";
-      EnvironmentFile = "/home/smolpanda/.config/opencode2-server.env";
-      ExecStart = "/home/smolpanda/.bun/bin/opencode2 serve --hostname 127.0.0.1 --port 4097";
-      Restart = "on-failure";
-      RestartSec = "3s";
-      # Same caps as opencode-web: soft reclaim above 2G, hard kill at 2.5G.
-      # Native binary should run far lighter than v1's Bun runtime; caps are
-      # a safety backstop (zram 2GiB absorbs peaks, no disk swap).
-      MemoryHigh = "2048M";
-      MemoryMax = "2560M";
+      Slice = "opencode.slice";
+      # Soft reclaim above 1G, hard kill at 1.5G — matches the opencode2-web
+      # pattern. Sessions are transient work; killing one beats killing systemd.
+      MemoryHigh = "1G";
+      MemoryMax = "1536M";
+      TasksMax = 512;
+      OOMPolicy = "kill";
     };
   };
 
-  # Expose opencode2 over the tailnet only: tailscale serve gives HTTPS on
-  # https://smolpanda.<tailnet>.ts.net:4444, reachable solely via tailnet
-  # (firewall trusts tailscale0) and gated by tailnet ACLs. serve config is
-  # persisted by tailscaled, so this unit mainly establishes it (idempotent).
-  # The v1 opencode-web mount on :4443 was removed 2026-08-12 (t_5556f158)
-  # together with the v1 web service; :4444 -> 127.0.0.1:4097 remains the
-  # single mount (single-protocol, no "multiple types" conflict).
-  systemd.services.tailscale-serve = {
-    description = "Serve opencode2 over the tailnet via tailscale serve";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "tailscaled.service" "opencode2-web.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      Restart = "on-failure";
-      RestartSec = "10s";
-      # Idempotent: reset first so a stale mount can't cause
-      # "cannot serve multiple types for a single mount point" (seen when
-      # --http and --https target the same mount '/'), which aborted the
-      # whole nixos-rebuild switch. HTTPS :4444 only — the :8443 HTTP
-      # workaround was retired once TLS certs started working. Serve HTTPS
-      # is tailnet-only by default (funnel is the opt-in for public).
-      #
-      # ExecStart is a LIST on purpose: systemd does NOT shell-interpret
-      # `&&` in a single ExecStart string (the tokens are passed as literal
-      # argv to one process), so a one-line `reset && serve --bg ...` chain
-      # silently degraded to reset-only and the serve mounts were never
-      # (re)applied by the unit — they were riding on persisted tailscaled
-      # state. Type=oneshot runs ExecStart entries sequentially, so the two
-      # entries gives reset-then-serve semantics.
-      ExecStart = [
-        "${pkgs.tailscale}/bin/tailscale serve reset"
-        "${pkgs.tailscale}/bin/tailscale serve --bg --https=4444 http://127.0.0.1:4097"
-      ];
-    };
-  };
+  # opencode2 tailnet serve — DISABLED with opencode2-web 2026-08-26 (OOM
+  # declutter). No :4444 mount while the API is down. Re-enable with the unit.
+  # systemd.services.tailscale-serve = {
+  #   description = "Serve opencode2 over the tailnet via tailscale serve";
+  #   wantedBy = [ "multi-user.target" ];
+  #   after = [ "tailscaled.service" "opencode2-web.service" ];
+  #   serviceConfig = {
+  #     Type = "oneshot";
+  #     Restart = "on-failure";
+  #     RestartSec = "10s";
+  #     ExecStart = [
+  #       "${pkgs.tailscale}/bin/tailscale serve reset"
+  #       "${pkgs.tailscale}/bin/tailscale serve --bg --https=4444 http://127.0.0.1:4097"
+  #     ];
+  #   };
+  # };
 
   networking = {
     hostName = "smolpanda";
