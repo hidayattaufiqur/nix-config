@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 let
   role = config.services.server-role;
-  repo = "${role.homeDir}/Fun/Projects/fno-interactor";
+  repo = "${role.homeDir}/Fun/Projects/fno-navigator";
   deployDir = "/var/lib/nginx/fno";
   deployTrigger = "${role.homeDir}/.hermes/fno-deploy-trigger";
 in
@@ -20,8 +20,8 @@ in
   # Rebuild + redeploy path (agent or human):
   #   touch ${deployTrigger}
   # fires fno-deploy.service: npm run build && rsync -> ${deployDir}.
-  systemd.services.fno-interactor = {
-    description = "FNO Interactor dev server (localhost only)";
+  systemd.services.fno-navigator = {
+    description = "FnO Navigator dev server (localhost only)";
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ];
 
@@ -53,13 +53,13 @@ in
   # site. Runs as the app user OUTSIDE the agent sandbox (systemd unit, not a
   # hermes child), so it can write ${deployDir} which the sandbox cannot.
   systemd.paths.fno-deploy = {
-    description = "Watch for the fno-interactor deploy trigger file";
+    description = "Watch for the fno-navigator deploy trigger file";
     wantedBy = [ "multi-user.target" ];
     pathConfig.PathExists = deployTrigger;
   };
 
   systemd.services.fno-deploy = {
-    description = "Build and deploy the fno-interactor static site";
+    description = "Build and deploy the fno-navigator static site";
     serviceConfig = {
       Type = "oneshot";
       User = role.user;

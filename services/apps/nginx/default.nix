@@ -146,7 +146,7 @@
       # fno.hidayattaufiqur.dev — production STATIC build (no vite dev server,
       # no websocket/HMR proxy; the vite ws was the CVE-2026-39363 surface).
       # Rebuild/deploy path: touch ~/.hermes/fno-deploy-trigger, which fires
-      # the fno-deploy oneshot (see services/apps/systemd/fno-interactor.nix)
+      # the fno-deploy oneshot (see services/apps/systemd/fno-navigator.nix)
       # to npm run build + rsync build/ -> /var/lib/nginx/fno.
       "fno.hidayattaufiqur.dev" = {
         forceSSL = true;

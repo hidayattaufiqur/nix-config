@@ -18,7 +18,7 @@ I'm also interested and fascinated by the world of Nix and NixOS in general, and
 ## Practical wins (in this repo)
 
 - **nginx + ACME**: TLS and vhosts are declared in Nix. No certbot, no cron, no standalone flag. Certificates Just Work.
-- **Custom systemd services**: apps like `fno-interactor` and `mc-management` are defined as systemd units in the repo — reproducible without SSHing in.
+- **Custom systemd services**: apps like `fno-navigator` and `mc-management` are defined as systemd units in the repo — reproducible without SSHing in.
 - **Monitoring**: Prometheus + Grafana + node exporter, all in the same flake, deployed with the rest of the config.
 - **Declarative disk layout**: the VPS uses `disko` so the disk setup is code and can be reprovisioned over SSH with `nixos-anywhere`.
 - **Secrets**: `sops-nix` is wired up and actively managing secrets.

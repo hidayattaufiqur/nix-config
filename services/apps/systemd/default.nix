@@ -11,7 +11,7 @@
   imports = [
     # ./llmsherpa.nix
     ./blogablog.nix
-    ./fno-interactor.nix
+    ./fno-navigator.nix
     ./nine-dots-hours-dashboard.nix
     ./keep2notion.nix
     ./tasks2notion.nix
