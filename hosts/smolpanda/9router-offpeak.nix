@@ -13,8 +13,13 @@
 # no cache), so swapping the combo's models JSON is enough — no minified
 # bundle patching, no Hermes fallback surgery.
 #
-# Two timers run the same swap script at each window edge (a few minutes
-# early so the boundary is respected for in-flight requests):
+# The host's /var/lib/9router bind mount is READONLY from the host shell
+# (root fs mounted ro; only the docker container's view of the bind is rw),
+# so the swap must run INSIDE the 9router container, where /app/data is
+# writable. The container ships better-sqlite3 + node.
+#
+# Two timers run the same swap at each window edge (a few minutes early so
+# the boundary is respected for in-flight requests):
 #   * peak-on  at 07:55 / 12:55 WIB  -> drop the two paid deepseek entries
 #   * peak-off at 11:05 / 17:05 WIB  -> restore the full model list
 #
@@ -23,7 +28,6 @@
 # are never clobbered, and a manual `systemctl start` works for verification.
 { pkgs, ... }:
 let
-  db = "/var/lib/9router/data/db/data.sqlite";
   combo = "hermes-agent";
   # Off-peak: full list as stored in the DB today.
   offpeakModels = [
@@ -43,7 +47,27 @@ let
   ];
   # Peak: drop the two paid deepseek entries, keep everything else.
   peakModels = builtins.filter (m: m != "ocg/deepseek-v4-flash" && m != "cmc/deepseek/deepseek-v4-flash") offpeakModels;
-  sqlite = "${pkgs.sqlite}/bin/sqlite3";
+  # Node script executed inside the container (writable /app/data bind).
+  swapNode = pkgs.writeText "9router-offpeak-swap.mjs" ''
+    import { createRequire } from "module";
+    const require = createRequire("/app/package.json"); // resolve better-sqlite3 from /app/node_modules
+    const Database = require("better-sqlite3");
+    const db = new Database("/app/data/db/data.sqlite");
+    const OFF = ${builtins.toJSON offpeakModels};
+    const PEAK = ${builtins.toJSON peakModels};
+    const row = db.prepare("SELECT models FROM combos WHERE name = ?").get("${combo}");
+    if (!row) { console.error("combo not found"); process.exit(1); }
+    const cur = JSON.parse(row.models);
+    const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+    let mode;
+    if (same(cur, OFF)) mode = "OFFPEAK";
+    else if (same(cur, PEAK)) mode = "PEAK";
+    else { console.log("combo manually edited, skipping"); process.exit(0); }
+    const next = mode === "OFFPEAK" ? PEAK : OFF;
+    db.prepare("UPDATE combos SET models = ?, updatedAt = ? WHERE name = ?")
+      .run(JSON.stringify(next), new Date().toISOString(), "${combo}");
+    console.log(`swapped ''${mode} -> ''${next.length} models`);
+  '';
   swapScript = pkgs.writeShellScript "9router-offpeak-swap" ''
     set -euo pipefail
     STATE=/tmp/9router-combo-state
@@ -51,20 +75,7 @@ let
     LAST=$([ -f "$STATE" ] && cat "$STATE" || echo 0)
     [ $((NOW - LAST)) -lt 60 ] && exit 0   # idempotent: both timers fire on boot catch-up
     echo "$NOW" > "$STATE"
-
-    MODE=$(${sqlite} "$DB" "SELECT CASE
-      WHEN (SELECT count(*) FROM json_each((SELECT models FROM combos WHERE name = '$COMBO'))) = $OFF_COUNT
-           AND EXISTS(SELECT 1 FROM json_each((SELECT models FROM combos WHERE name = '$COMBO')) WHERE value IN ('ocg/deepseek-v4-flash','cmc/deepseek/deepseek-v4-flash'))
-        THEN 'OFFPEAK'
-      WHEN (SELECT count(*) FROM json_each((SELECT models FROM combos WHERE name = '$COMBO'))) = $PEAK_COUNT
-           AND NOT EXISTS(SELECT 1 FROM json_each((SELECT models FROM combos WHERE name = '$COMBO')) WHERE value IN ('ocg/deepseek-v4-flash','cmc/deepseek/deepseek-v4-flash'))
-        THEN 'PEAK'
-      ELSE 'UNKNOWN' END")
-    case "$MODE" in
-      OFFPEAK) ${sqlite} "$DB" "UPDATE combos SET models = '$PEAK_JSON', updatedAt = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE name = '$COMBO'" ;;
-      PEAK)    ${sqlite} "$DB" "UPDATE combos SET models = '$OFF_JSON', updatedAt = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE name = '$COMBO'" ;;
-      UNKNOWN) echo "9router-offpeak: $COMBO manually edited, skipping" ;;
-    esac
+    exec ${pkgs.docker}/bin/docker exec 9router node ${swapNode}
   '';
 in
 {
@@ -75,14 +86,6 @@ in
         Type = "oneshot";
         User = "smolpanda";
         Group = "users";
-        Environment = [
-          "DB=${db}"
-          "COMBO=${combo}"
-          "OFF_JSON=${builtins.toJSON offpeakModels}"
-          "PEAK_JSON=${builtins.toJSON peakModels}"
-          "OFF_COUNT=${builtins.toString (builtins.length offpeakModels)}"
-          "PEAK_COUNT=${builtins.toString (builtins.length peakModels)}"
-        ];
         ExecStart = swapScript;
       };
     };
@@ -92,14 +95,6 @@ in
         Type = "oneshot";
         User = "smolpanda";
         Group = "users";
-        Environment = [
-          "DB=${db}"
-          "COMBO=${combo}"
-          "OFF_JSON=${builtins.toJSON offpeakModels}"
-          "PEAK_JSON=${builtins.toJSON peakModels}"
-          "OFF_COUNT=${builtins.toString (builtins.length offpeakModels)}"
-          "PEAK_COUNT=${builtins.toString (builtins.length peakModels)}"
-        ];
         ExecStart = swapScript;
       };
     };
