@@ -221,6 +221,11 @@
   sops.package = sops-install-secrets;
   sops.defaultSopsFile = ../../secrets/secrets.yaml;
   sops.age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
+  # Needed by services/apps/systemd/notion-graph-sync.nix (shared with
+  # smolpanda): it reads NOTION_TOKEN etc. from the hermes-extra sops file.
+  sops.secrets."hermes-extra" = {
+    sopsFile = ../../secrets/secrets-extra.yaml;
+  };
 
   system.stateVersion = "23.11"; # Did you read the comment?
 }

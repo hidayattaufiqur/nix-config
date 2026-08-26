@@ -39,7 +39,9 @@ in
   systemd.services."autovt@tty1".enable = false;
 
   # Disable closing lid to suspend
-  services.logind.extraConfig = ''
-    HandleLidSwitch=ignore
-  '';
+  # deprecated in nixpkgs 25.11, kept for history
+  # services.logind.extraConfig = ''
+  #   HandleLidSwitch=ignore
+  # '';
+  services.logind.settings.Login.HandleLidSwitch = "ignore";
 }
