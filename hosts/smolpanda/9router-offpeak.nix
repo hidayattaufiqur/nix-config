@@ -31,9 +31,12 @@ let
   combo = "hermes-agent";
   # Off-peak canonical order (2026-08-26 evening, agreed with user):
   #   * oc/* free tier first — muse-free has the best success rate
-  #   * ocg/deepseek-v4-flash early — OpenCode Go is flat-rate, strong model
-  #   * cmc/stealth/ox-alpha KEPT — free & unlimited (45/45 success over 24h)
+  #   * cmc/stealth/ox-alpha mid — free & unlimited (45/45 success over 24h)
+  #   * ocg/muse-spark mid — OpenCode Go muse, not deepseek-priced
   #   * cmc/meta/muse-spark mid — paid but NOT time-priced
+  #   * ocg/deepseek-v4-flash demoted — NOT flat-rate: it follows DeepSeek
+  #     pricing like cmc deepseek (user correction 2026-08-26 evening), so
+  #     it gets stripped during peak windows via the name filter below
   #   * agentrouter demoted to LAST — deterministic "sensitive words detected"
   #     500s on big tool-heavy histories turned them into retry-storm
   #     generators (88 POSTs / 0 successes on deepseek-v4f alone)
@@ -43,22 +46,21 @@ let
   offpeakModels = [
     "oc/muse-spark-1.2-contributor-free"
     "oc/deepseek-v4-flash-free"
-    "ocg/deepseek-v4-flash"
-    "cmc/stealth/ox-alpha"
     "oc/x-preview-f-free"
     "oc/laguna-s-2.1-free"
     "oc/mimo-v2.5-free"
+    "cmc/stealth/ox-alpha"
     "ocg/muse-spark-1.2-contributor"
     "cmc/meta/muse-spark-1.2-contributor"
+    "ocg/deepseek-v4-flash"
     "agentrouter/gpt-5.6-sol"
     "agentrouter/claude-opus-5"
     "agentrouter/deepseek-v4f"
   ];
-  # Peak: strip EVERY CommandCode deepseek variant (doubled-price windows).
-  # Name-based filter, so protection survives dashboard edits that re-add
-  # cmc/deepseek. With cmc/deepseek absent from the canonical list this
-  # equals the off-peak list and the swaps become harmless no-ops.
-  peakModels = builtins.filter (m: builtins.match ".*cmc/.*deepseek.*" m == null) offpeakModels;
+  # Peak: strip EVERY deepseek variant THAT IS METERED — cmc/* and ocg/*
+  # (both follow DeepSeek's own doubled-price windows). oc/deepseek-v4-flash-free
+  # is the free tier and stays. Name filter survives dashboard re-adds.
+  peakModels = builtins.filter (m: builtins.match "(cmc|ocg)/.*deepseek.*" m == null) offpeakModels;
   # Node script executed inside the container (writable /app/data bind).
   swapNode = pkgs.writeText "9router-offpeak-swap.mjs" ''
     import { createRequire } from "module";
