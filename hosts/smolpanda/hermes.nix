@@ -106,12 +106,10 @@ in
       # provider/model so bare 'ox-alpha' never fuzzy-matches onto
       # opencode-go's catalog (which has ox-alpha-free) for NEW sessions.
       # Work + upskilling channels stay Copilot via channel_overrides below.
-      # Primary traffic now routes via 9router (local OpenAI-compat proxy) so
+      # Primary traffic routes via 9router (local OpenAI-compat proxy).
       # model changes happen in the 9router Combo without editing hermes.nix.
-      # Use the explicit Combo model so 9router's hermes-agent failover order
-      # (commandcode -> agentrouter -> opencode-go -> free) is guaranteed.
-      # model.default = "9router/hermes-agent";
-      model.default = "opencode-go/deepseek-v4-flash"; 
+      model.default = "9router/hermes-agent";
+      # model.default = "opencode-go/deepseek-v4-flash";
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "high";
@@ -274,6 +272,10 @@ in
             model = "claude-sonnet-4.6";
           };
           "1537124050546204824" = {   # upskilling
+            provider = "copilot";
+            model = "claude-sonnet-4.6";
+          };
+          "1535315824485732423" = {   # atlas-agent
             provider = "copilot";
             model = "claude-sonnet-4.6";
           };
