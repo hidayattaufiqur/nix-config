@@ -72,6 +72,11 @@ let
       ];
       PrivateTmp = true;
       TimeoutStartSec = "300";
+      # Cgroup memory caps (2026-08-27 harness audit): eris crept to 1.5GiB
+      # before restart revealed 611MiB baseline. Soft ceiling triggers reclaim;
+      # hard ceiling kills before RAM starvation cascades to other services.
+      MemoryHigh = "800M";
+      MemoryMax = "1200M";
     };
     restartTriggers = [
       "/var/lib/hermes/.hermes/profiles/${name}/config.yaml"
