@@ -204,16 +204,11 @@ in
       mcp_discovery_timeout = 15;
       web.backend = "tavily";
       web.extract_backend = "tavily";
-      # Vision analysis backend: commandcode deepseek-v4-flash-vision-exp, GLOBAL.
-      # Hermes has no per-channel aux vision, and Copilot must stay
-      # work-only, so vision is personal in every channel (user decision).
-      # 2026-08-22: moved off opencode-go/minimax-m3 — Go wallet ran dry
-      # (Insufficient balance). deepseek-v4-flash-vision-exp is on the
-      # CommandCode Provider plan (same key as the main brain). Revisit
-      # if opencode credits get topped up.
+      # Vision analysis backend: routed via 9router (local OpenAI-compat proxy).
+      # Avoids direct commandcode/opencode calls to stay within rate limits.
       auxiliary.vision = {
-        provider = "commandcode";
-        model = "deepseek/deepseek-v4-flash-vision-exp";
+        provider = "9router";
+        model = "hermes-agent";
       };
       # MCP servers ported from the user's opencode setup (~/.config/opencode/opencode.json).
       # - microsoft_learn: official Microsoft Learn MCP (remote, no auth) — used by the
