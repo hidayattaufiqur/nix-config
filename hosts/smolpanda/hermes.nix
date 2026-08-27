@@ -8,16 +8,17 @@ let
   # wrapper as the mastermind (which exports HERMES_BUNDLED_PLUGINS etc.), but
   # scoped to the worker's HERMES_HOME via `--profile`.
   hermesPkg = config.services.hermes-agent.package;
-  # Worker profiles are named after the AGENT (atlas, gate-keeper, dossier,
-  # nix, pandr, eris), not the role. Exception: Hermes the mastermind runs from
+  # Worker profiles are named after the AGENT (atlas, janus, dossier, nix,
+  # pandr, eris), not the role. Exception: Hermes the mastermind runs from
   # the module-managed default profile dir (/var/lib/hermes/.hermes).
-  # gate-keeper = security/code-review worker (renamed from janus 2026-08-23;
-  # janus itself was renamed from security-reviewer and merged with the
-  # retired d365fo-reviewer 2026-08-14).
-  # 2026-08-26 (OOM declutter, user decision): nix, gate-keeper and pandr
-  # gateways disabled — user talks to eris (this bot), atlas (research/plan),
+  # janus = security/code-review + QA/merge/deploy worker (profile dir renamed
+  # back from gate-keeper 2026-08-27, undoing the 2026-08-23 symlink rename;
+  # the janus/gate-keeper pair was a single identity with two names).
+  # 2026-08-26 (OOM declutter, user decision): nix and pandr gateways
+  # disabled — user talks to eris (this bot), atlas (research/plan),
   # and dossier (docs) directly. Their profile dirs stay; re-add by restoring
-  # the name here.
+  # the name here. 2026-08-27: eris gateway under review (1.5GiB RSS — see
+  # gateway-usage audit); janus/nix/pandr/gate-keeper are dispatch-only.
   workerProfiles = [
     "atlas"
     "dossier"
@@ -34,7 +35,7 @@ let
   #   dossier             not installed
   #   atlas               installed + enabled
   #   nix                 installed + enabled
-  #   gate-keeper         installed + enabled
+  #   janus               installed + enabled
   #   pandr               installed + enabled
   #   eris                installed + enabled
   # Install/enable with:
@@ -109,6 +110,24 @@ in
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "high";
+      # Mastermind skill disable-list (2026-08-27 harness audit): 10 bundled
+      # skills with zero use/view since install (2026-08-13) — design &
+      # entertainment shelfware that never fires for the orchestrator role.
+      # Focus trim only (index cost ~0.1-0.3% of context); re-enable by
+      # removing a name here. Counted proof: .usage.json use_count=0,
+      # view_count=0 for every entry below.
+      skills.disabled = [
+        "claude-design"
+        "comfyui"
+        "himalaya"
+        "manim-video"
+        "openhue"
+        "p5js"
+        "popular-web-designs"
+        "sketch"
+        "songwriting-and-ai-music"
+        "touchdesigner-mcp"
+      ];
       # Clarify (Discord interactive input) window: user decision 2026-08-16.
       # 15 min to answer (900s), 5 min warning nudge (300s), then the agent
       # proceeds with the recommended default instead of hanging for an hour.
