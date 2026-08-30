@@ -1,13 +1,32 @@
+-- 2026-08-28: migrated to vim.lsp.config (nvim 0.11+)
+-- `require("lspconfig").SERVER.setup` is deprecated (see :help lspconfig-nvim-0.11)
+-- Use vim.lsp.config + vim.lsp.enable. Keep fallback for older nvim/lspconfig.
 local configs = require("plugins.configs.lspconfig")
 local on_attach = configs.on_attach
 local capabilities = configs.capabilities
 
-local lspconfig = require "lspconfig"
+-- helper: configure + enable, with fallback to legacy lspconfig
+local function setup(server, opts)
+  opts = opts or {}
+  opts.on_attach = opts.on_attach or on_attach
+  opts.capabilities = opts.capabilities or capabilities
+  if vim.lsp.config then
+    vim.lsp.config(server, opts)
+    vim.lsp.enable(server)
+  else
+    require("lspconfig")[server].setup(opts)
+  end
+end
 
-local M = {}
+-- use vim.fs.root directly (lspconfig.util deprecated, not always available at startup)
+local root_pattern = function(...)
+  local patterns = { ... }
+  return function(fname)
+    return vim.fs.root(fname, patterns)
+  end
+end
 
-M.opts = { inlay_hints = { enabled = true } }
-
+-- common servers (de-duplicated; missing servers are silently skipped)
 local servers = {
   "html",
   "cssls",
@@ -15,78 +34,52 @@ local servers = {
   "lua_ls",
   "gopls",
   "golangci_lint_ls",
-  "html",
   "basedpyright",
   "ts_ls",
   "nil_ls",
-  "astro"
+  "astro",
+  "cmake",
+  "rust_analyzer",
 }
 
 for _, lsp in ipairs(servers) do
-  lspconfig[lsp].setup {
-    on_attach = on_attach,
-    capabilities = capabilities,
+  -- pcall: server may not be installed / config may not exist (e.g. golangci_lint_ls)
+  pcall(setup, lsp, {
     settings = {
-			Go = {
-				diagnostics = {
-					globals = {"vim"},
-				}
-			}
-		}
-  }
+      Go = { diagnostics = { globals = { "vim" } } },
+    },
+  })
 end
 
- lspconfig.gopls.setup {
-    on_attach = on_attach,
-    capabilities = capabilities,
-    root_dir = lspconfig.util.root_pattern(".git", "go.mod"),
-    flags = {
-       debounce_text_changes = 150,
+-- gopls (detailed)
+pcall(setup, "gopls", {
+  root_dir = root_pattern(".git", "go.mod"),
+  flags = { debounce_text_changes = 150 },
+  settings = {
+    gopls = {
+      analyses = {
+        nilness = true,
+        unusedparams = true,
+        unusedwrite = true,
+        useany = true,
+      },
+      gofumpt = true,
+      experimentalPostfixCompletions = true,
+      staticcheck = true,
+      usePlaceholders = true,
     },
-    settings = {
-       gopls = {
-          analyses = {
-            nilness = true,
-            unusedparams = true,
-            unusedwrite = true,
-            useany = true
-          },
-          gofumpt = true,
-          experimentalPostfixCompletions = true,
-          staticcheck = true,
-          usePlaceholders = true,
-       },
-    },
+  },
+  init_options = {
+    usePlaceholders = true,
+    completeUnimported = true,
+    staticcheck = true,
+    matcher = "fuzzy",
+    semanticTokens = true,
+  },
+})
 
-    -- Enable virtual text wrapping for diagnostics
-    -- Adjust the 'virtual_text_max_width' value as needed
-    init_options = {
-       usePlaceholders = true,
-       completeUnimported = true,
-       staticcheck = true,
-       matcher = "fuzzy",
-       -- diagnosticCaching = true,
-       -- useWorkspaceFolders = true,
-       -- symbolCache = { enabled = true },
-       semanticTokens = true,
-       -- experimentalWorkspaceModule = true,
-       -- virtualText = {
-       --     enabled = true,
-       --     prefix = "",
-       --     spacing = 0,
-       --     max_width = 120, -- Adjust this value based on your preference
-       -- },
-    },
- }
-
-lspconfig.ts_ls.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
-
-lspconfig.basedpyright.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
+pcall(setup, "ts_ls", {})
+pcall(setup, "basedpyright", {
   settings = {
     python = {
       analysis = {
@@ -99,54 +92,28 @@ lspconfig.basedpyright.setup{
         reportUnusedImport = true,
         reportMissingImports = true,
       },
-   },
-  }
-}
+    },
+  },
+})
 
-lspconfig.nil_ls.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
+pcall(setup, "nil_ls", {
   autostart = true,
   settings = {
-    ['nil'] = {
+    ["nil"] = {
       testSetting = 42,
-      formatting = {
-        command = { "nixpkgs-fmt" },
-      },
-    }
-  }
-}
+      formatting = { command = { "nixpkgs-fmt" } },
+    },
+  },
+})
 
-lspconfig.astro.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
+for _, srv in ipairs({ "astro", "cmake", "clangd", "ccls" }) do
+  pcall(setup, srv, {})
+end
 
-lspconfig.cmake.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
-
-lspconfig.clangd.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
-
-lspconfig.ccls.setup{
-  on_attach = on_attach,
-  capabilities = capabilities,
-}
-
-lspconfig.rust_analyzer.setup{
+pcall(setup, "rust_analyzer", {
   settings = {
-    ['rust-analyzer'] = {
-      diagnostics = {
-        enable = false;
-      }
-    }
-  }
-}
+    ["rust-analyzer"] = { diagnostics = { enable = false } },
+  },
+})
 
--- TODO: add java lsp
-
-return M
+return {}
