@@ -139,16 +139,16 @@ in
   security.sudo.wheelNeedsPassword = false;
   programs.zsh.enable = true;
 
-  environment.systemPackages = with pkgs; [
-    curl
-    git
-    htop
-    jq
-    neovim
-    python3
-    tmux
-    wget
-  ];
+  # 2026-08-28: system neovim pinned to 0.12.5 (upkgs) for treesitter `main`
+  environment.systemPackages = (with pkgs; [
+     curl
+     git
+     htop
+     jq
+     python3
+     tmux
+     wget
+   ]) ++ [ upkgs.neovim ];
 
   time.timeZone = "Asia/Jakarta";
   i18n.defaultLocale = "en_US.UTF-8";
