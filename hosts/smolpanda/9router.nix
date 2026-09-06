@@ -1,12 +1,22 @@
 { config, lib, pkgs, ... }:
 
-# 9Router v0.5.59 from source + AgentRouter header-spoof overlay.
+# 9Router v0.5.69 from source + AgentRouter header-spoof overlay.
 #
-# No published container image exists for v0.5.59 (git tag only).
-# 9router-build.service clones v0.5.59, bakes in the AgentRouter overlay,
+# No published container image exists for v0.5.69 (git tag only).
+# 9router-build.service clones v0.5.69, bakes in the AgentRouter overlay,
 # and builds a local Docker image. 9router.service runs it with the same
 # bind-mounts as before (data dir persists, custom-server.js is now
 # baked into the image but we keep a host copy for inspection/override).
+#
+# ponytail: upgraded v0.5.59 -> v0.5.69 2026-09-06. No breaking changes:
+# no SQLite migration, custom-server.js unchanged upstream (overlay
+# rebase-free). New-image verified on the real data dir before cutover;
+# old 9router-local:v0.5.59 image intentionally NOT pruned (rollback =
+# `docker run --rm --name 9router --network host -v
+# /var/lib/9router/data:/app/data 9router-local:v0.5.59` + stop old).
+# Upstream Dockerfile now fetches npm/apk via CN mirrors (aliyun/npmmirror)
+# — reachable from this host; if a future build stalls, that's the first
+# suspect.
 
 let
   # AgentRouter header-spoof patch — injects Claude Code / Copilot headers
@@ -16,7 +26,7 @@ let
     #!${pkgs.bash}/bin/bash
     set -euo pipefail
 
-    TAG="v0.5.59"
+    TAG="v0.5.69"
     IMAGE="9router-local:$TAG"
 
     # Skip if image already built
@@ -57,9 +67,9 @@ in
     "d /var/lib/9router/build-src 0755 root root -"
   ];
 
-  # Build 9router v0.5.59 image from source (runs once, cached in nix store path)
+  # Build 9router v0.5.69 image from source (runs once, cached in nix store path)
   systemd.services."9router-build" = {
-    description = "Build 9router v0.5.59 from source";
+    description = "Build 9router v0.5.69 from source";
     after = [ "network.target" "docker.service" ];
     requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
@@ -83,7 +93,7 @@ in
       Type = "simple";
       EnvironmentFile = config.sops.templates."9router.env".path;
       ExecStartPre = "-${pkgs.docker}/bin/docker rm -f 9router";
-      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.59";
+      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.69";
       ExecStop = "-${pkgs.docker}/bin/docker stop 9router";
       Restart = "always";
       RestartSec = 10;
