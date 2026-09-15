@@ -11,6 +11,7 @@ inputs = {
   };
   disko.url = "github:nix-community/disko";
   disko.inputs.nixpkgs.follows = "nixpkgs";
+  flake-utils.url = "github:numtide/flake-utils";
   # hermes-agent: pinned upstream at rev 1b1975781 (0.20.1) but OVERRIDDEN to a
   # local vendored checkout so we can carry one-line upstream fixes. Patches:
   #  - vendor/hermes-pr-guard.patch: kanban check_respawn_guard rule 4 `active_pr`
@@ -24,12 +25,15 @@ inputs = {
   #    (2026-08-26; card t_f794c2ae).
   # The vendored tree == upstream @ 1b1975781 plus these patches.
   hermes-agent.url = "path:/home/smolpanda/nix-config/vendor/hermes-agent";
+  d365fo-mcp.url = "path:/home/smolpanda/Fun/Projects/d365fo-mcp";
+  d365fo-mcp.inputs.nixpkgs.follows = "nixpkgs-unstable";
+  d365fo-mcp.inputs.flake-utils.follows = "flake-utils";
   sops-nix.url = "github:Mic92/sops-nix";
   # do NOT set inputs.nixpkgs.follows — let sops-nix use its own nixpkgs
   # (needs buildGo125Module, not available in 24.11)
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, hermes-agent, sops-nix }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, hermes-agent, sops-nix, d365fo-mcp, ... }@inputs:
   let
     system = "x86_64-linux";
 
@@ -54,7 +58,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
       };
     };
 
-    specialArgs = { inherit pkgs upkgs pinnedPkgs; };
+    specialArgs = { inherit pkgs upkgs pinnedPkgs; } // { inherit d365fo-mcp; };
 
     # Build sops-install-secrets using nixpkgs-unstable (has buildGo125Module).
     # The system nixpkgs (24.11) only ships up to buildGo124Module, so we
@@ -135,7 +139,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
              home-manager = {
                backupFileExtension = "backup";
                useUserPackages = true;
-               useGlobalPkgs = true;
+               useGlobalPkgs = true; 
                extraSpecialArgs = specialArgs;
                users.smolpanda = import ./hosts/smolpanda/home.nix;
              };
