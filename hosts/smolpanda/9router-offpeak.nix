@@ -29,30 +29,27 @@
 { pkgs, ... }:
 let
   combo = "hermes-agent";
-  # Off-peak canonical order (2026-08-26 evening, agreed with user):
-  #   * oc/* free tier first — muse-free has the best success rate
-  #   * cmc/stealth/ox-alpha mid — free & unlimited (45/45 success over 24h)
-  #   * ocg/muse-spark mid — OpenCode Go muse, not deepseek-priced
-  #   * cmc/meta/muse-spark mid — paid but NOT time-priced
-  #   * ocg/deepseek-v4-flash demoted — NOT flat-rate: it follows DeepSeek
-  #     pricing like cmc deepseek (user correction 2026-08-26 evening), so
-  #     it gets stripped during peak windows via the name filter below
-  #   * agentrouter demoted to LAST — deterministic "sensitive words detected"
-  #     500s on big tool-heavy histories turned them into retry-storm
-  #     generators (88 POSTs / 0 successes on deepseek-v4f alone)
-  #   * cmc/deepseek/deepseek-v4-flash intentionally ABSENT — CommandCode
-  #     weekly quota ceiling; the peak filter below strips it automatically
-  #     if it is ever re-added through the dashboard.
+  # Off-peak canonical list — synced 2026-09-30 ~01:05 WIB from the live combo
+  # row (dashboard-edited by the user). The script refuses to touch a combo
+  # that matches neither this list nor the derived peak list, so re-sync this
+  # whenever the hermes-agent combo is edited by hand.
   offpeakModels = [
     "oc/muse-spark-1.2-contributor-free"
     "oc/deepseek-v4-flash-free"
-    "oc/x-preview-f-free"
     "oc/laguna-s-2.1-free"
     "oc/mimo-v2.5-free"
-    "cmc/stealth/ox-alpha"
-    "ocg/muse-spark-1.2-contributor"
-    "cmc/meta/muse-spark-1.2-contributor"
-    "ocg/deepseek-v4-flash"
+    "ocg/hy3"
+    "oc/hy3-free"
+    "oc/nemotron-3-ultra-free"
+    "oc/nemotron-3.5-lightning-free"
+    "oc/big-pickle"
+    "oc/x-preview-f-free"
+    "orvix/orvix/muse-spark-1.2"
+    "cmc/meta/muse-spark-1.3-contributor"
+    "cmc/deepseek/deepseek-v4.1-flash"
+    "cmc/deepseek/deepseek-v4-flash"
+    "cmc/minimax/minimax-m3-free"
+    "cmc/minimax/minimax-m2.7-free"
     "agentrouter/gpt-5.6-sol"
     "agentrouter/claude-opus-5"
     "agentrouter/deepseek-v4f"
@@ -89,7 +86,9 @@ let
     LAST=$([ -f "$STATE" ] && cat "$STATE" || echo 0)
     [ $((NOW - LAST)) -lt 60 ] && exit 0   # idempotent: both timers fire on boot catch-up
     echo "$NOW" > "$STATE"
-    exec ${pkgs.docker}/bin/docker exec 9router node ${swapNode}
+    # Feed the module over stdin: the container sees only /app/data, so a
+    # /nix/store path is unresolvable inside it ("Cannot find module").
+    exec ${pkgs.docker}/bin/docker exec -i 9router node --input-type=module - < ${swapNode}
   '';
 in
 {
