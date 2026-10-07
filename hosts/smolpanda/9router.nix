@@ -1,22 +1,15 @@
 { config, lib, pkgs, ... }:
 
-# 9Router v0.5.69 from source + AgentRouter header-spoof overlay.
+# 9Router v0.5.91 from source + AgentRouter header-spoof overlay.
+# Latest upstream stable tag verified 2026-09-30; SQLite/data bind is preserved.
+# 9router-build.service builds the pinned tag with the local AgentRouter overlay;
+# 9router.service runs it with the persistent /var/lib/9router/data bind.
+# The previous v0.5.69 image remains installed for rollback.
 #
-# No published container image exists for v0.5.69 (git tag only).
-# 9router-build.service clones v0.5.69, bakes in the AgentRouter overlay,
-# and builds a local Docker image. 9router.service runs it with the same
-# bind-mounts as before (data dir persists, custom-server.js is now
-# baked into the image but we keep a host copy for inspection/override).
-#
-# ponytail: upgraded v0.5.59 -> v0.5.69 2026-09-06. No breaking changes:
-# no SQLite migration, custom-server.js unchanged upstream (overlay
-# rebase-free). New-image verified on the real data dir before cutover;
-# old 9router-local:v0.5.59 image intentionally NOT pruned (rollback =
-# `docker run --rm --name 9router --network host -v
-# /var/lib/9router/data:/app/data 9router-local:v0.5.59` + stop old).
-# Upstream Dockerfile now fetches npm/apk via CN mirrors (aliyun/npmmirror)
-# — reachable from this host; if a future build stalls, that's the first
-# suspect.
+# ponytail: upstream custom-server.js is byte-identical between v0.5.69 and
+# v0.5.91, so the overlay needs no rebase. The v0.5.91 DB diff contains no
+# schema migration; stay on the same SQLite file and keep v0.5.69 as rollback.
+# Use the reachable CN package mirrors explicitly during image build.
 
 let
   # AgentRouter header-spoof patch — injects Claude Code / Copilot headers
@@ -26,7 +19,7 @@ let
     #!${pkgs.bash}/bin/bash
     set -euo pipefail
 
-    TAG="v0.5.69"
+    TAG="v0.5.91"
     IMAGE="9router-local:$TAG"
 
     # Skip if image already built
@@ -46,7 +39,11 @@ let
     cp "${overlayScript}" "$SRC/repo/custom-server.js"
 
     # Build image from upstream Dockerfile
-    ${pkgs.docker}/bin/docker build -t "$IMAGE" "$SRC/repo"
+    ${pkgs.docker}/bin/docker build \
+      --build-arg ALPINE_MIRROR=mirrors.aliyun.com \
+      --build-arg NPM_REGISTRY=https://registry.npmmirror.com \
+      --build-arg APP_VERSION="$TAG" \
+      -t "$IMAGE" "$SRC/repo"
 
     rm -rf "$SRC"
     echo "9router build complete: $IMAGE"
@@ -67,9 +64,9 @@ in
     "d /var/lib/9router/build-src 0755 root root -"
   ];
 
-  # Build 9router v0.5.69 image from source (runs once, cached in nix store path)
+  # Build 9router v0.5.91 image from source (runs once, cached in nix store path)
   systemd.services."9router-build" = {
-    description = "Build 9router v0.5.69 from source";
+    description = "Build 9router v0.5.91 from source";
     after = [ "network.target" "docker.service" ];
     requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
@@ -93,7 +90,7 @@ in
       Type = "simple";
       EnvironmentFile = config.sops.templates."9router.env".path;
       ExecStartPre = "-${pkgs.docker}/bin/docker rm -f 9router";
-      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.69";
+      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.91";
       ExecStop = "-${pkgs.docker}/bin/docker stop 9router";
       Restart = "always";
       RestartSec = 10;

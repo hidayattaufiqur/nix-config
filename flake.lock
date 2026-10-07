@@ -10,14 +10,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1789455966,
-        "narHash": "sha256-zxMrbq1iqgtyyQAuyqcBEOrPlONI3q00SoDxcSWAC+A=",
-        "path": "/home/smolpanda/Fun/Projects/d365fo-mcp",
-        "type": "path"
+        "lastModified": 1789458615,
+        "narHash": "sha256-J56VfrfuZtxZvtX+k+Thy0hQgQyFqU6/m+3yDFVLOtQ=",
+        "ref": "refs/heads/main",
+        "rev": "9ab912cdacfe2dbee072ae88b67944db99be22e9",
+        "revCount": 13,
+        "type": "git",
+        "url": "file:///home/smolpanda/Fun/Projects/d365fo-mcp"
       },
       "original": {
-        "path": "/home/smolpanda/Fun/Projects/d365fo-mcp",
-        "type": "path"
+        "type": "git",
+        "url": "file:///home/smolpanda/Fun/Projects/d365fo-mcp"
       }
     },
     "disko": {
