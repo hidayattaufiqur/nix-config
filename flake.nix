@@ -25,7 +25,10 @@ inputs = {
   #    (2026-08-26; card t_f794c2ae).
   # The vendored tree == upstream @ 1b1975781 plus these patches.
   hermes-agent.url = "path:/home/smolpanda/nix-config/vendor/hermes-agent";
-  d365fo-mcp.url = "path:/home/smolpanda/Fun/Projects/d365fo-mcp";
+  # git+file:// (not path:) — path: inputs copy the whole dir and ignore
+  # .gitignore, so .tmp-persist/ (2.2G scratch) + .git/ land in the input NAR
+  # and every catalog run / commit flips narHash, breaking rebuild eval.
+  d365fo-mcp.url = "git+file:///home/smolpanda/Fun/Projects/d365fo-mcp";
   d365fo-mcp.inputs.nixpkgs.follows = "nixpkgs-unstable";
   d365fo-mcp.inputs.flake-utils.follows = "flake-utils";
   sops-nix.url = "github:Mic92/sops-nix";

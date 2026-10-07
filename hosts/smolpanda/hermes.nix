@@ -22,7 +22,6 @@ let
   workerProfiles = [
     "atlas"
     "dossier"
-    "eris"
   ];
   # ── Ponytail plugin state (intentionally imperative) ────────────────────
   # ponytail (github.com/DietrichGebert/ponytail) is a per-turn ruleset
@@ -53,6 +52,12 @@ let
       HERMES_HOME = "/var/lib/hermes/.hermes/profiles/${name}";
       # Browser tool binary for worker gateways (playwright E2E checks).
       AGENT_BROWSER_EXECUTABLE_PATH = "/home/smolpanda/.local/bin/chromium-fhs";
+    } // lib.optionalAttrs (name == "atlas") {
+      # Restart-forcing token, same trick as hermes-agent below: a profile's
+      # config.yaml is written at activation, so restartTriggers never hashes
+      # the new content and THIS gateway would keep the old model in memory.
+      # Bump the epoch whenever atlas/config.yaml changes (2026-09-30: v1).
+      HERMES_CONFIG_EPOCH = "1";
     };
     serviceConfig = {
       Type = "simple";
@@ -62,6 +67,11 @@ let
       ExecStart = "${hermesPkg}/bin/hermes --profile ${name} gateway run";
       Restart = "always";
       RestartSec = "5";
+      # Atlas alone needs the TW read-only Azure DevOps PAT. Keep other worker
+      # gateways outside the broad hermes-extra secret environment.
+      EnvironmentFile = lib.optionals (name == "atlas") [
+        config.sops.secrets."hermes-extra".path
+      ];
       UMask = "0007";
       NoNewPrivileges = true;
       ProtectSystem = "strict";
@@ -110,9 +120,19 @@ in
       # model changes happen in the 9router Combo without editing hermes.nix.
       model.default = "9router/hermes-agent";
       # model.default = "opencode-go/deepseek-v4-flash";
+      model.context_length = 1000000;
+
       # Mastermind reasoning effort: max for the orchestrator/CEO profile;
       # workers default to high (set per-profile in their config.yaml).
       agent.reasoning_effort = "high";
+      # Per-model Luna overrides: request high reasoning; Copilot's live
+      # catalog advertises ["minimal","low","medium","high"] and the provider
+      # clamps verbatim — "max" would downgrade to "medium", so "high" is the
+      # safe ceiling that always lands at the highest available level.
+      agent.reasoning_overrides = {
+        "gpt-6-luna" = "high";
+        "gpt-5.6-luna" = "high";
+      };
       # Mastermind skill disable-list (2026-08-27 harness audit): 10 bundled
       # skills with zero use/view since install (2026-08-13) — design &
       # entertainment shelfware that never fires for the orchestrator role.
@@ -155,7 +175,7 @@ in
           name = "CommandCode";
           key_env = "COMMANDCODE_API_KEY";
           transport = "chat_completions";
-          models = [ "meta/muse-spark-1.2-contributor" "deepseek/deepseek-v4-flash" "xiaomi/mimo-v2.5" ];
+          models = [ "meta/muse-spark-1.3-contributor" "deepseek/deepseek-v4.1-flash" "xiaomi/mimo-v2.5" ];
         };
         opencode-go = {
           api = "https://opencode.ai/go/v1";
@@ -165,7 +185,7 @@ in
           models = [ "meta/muse-spark-1.2-contributor" "deepseek/deepseek-v4-flash" ];
         };
         "9router" = {
-          api = "http://127.0.0.1:20128/v1";
+          api = "http://127.0.0.1:20128/v1";   # direct 9router — headroom proxy disabled 2026-09-18 (1.3G RSS for 2.8% saving, not worth it)
           name = "9Router";
           key_env = "NINE_ROUTER_API_KEY";
           transport = "chat_completions";
@@ -173,11 +193,19 @@ in
           models = [ "hermes-agent" ];
         };
       };
-      # fallback_providers = [
-      #   { provider = "9router"; model = "hermes-agent"; }
-      #   { provider = "commandcode"; model = "meta/muse-spark-1.2-contributor"; }
-      #   { provider = "commandcode"; model = "deepseek/deepseek-v4-flash"; }
-      # ];
+      # Dashboard via Tailscale (100.64.254.88) - password gate for non-loopback bind
+      dashboard.basic_auth = {
+        username = "hidayattaufiqur";
+        password_hash = "scrypt$16384$8$1$dnqw18ACuX7e/Vri87pRIg==$KvBE3wLmfCZVllMFJYGD1wT1fqONdta4XSQZIVkbquo=";
+      };
+      # Declarative fallback chain (mirrors runtime config.yaml): the gateway
+      # walks this when the primary model fails. 9router/hermes-agent first —
+      # it is the reliable path that answers every mastermind turn.
+      fallback_providers = [
+        { provider = "9router"; model = "hermes-agent"; }
+        { provider = "commandcode"; model = "meta/muse-spark-1.3-contributor"; }
+        { provider = "commandcode"; model = "deepseek/deepseek-v4.1-flash"; }
+      ];
       # Mastermind orchestration: the default profile is the CEO. It needs the
       # kanban toolset so it can decompose goals and route cards to the worker
       # profiles (atlas, dossier, nix, gate-keeper, pandr,
@@ -204,11 +232,15 @@ in
       mcp_discovery_timeout = 15;
       web.backend = "tavily";
       web.extract_backend = "tavily";
-      # Vision analysis backend: routed via 9router (local OpenAI-compat proxy).
-      # Avoids direct commandcode/opencode calls to stay within rate limits.
+      # Discord gateway tool progress verbosity (2026-09-30 user request:
+      # set display.tool_progress to "new" for Discord).
+      # `new` = tool indicator only when the tool changes (quieter than default `all`).
+      display.platforms.discord.tool_progress = "new";
+      # Vision analysis backend: commandcode Muse Spark 1.3 contributor (vision-capable).
+      # 9router oc/muse-spark-1.2-contributor-free returns empty content on vision (HTTP 200 content:"") — pinned to commandcode paid vision.
       auxiliary.vision = {
-        provider = "9router";
-        model = "hermes-agent";
+        provider = "commandcode";
+        model = "meta/muse-spark-1.3-contributor";
       };
       # MCP servers ported from the user's opencode setup (~/.config/opencode/opencode.json).
       # - microsoft_learn: official Microsoft Learn MCP (remote, no auth) — used by the
@@ -257,22 +289,24 @@ in
           "1535217343179923456" = "This is the PROJECTS channel (side projects and personal software).";
           "1537124050546204824" = "This is the UPSKILLING channel (D365FO technical upskilling program). Hands-on: modules M0-M9 of the curriculum (D365FO_Upskilling_Curriculum.md), real perf challenges with before/after measurements. Use the d365fo-architect skill and the ~/d365fo-src source mirror; keep answers practical and session-oriented.";
         };
-        # Copilot is WORK-ONLY: the work channel (and its auto-threads,
-        # which inherit via parent_id lookup) runs on Copilot; every other
-        # channel stays on the personal opencode-go/deepseek stack.
-        # Threads created in a channel inherit the parent channel's override.
+        # Copilot GPT-6 Luna high-reasoning for work/atlas (2026-09-30 user
+        # request: gpt-5.6-luna -> gpt-6-luna); upskilling stays on
+        # gpt-5.6-luna. Threads auto-inherit the parent channel's override
+        # via gateway _get_channel_override parent_id lookup — no per-thread
+        # config needed. Global agent.reasoning_effort = "high" covers both;
+        # per-model override pins max reasoning where catalog allows it.
         channel_overrides = {
           "1535217253543575603" = {   # work
             provider = "copilot";
-            model = "claude-sonnet-4.6";
+            model = "gpt-6-luna";
           };
           "1537124050546204824" = {   # upskilling
             provider = "copilot";
-            model = "claude-sonnet-4.6";
+            model = "gpt-6-luna";
           };
           "1535315824485732423" = {   # atlas-agent
             provider = "copilot";
-            model = "claude-sonnet-4.6";
+            model = "gpt-6-luna";
           };
         };
       };
@@ -291,6 +325,10 @@ in
     {
       hermes-agent = {
         environment.HOME = lib.mkForce "/home/smolpanda";
+        # Epoch forces gateway restart on switch (config.yaml rewrites land
+        # after restartTriggers hash, so settings changes never restart it).
+        # 2026-09-30: bumped 2 -> 3 for the work/atlas gpt-6-luna rollout.
+        environment.HERMES_CONFIG_EPOCH = "3";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
