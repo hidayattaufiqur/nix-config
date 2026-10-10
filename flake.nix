@@ -31,12 +31,18 @@ inputs = {
   d365fo-mcp.url = "git+file:///home/smolpanda/Fun/Projects/d365fo-mcp";
   d365fo-mcp.inputs.nixpkgs.follows = "nixpkgs-unstable";
   d365fo-mcp.inputs.flake-utils.follows = "flake-utils";
+  # jev-mcp lives in its own repo too (2026-10-10): this flake configures the
+  # system, programs/packages live in ~/Fun/Projects/<program>. Same
+  # git+file:// accessor as d365fo-mcp so .gitignore is honoured.
+  jev-mcp.url = "git+file:///home/smolpanda/Fun/Projects/jev-mcp";
+  jev-mcp.inputs.nixpkgs.follows = "nixpkgs-unstable";
+  jev-mcp.inputs.flake-utils.follows = "flake-utils";
   sops-nix.url = "github:Mic92/sops-nix";
   # do NOT set inputs.nixpkgs.follows — let sops-nix use its own nixpkgs
   # (needs buildGo125Module, not available in 24.11)
 };
 
-outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, hermes-agent, sops-nix, d365fo-mcp, ... }@inputs:
+outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, disko, hermes-agent, sops-nix, d365fo-mcp, jev-mcp, ... }@inputs:
   let
     system = "x86_64-linux";
 
@@ -61,7 +67,7 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
       };
     };
 
-    specialArgs = { inherit pkgs upkgs pinnedPkgs; } // { inherit d365fo-mcp; };
+    specialArgs = { inherit pkgs upkgs pinnedPkgs; } // { inherit d365fo-mcp jev-mcp; };
 
     # Build sops-install-secrets using nixpkgs-unstable (has buildGo125Module).
     # The system nixpkgs (24.11) only ships up to buildGo124Module, so we

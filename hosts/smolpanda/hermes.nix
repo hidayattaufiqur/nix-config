@@ -70,9 +70,14 @@ let
       ExecStart = "${hermesPkg}/bin/hermes --profile ${name} gateway run";
       Restart = "always";
       RestartSec = "5";
-      # Atlas alone needs the TW read-only Azure DevOps PAT. Keep other worker
-      # gateways outside the broad hermes-extra secret environment.
-      EnvironmentFile = lib.optionals (name == "atlas") [
+      # Atlas needs the TW read-only Azure DevOps PAT; dossier needs
+      # ORVIX_TOKEN for the jev MCP server (2026-10-10). Both therefore read
+      # the broad hermes-extra secret now, which also hands dossier the AZDO
+      # PATs / KB passwords / VERCEL token it does not need.
+      # ponytail: one env blob for both profiles — split ORVIX_TOKEN into its
+      # own sops key (EnvironmentFile per profile) if that boundary matters
+      # more than one extra key to rotate.
+      EnvironmentFile = lib.optionals (name == "atlas" || name == "dossier") [
         config.sops.secrets."hermes-extra".path
       ];
       UMask = "0007";
