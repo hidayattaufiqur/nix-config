@@ -56,8 +56,11 @@ let
       # Restart-forcing token, same trick as hermes-agent below: a profile's
       # config.yaml is written at activation, so restartTriggers never hashes
       # the new content and THIS gateway would keep the old model in memory.
-      # Bump the epoch whenever atlas/config.yaml changes (2026-09-30: v1).
-      HERMES_CONFIG_EPOCH = "1";
+      # Bump the epoch whenever atlas/config.yaml or atlas/SOUL.md changes
+      # (2026-09-30: v1; 2026-10-10: v2 = evidence-first SOUL.md steer).
+      # Changing the value rewrites the unit env, which is what makes
+      # switch-to-configuration restart this gateway.
+      HERMES_CONFIG_EPOCH = "2";
     };
     serviceConfig = {
       Type = "simple";
@@ -312,6 +315,18 @@ in
       };
     };
   };
+
+  # ── Atlas profile-level evidence-first steer ────────────────────────────
+  # SOUL.md is Hermes's only per-profile instruction slot that is always in
+  # the system prompt (slot #1); worker-profile config.yaml is CLI-owned and
+  # has no instruction key, and nothing else in this flake generates worker
+  # profile state. So this flake OWNS atlas/SOUL.md: edit
+  # hosts/smolpanda/atlas-SOUL.md, not the profile dir (activation overwrites
+  # it on every switch, and the epoch bump above restarts the gateway).
+  # Content = the shared Hindsight policy + the D365FO evidence-first steer.
+  system.activationScripts.hermes-atlas-soul = lib.stringAfter [ "users" ] ''
+    install -o smolpanda -g users -m 0660 -D ${./atlas-SOUL.md} /var/lib/hermes/.hermes/profiles/atlas/SOUL.md
+  '';
 
   # Run with full access to the smolpanda home so Hermes can drive the user's
   # opencode CLI (auth in ~/.local/share/opencode) and reach git/ssh configs.
