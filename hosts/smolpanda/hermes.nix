@@ -348,6 +348,22 @@ in
     install -o smolpanda -g users -m 0660 -D ${./dossier-SOUL.md} /var/lib/hermes/.hermes/profiles/dossier/SOUL.md
   '';
 
+  # ── Default (mastermind) + pandr SOUL: one source, two installs ──────────
+  # Both were hand-written and unmanaged until 2026-10-11, and their content
+  # was already byte-identical (the shared Hindsight policy), so one file
+  # serves both. Why flake-owned: the rebuild-trigger knowledge
+  # (`touch ~/.hermes/rebuild-trigger`, never `nixos-rebuild switch` from an
+  # agent) is spread across many skills that an agent has to *choose* to load
+  # at the right moment, which is why it kept getting missed. SOUL.md is slot
+  # #1 of the system prompt — always in context — so pinning it here is what
+  # actually raises the hit rate. Edit hosts/smolpanda/default-SOUL.md, not the
+  # profile dirs (activation overwrites them; the epoch bump restarts the
+  # default gateway so the new content is read).
+  system.activationScripts.hermes-default-soul = lib.stringAfter [ "users" ] ''
+    install -o smolpanda -g users -m 0660 -D ${./default-SOUL.md} /var/lib/hermes/.hermes/SOUL.md
+    install -o smolpanda -g users -m 0660 -D ${./default-SOUL.md} /var/lib/hermes/.hermes/profiles/pandr/SOUL.md
+  '';
+
   # Run with full access to the smolpanda home so Hermes can drive the user's
   # opencode CLI (auth in ~/.local/share/opencode) and reach git/ssh configs.
   # Worker gateways (defined at top of file): each worker profile runs its own
@@ -363,7 +379,11 @@ in
         # Epoch forces gateway restart on switch (config.yaml rewrites land
         # after restartTriggers hash, so settings changes never restart it).
         # 2026-09-30: bumped 2 -> 3 for the work/atlas gpt-6-luna rollout.
-        environment.HERMES_CONFIG_EPOCH = "3";
+        # 2026-10-11: bumped 3 -> 4 so the flake-owned default/SOUL.md (the
+        # rebuild-trigger knowledge that must live in slot #1) lands in the
+        # running gateway — the SOUL is written by an activation script, so
+        # restartTriggers cannot hash its new content within the same switch.
+        environment.HERMES_CONFIG_EPOCH = "4";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
@@ -372,6 +392,7 @@ in
         restartTriggers = [
           "/var/lib/hermes/.hermes/config.yaml"
           "/var/lib/hermes/.hermes/.env"
+          "/var/lib/hermes/.hermes/SOUL.md"
           "/run/secrets/hermes-extra"
         ];
         serviceConfig.TimeoutStartSec = "300";
