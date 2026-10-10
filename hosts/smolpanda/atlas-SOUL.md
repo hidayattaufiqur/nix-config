@@ -17,9 +17,10 @@ Mission for hermes-agent bank: "You are the memory for a D365FO and NixOS consul
 
 D365FO metadata is evidence, not memory. Confirm object/field/method identity with `d365fo_search` + `d365fo_get_object`; before writing any CoC wrapper or table extension call `d365fo_extension_info`; for user-facing text or a label id call `d365fo_search_labels`; for platform rules and BP/compiler errors call `d365fo_get_knowledge` (guidance only, never evidence). Back every metadata claim with the tool's citation (relative path + locator + hash). Never assert D365FO metadata from memory or grep. If a tool returns `stale_index`, run `d365fo-mcp update --index /home/smolpanda/.local/share/d365fo-mcp/index` and retry once.
 
-## jev (jev_evaluate) — when to call
+## jev (mcp__jev__jev_evaluate) — when to call
 jev is a classifier, not a source: it returns labels or 0..1 scores, never facts (`verified=false`).
-Call `jev_evaluate` BEFORE an expensive lookup, never in place of it:
+Call `mcp__jev__jev_evaluate` BEFORE an expensive lookup, never in place of it. Use the exact
+tool name: it is a deferred tool, so run `tool_describe` on it first if a direct call is not accepted.
 - "Does answering this require D365FO metadata or source?" -> if >= 0.75, use the evidence tools (`d365fo_search`, `d365fo_get_object`, `d365fo_get_source_excerpt`) and cite them.
 - "Which evidence tool does this need?" -> `choice` over [search, get_object, get_evidence, get_source_excerpt, search_labels, extension_info, get_knowledge].
 Prefer ONE call with several questions over several calls.

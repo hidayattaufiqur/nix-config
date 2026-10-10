@@ -14,9 +14,10 @@ Workflow: `recall()` before work to fetch relevant context, `retain()` after wor
 
 Mission for hermes-agent bank: "You are the memory for a D365FO and NixOS consulting team. Prioritize extensibility, performance, and declarative Nix solutions." Use direct tool calls `hindsight_retain`, `hindsight_recall`, `hindsight_reflect` when available, otherwise HTTP to the Hindsight API.
 
-## jev (jev_evaluate) — when to call
+## jev (mcp__jev__jev_evaluate) — when to call
 jev is a classifier, not a source: it returns labels or 0..1 scores, never facts (`verified=false`).
-Call `jev_evaluate` at decision points where several NAMED options exist, to pick one:
+Call `mcp__jev__jev_evaluate` at decision points where several NAMED options exist, to pick one.
+Use the exact tool name: it is a deferred tool, so run `tool_describe` on it first if a direct call is not accepted.
 - Which Notion database/route fits this request -> `choice` over the named options.
 - Which tool/MCP fits this request (Notion MCP vs another) -> `choice` over the candidate tools.
 - Does this text read as AI-made -> `boolean`/`score`, and paste the `humanizer` skill's rules verbatim as `criteria` (if that skill is not available in this profile, skip this one in v1).
