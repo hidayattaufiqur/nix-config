@@ -123,6 +123,29 @@
         "type": "github"
       }
     },
+    "jev-mcp": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791619307,
+        "narHash": "sha256-EGhXIhcDY2fbEHZRbrj4pLUf6BSGaHAI5Fb5S+3yYbE=",
+        "ref": "refs/heads/main",
+        "rev": "710239a965fc38f5e2e1c0f7091e781677a1d9dc",
+        "revCount": 2,
+        "type": "git",
+        "url": "file:///home/smolpanda/Fun/Projects/jev-mcp"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:///home/smolpanda/Fun/Projects/jev-mcp"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1785318670,
@@ -281,6 +304,7 @@
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
+        "jev-mcp": "jev-mcp",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-6e99f2a2": "nixpkgs-6e99f2a2",
         "nixpkgs-unstable": "nixpkgs-unstable",
