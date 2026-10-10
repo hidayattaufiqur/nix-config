@@ -328,6 +328,13 @@ in
     install -o smolpanda -g users -m 0660 -D ${./atlas-SOUL.md} /var/lib/hermes/.hermes/profiles/atlas/SOUL.md
   '';
 
+  # Dossier's SOUL.md was hand-written in the profile dir and unmanaged until
+  # now (2026-10-10); hosts/smolpanda/dossier-SOUL.md is its current content
+  # plus the jev steer, so the flake OWNS it from here on.
+  system.activationScripts.hermes-dossier-soul = lib.stringAfter [ "users" ] ''
+    install -o smolpanda -g users -m 0660 -D ${./dossier-SOUL.md} /var/lib/hermes/.hermes/profiles/dossier/SOUL.md
+  '';
+
   # Run with full access to the smolpanda home so Hermes can drive the user's
   # opencode CLI (auth in ~/.local/share/opencode) and reach git/ssh configs.
   # Worker gateways (defined at top of file): each worker profile runs its own

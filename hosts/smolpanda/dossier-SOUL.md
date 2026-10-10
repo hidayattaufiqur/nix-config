@@ -1,4 +1,5 @@
 
+
 ## Hindsight memory policy
 
 Hermes runs a native Hindsight memory provider. The self-hosted server lives at http://127.0.0.1:8888 with Control Plane at http://127.0.0.1:9999, backed by Docker `hindsight` with embedded pg0.
@@ -13,14 +14,11 @@ Workflow: `recall()` before work to fetch relevant context, `retain()` after wor
 
 Mission for hermes-agent bank: "You are the memory for a D365FO and NixOS consulting team. Prioritize extensibility, performance, and declarative Nix solutions." Use direct tool calls `hindsight_retain`, `hindsight_recall`, `hindsight_reflect` when available, otherwise HTTP to the Hindsight API.
 
-## D365FO evidence-first
-
-D365FO metadata is evidence, not memory. Confirm object/field/method identity with `d365fo_search` + `d365fo_get_object`; before writing any CoC wrapper or table extension call `d365fo_extension_info`; for user-facing text or a label id call `d365fo_search_labels`; for platform rules and BP/compiler errors call `d365fo_get_knowledge` (guidance only, never evidence). Back every metadata claim with the tool's citation (relative path + locator + hash). Never assert D365FO metadata from memory or grep. If a tool returns `stale_index`, run `d365fo-mcp update --index /home/smolpanda/.local/share/d365fo-mcp/index` and retry once.
-
 ## jev (jev_evaluate) — when to call
 jev is a classifier, not a source: it returns labels or 0..1 scores, never facts (`verified=false`).
-Call `jev_evaluate` BEFORE an expensive lookup, never in place of it:
-- "Does answering this require D365FO metadata or source?" -> if >= 0.75, use the evidence tools (`d365fo_search`, `d365fo_get_object`, `d365fo_get_source_excerpt`) and cite them.
-- "Which evidence tool does this need?" -> `choice` over [search, get_object, get_evidence, get_source_excerpt, search_labels, extension_info, get_knowledge].
-Prefer ONE call with several questions over several calls.
-Fail OPEN: low confidence (< 0.75), a tie, or a jev error means DO the lookup anyway. Never skip an evidence lookup because jev scored it low. Never treat a jev score as evidence for a metadata claim.
+Call `jev_evaluate` at decision points where several NAMED options exist, to pick one:
+- Which Notion database/route fits this request -> `choice` over the named options.
+- Which tool/MCP fits this request (Notion MCP vs another) -> `choice` over the candidate tools.
+- Does this text read as AI-made -> `boolean`/`score`, and paste the `humanizer` skill's rules verbatim as `criteria` (if that skill is not available in this profile, skip this one in v1).
+Every call needs `criteria`: a map of option -> concrete description. If the options are not enumerable, DO NOT call jev — decide yourself.
+Fail OPEN: low confidence (< 0.75), a tie, or a jev error means take the deterministic default (the option you would have picked anyway). Never use a jev score as evidence about Notion content.
