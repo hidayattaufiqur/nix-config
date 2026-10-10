@@ -126,7 +126,15 @@ in
       # Work + upskilling channels stay Copilot via channel_overrides below.
       # Primary traffic routes via 9router (local OpenAI-compat proxy).
       # model changes happen in the 9router Combo without editing hermes.nix.
-      model.default = "9router/hermes-agent";
+      model.default = "hermes-agent";
+      # provider MUST be set explicitly: slash specs are model strings, never
+      # providers (hermes_cli/models.py only parses `provider:model` colon
+      # syntax). With no model.provider, resolve_requested_provider falls
+      # through to the auto env-key loop (hermes_cli/auth.py) which matched
+      # OPENCODE_GO_API_KEY first -> every hermes-agent turn 400'd
+      # (x-opencode-session) and burned a fallback. Fixed for the default
+      # profile + all worker profiles 2026-10-11 (task t_b919d7ee).
+      model.provider = "9router";
       # model.default = "opencode-go/deepseek-v4-flash";
       model.context_length = 1000000;
 
