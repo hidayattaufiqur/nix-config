@@ -1,14 +1,16 @@
 { config, lib, pkgs, ... }:
 
-# 9Router v0.5.91 from source + AgentRouter header-spoof overlay.
-# Latest upstream stable tag verified 2026-09-30; SQLite/data bind is preserved.
-# 9router-build.service builds the pinned tag with the local AgentRouter overlay;
+# 9Router v0.5.99 from source + AgentRouter header-spoof overlay.
+# 0.5.99 has no git tag, so the build pins the npm-published commit ce4460ef.
+# 9router-build.service builds that commit with the local AgentRouter overlay;
 # 9router.service runs it with the persistent /var/lib/9router/data bind.
-# The previous v0.5.69 image remains installed for rollback.
+# The previous v0.5.91 image remains installed for rollback.
 #
-# ponytail: upstream custom-server.js is byte-identical between v0.5.69 and
-# v0.5.91, so the overlay needs no rebase. The v0.5.91 DB diff contains no
-# schema migration; stay on the same SQLite file and keep v0.5.69 as rollback.
+# ponytail: upstream custom-server.js is byte-identical between v0.5.91 (f01fb909)
+# and the 0.5.99 commit ce4460ef (sha256 c3b4f23a…), so the overlay needs no rebase.
+# The 0.5.91 -> 0.5.99 DB diff is additive only (apiKeys.accessRestricted/accessAllow,
+# SCHEMA_VERSION 1 -> 2); syncSchemaFromTables() adds the columns on boot after a
+# pre-change backup. Same SQLite file, v0.5.91 stays as rollback.
 # Use the reachable CN package mirrors explicitly during image build.
 
 let
@@ -19,21 +21,25 @@ let
     #!${pkgs.bash}/bin/bash
     set -euo pipefail
 
-    TAG="v0.5.91"
-    IMAGE="9router-local:$TAG"
+    VERSION="v0.5.99"
+    # npm gitHead of 0.5.99; no v0.5.99 tag exists, so pin the immutable commit.
+    COMMIT="ce4460ef79382bfddb4aa5fc0ff9f3cb0d5f95a8"
+    IMAGE="9router-local:$VERSION"
 
     # Skip if image already built
     if ${pkgs.docker}/bin/docker image inspect "$IMAGE" >/dev/null 2>&1; then
-      echo "9router-local:$TAG already exists, skipping build"
+      echo "$IMAGE already exists, skipping build"
       exit 0
     fi
 
     SRC="/var/lib/9router/build-src"
     rm -rf "$SRC"
-    mkdir -p "$SRC"
-
-    git clone --depth 1 --branch "$TAG" \
-      https://github.com/decolua/9router.git "$SRC/repo"
+    mkdir -p "$SRC/repo"
+    cd "$SRC/repo"
+    git init -q .
+    git remote add origin https://github.com/decolua/9router.git
+    git fetch -q --depth 1 origin "$COMMIT"
+    git checkout -q FETCH_HEAD
 
     # Overlay AgentRouter header-spoof patch into custom-server.js
     cp "${overlayScript}" "$SRC/repo/custom-server.js"
@@ -42,7 +48,7 @@ let
     ${pkgs.docker}/bin/docker build \
       --build-arg ALPINE_MIRROR=mirrors.aliyun.com \
       --build-arg NPM_REGISTRY=https://registry.npmmirror.com \
-      --build-arg APP_VERSION="$TAG" \
+      --build-arg APP_VERSION="$VERSION" \
       -t "$IMAGE" "$SRC/repo"
 
     rm -rf "$SRC"
@@ -64,9 +70,9 @@ in
     "d /var/lib/9router/build-src 0755 root root -"
   ];
 
-  # Build 9router v0.5.91 image from source (runs once, cached in nix store path)
+  # Build 9router v0.5.99 image from source (runs once, cached in nix store path)
   systemd.services."9router-build" = {
-    description = "Build 9router v0.5.91 from source";
+    description = "Build 9router v0.5.99 from source";
     after = [ "network.target" "docker.service" ];
     requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
@@ -90,7 +96,7 @@ in
       Type = "simple";
       EnvironmentFile = config.sops.templates."9router.env".path;
       ExecStartPre = "-${pkgs.docker}/bin/docker rm -f 9router";
-      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.91";
+      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.99";
       ExecStop = "-${pkgs.docker}/bin/docker stop 9router";
       Restart = "always";
       RestartSec = 10;
