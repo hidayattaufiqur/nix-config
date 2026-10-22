@@ -195,29 +195,6 @@ in
         # on the /clear /new /reset modal at some point). Declared here so a
         # nix-driven config regen does not silently re-enable that modal.
         destructive_slash_confirm = false;
-        command_allowlist = [
-          # Class keys mined from 90d of approval history, i.e. things he has
-          # already approved by hand hundreds of times.
-          "script execution via -e/-c flag" # 531x
-          "shell command via -c/-lc flag" # 2x - wraps systemd-run/heredocs
-          "command parser limit or malformed executable payload" # 19x
-          "stop/restart system service" # 11x - infra deploys
-
-          # /tmp scratch cleanup. Scoped GLOBS on purpose, NOT the
-          # "delete in root path" class key: that key matches any leading-slash
-          # path, so allowlisting it would also silently permit
-          # `rm -rf /home/...` and `rm -rf /var/...`.
-          "rm -f /tmp/*"
-          "rm -rf /tmp/*"
-          "rm -f /tmp/*/*"
-          "rm -rf /tmp/*/*"
-          "rm -rf /tmp/*/*/*"
-
-          # The nix eval/build wrapper used on every rebuild. The eval MUST run
-          # outside the gateway's memory cgroup or it thrashes and kills the
-          # turn, so this wrapper is on the critical path.
-          "systemd-run --user --scope *"
-        ];
         # Never-run floor. Hardline blocklist covers rootfs wipes; these are
         # the additional "no, not from the agent" cases he cares about.
         deny = [
@@ -226,6 +203,34 @@ in
           "*wget*|*sh*"
         ];
       };
+
+      # TOP-LEVEL key, not approvals.command_allowlist. The docs put the
+      # permanent allowlist at config root, which is where "always approve"
+      # writes it. Nesting it under approvals. is silently ignored - verified
+      # with `hermes approvals test`: nested -> still ask-approval.
+      command_allowlist = [
+        # Class keys mined from 90d of approval history, i.e. things he has
+        # already approved by hand hundreds of times.
+        "script execution via -e/-c flag" # 531x
+        "shell command via -c/-lc flag" # 2x - wraps systemd-run/heredocs
+        "command parser limit or malformed executable payload" # 19x
+        "stop/restart system service" # 11x - infra deploys
+
+        # /tmp scratch cleanup. Scoped GLOBS on purpose, NOT the
+        # "delete in root path" class key: that key matches any leading-slash
+        # path, so allowlisting it would also silently permit
+        # `rm -rf /home/...` and `rm -rf /var/...`.
+        "rm -f /tmp/*"
+        "rm -rf /tmp/*"
+        "rm -f /tmp/*/*"
+        "rm -rf /tmp/*/*"
+        "rm -rf /tmp/*/*/*"
+
+        # The nix eval/build wrapper used on every rebuild. The eval MUST run
+        # outside the gateway's memory cgroup or it thrashes and kills the
+        # turn, so this wrapper is on the critical path.
+        "systemd-run --user --scope *"
+      ];
 
       security = {
         allow_data_training_tiers_noninteractive = true;
