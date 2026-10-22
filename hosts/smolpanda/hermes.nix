@@ -208,6 +208,17 @@ in
       # permanent allowlist at config root, which is where "always approve"
       # writes it. Nesting it under approvals. is silently ignored - verified
       # with `hermes approvals test`: nested -> still ask-approval.
+      #
+      # Two matcher rules to know when editing this list
+      # (tools/approval.py::_command_matches_permanent_allowlist):
+      #   * a pattern with no glob wildcard must match the command EXACTLY;
+      #   * a command containing a shell operator (&&, ||, ;, |, <, >, `,
+      #     newline, $(...) ) never matches the allowlist at all - it is
+      #     considered too compound. So allowlist the SIMPLE command, and
+      #     expect a compound one to still prompt.
+      #   * fnmatch globs do not cross "/" (fnmatch.translate maps * to .*),
+      #     so "rm -rf /tmp/*" does NOT cover "rm -rf /tmp/a/b" - hence the
+      #     extra one- and two-level entries below.
       command_allowlist = [
         # Class keys mined from 90d of approval history, i.e. things he has
         # already approved by hand hundreds of times.
