@@ -65,6 +65,13 @@ KNOWN_GOOD_RES = [
     re.compile(r"^docker (logs|ps|images|inspect|stats|top)\b", re.I),
     re.compile(r"^git (status|log|diff|show|branch|remote|rev-parse|ls-remote)\b", re.I),
     re.compile(r"^(cat|head|tail|ls|stat|wc|file|readlink|which|command -v|type)\s+", re.I),
+    # Scratch cleanup under /tmp. Scoped STRICTLY to /tmp: the whole path must
+    # be /tmp[/subdir...], so "rm -rf /tmp/x" is fine while "rm -rf /home/x",
+    # "rm -rf /var/x" and "rm -rf /" are not. Anchored at both ends, so a
+    # chained command ("rm -rf /tmp/x && something") does NOT match and still
+    # goes to jev. Needed because jev scores a /tmp wipe anywhere from 0.05
+    # to 0.82 across runs - too much variance to leave to the model.
+    re.compile(r"^rm\s+(?:-[a-zA-Z]+\s+)*/tmp(?:/[A-Za-z0-9._*-]+)*/?$", re.I),
 ]
 
 # A read is only "known-good" if it does not point at a secret. Without this,
@@ -80,6 +87,10 @@ SENSITIVE_PATH_RE = re.compile(
 
 # Shapes that make a mid-band jev verdict actionable. A mid-band command
 # without one of these is allowed.
+#
+# NOTE: shell operators are deliberately NOT in this list. A compound command
+# is split into segments and each segment is judged on its own, so the
+# operator itself carries no risk signal.
 RISKY_SHAPE_RE = re.compile(
     r"\brm\b|\bmkfs\b|\bdd\b|chmod|chown|truncate|shred"
     r"|systemctl\s+(stop|disable|mask|kill)"
@@ -90,10 +101,21 @@ RISKY_SHAPE_RE = re.compile(
     r"|\bnpm\s+(install|i)\b|\bpip\s+install\b|\bapt\b|\bdnf\b"
     r"|\bnixos-rebuild\b.*\bswitch\b"
     r"|sudo"
-    r"|[|;&<>]"
     r"|\bgit\b.*\b(push|reset --hard|clean -f|filter-branch)\b",
     re.IGNORECASE,
 )
+
+# Split a compound command into its segments. jev judges ONE command far
+# better than a 3-part chain: measured, a benign "cp a b; cp c d" scored
+# 0.89 (blocked) while each cp alone scores ~0.2. Splitting on the shell
+# operators and judging the max segment keeps the signal honest.
+_SEGMENT_SPLIT_RE = re.compile(r"\|\||&&|;|\||&|\n")
+
+
+def _segments(command: str) -> list[str]:
+    """Split a compound command into independently judgeable segments."""
+    parts = [s.strip() for s in _SEGMENT_SPLIT_RE.split(command)]
+    return [p for p in parts if p] or [command]
 
 # Exact-match safe prefixes: pure reads with no side-effect verbs anywhere.
 _SAFE_EXACT_RE = re.compile(
@@ -194,44 +216,70 @@ def _jev_unsafe_probability(command: str) -> tuple[float | None, str | None]:
 
 
 def _verdict(command: str) -> tuple[str, str]:
-    """Return (action, message) where action is 'skip'|'allow'|'block'."""
-    # 1) Known-good shapes: recurring, legitimate work on this box. jev has no
-    #    context that they are expected, and they are what the agent does all
-    #    day, so they skip the LLM entirely - UNLESS the command touches a
-    #    secret path, in which case jev decides.
-    if not SENSITIVE_PATH_RE.search(command):
-        for rx in KNOWN_GOOD_RES:
-            if rx.match(command.strip()):
-                return "skip", "known-good shape"
+    """Return (action, message) where action is 'skip'|'allow'|'block'.
 
-    # 2) Plain read with no side-effect verb: cheap skip.
-    if (
-        not SENSITIVE_PATH_RE.search(command)
-        and _SAFE_EXACT_RE.search(command)
-        and not _FORCE_JEV_RE.search(command)
-    ):
-        return "skip", "trusted read-only shape"
+    A compound command is judged SEGMENT BY SEGMENT: the worst segment
+    decides. jev's judgement of a 3-part chain is far worse than of any
+    single part (measured 0.89 for a benign "cp a b; cp c d"), so asking it
+    about the chain as a whole produces false blocks.
+    """
+    worst_p = -1.0
+    worst_seg = ""
+    worst_reason = ""
+    unresolved = False
 
-    # 3) jev decides.
-    cached = _session_cache.get(command)
-    if cached is not None:
-        p, reason = cached, "cached"
-    else:
-        p, reason = g_prob = _jev_unsafe_probability(command)
+    for seg in _segments(command):
+        # 1) Known-good shapes: recurring, legitimate work on this box. jev
+        #    has no context that they are expected, and they are what the
+        #    agent does all day, so they skip the LLM entirely - UNLESS the
+        #    segment touches a secret path or carries a risky shape.
+        known_good = False
+        if not SENSITIVE_PATH_RE.search(seg):
+            for rx in KNOWN_GOOD_RES:
+                if rx.match(seg):
+                    known_good = True
+                    break
+        if known_good and not RISKY_SHAPE_RE.search(seg):
+            continue
+
+        # 2) jev decides.
+        p, reason = _segment_probability(seg)
         if p is None:
-            if FAIL_OPEN:
-                logger.info("jev-gate: fail-open (%s)", reason)
-                return "allow", f"jev unavailable ({reason}) - deny floor still active"
-            return "block", f"jev unavailable ({reason})"
-        if len(_session_cache) >= CACHE_MAX:
-            _session_cache.clear()
-        _session_cache[command] = p
+            unresolved = True
+            worst_reason = reason
+            continue
+        if p > worst_p:
+            worst_p, worst_seg = p, seg
+            worst_reason = reason
 
-    if p >= BLOCK_CONFIDENT:
-        return "block", f"jev unsafe={p:.2f} (>= {BLOCK_CONFIDENT}): {command[:120]}"
-    if p >= BLOCK_UNCERTAIN and RISKY_SHAPE_RE.search(command):
-        return "block", f"jev uncertain={p:.2f} + risky shape: {command[:120]}"
-    return "allow", f"jev safe={p:.2f}"
+    if unresolved:
+        if FAIL_OPEN:
+            logger.info("jev-gate: fail-open (%s)", worst_reason)
+            return "allow", f"jev unavailable ({worst_reason}) - deny floor still active"
+        return "block", f"jev unavailable ({worst_reason})"
+
+    if worst_p < 0:
+        return "allow", "no risky segment"
+
+    if worst_p >= BLOCK_CONFIDENT:
+        return "block", f"jev unsafe={worst_p:.2f} (>= {BLOCK_CONFIDENT}): {worst_seg[:120]}"
+    if worst_p >= BLOCK_UNCERTAIN and RISKY_SHAPE_RE.search(worst_seg):
+        return "block", f"jev uncertain={worst_p:.2f} + risky shape: {worst_seg[:120]}"
+    return "allow", f"jev safe={worst_p:.2f}"
+
+
+def _segment_probability(segment: str) -> tuple[float | None, str | None]:
+    """jev probability for one segment, with the per-session cache."""
+    cached = _session_cache.get(segment)
+    if cached is not None:
+        return cached, "cached"
+    p, reason = _jev_unsafe_probability(segment)
+    if p is None:
+        return None, reason
+    if len(_session_cache) >= CACHE_MAX:
+        _session_cache.clear()
+    _session_cache[segment] = p
+    return p, reason
 
 
 def _prescreen(command: str) -> str | None:
