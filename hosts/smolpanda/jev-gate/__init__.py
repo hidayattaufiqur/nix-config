@@ -105,6 +105,13 @@ RISKY_SHAPE_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Destructive deletes OUTSIDE the session's scratch areas fail CLOSED when
+# jev is unreachable. In-scope moves (/tmp, the agent's own workspace) fail
+# open; /home, /var, /etc, /srv, /opt and /root do not get that trust.
+_CLOSURE_EXTRA_OUTSIDE_SCRATCH = (
+    "/home/", "/var/", "/etc/", "/srv/", "/opt/", "/root",
+)
+
 # Split a compound command into its segments. jev judges ONE command far
 # better than a 3-part chain: measured, a benign "cp a b; cp c d" scored
 # 0.89 (blocked) while each cp alone scores ~0.2. Splitting on the shell
@@ -245,6 +252,18 @@ def _verdict(command: str) -> tuple[str, str]:
         # 2) jev decides.
         p, reason = _segment_probability(seg)
         if p is None:
+            # Fail CLOSED when the command is a destructive delete outside the
+            # session's scratch areas, or reads a secret path: a slow
+            # evaluator must not be the difference between "allowed" and
+            # "blocked" for those. Everything else fails OPEN to the deny
+            # floor (approvals.deny + hardline blocklist).
+            if SENSITIVE_PATH_RE.search(seg):
+                return "block", f"jev unavailable ({reason}) + sensitive path: {seg[:110]}"
+            low_seg = seg.lower()
+            if re.search(r"\brm\b", low_seg) and any(
+                p_ in low_seg for p_ in _CLOSURE_EXTRA_OUTSIDE_SCRATCH
+            ):
+                return "block", f"jev unavailable ({reason}) + destructive delete outside scratch: {seg[:110]}"
             unresolved = True
             worst_reason = reason
             continue
