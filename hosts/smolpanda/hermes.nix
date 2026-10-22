@@ -187,20 +187,40 @@ in
       # mode stays `smart` (NOT off): low-risk auto-approves, genuinely
       # dangerous auto-denies, only uncertain cases escalate to a card.
       approvals = {
-        mode = "smart";
-        # 30 min. Deliberately finite: an unanswered prompt pins a gateway
-        # worker slot, and this gateway also serves atlas + dossier.
+        # OFF per user decision 2026-10-22: no more approval cards (they
+        # arrive on Discord without a ping and fail closed at the timeout,
+        # stalling the turn). The safety net is the JEV GATE PLUGIN
+        # (plugins/jev-gate) - jev_evaluate decides per command whether the
+        # call is safe, and blocks it when it is not.
+        mode = "off";
+        # Kept for the plugin's own escalation path and for any surface that
+        # still uses the human gate.
         timeout = 1800;
         # Preserved from the previous live config (he clicked "Always Approve"
         # on the /clear /new /reset modal at some point). Declared here so a
         # nix-driven config regen does not silently re-enable that modal.
         destructive_slash_confirm = false;
-        # Never-run floor. Hardline blocklist covers rootfs wipes; these are
-        # the additional "no, not from the agent" cases he cares about.
+        # Never-run floor. Deny rules fire BEFORE the yolo / mode=off bypass
+        # (tools/approval.py::_match_user_deny_rule), so these still hold
+        # with mode off. They are matched with fnmatch against the WHOLE
+        # command, so they must be narrow:
+        #   * "git push --force*" - exact prefix, no false positives.
+        #   * "curl*|*sh" style globs are TOO BROAD: fnmatch matches the
+        #     whole string, so "*curl*|*sh*" fired on an unrelated command
+        #     that merely contained "curl", a pipe, and the letters "sh"
+        #     somewhere later. These variants anchor on the pipe-to-shell
+        #     shape instead ("... | sh" at the end of the command).
         deny = [
           "git push --force*"
-          "*curl*|*sh*"
-          "*wget*|*sh*"
+          "git push --force-with-lease*"
+          "*| sh"
+          "*| bash"
+          "*| zsh"
+          "*| ksh"
+          "*|sh"
+          "*|bash"
+          "*|zsh"
+          "*|ksh"
         ];
       };
 
@@ -242,6 +262,12 @@ in
         # turn, so this wrapper is on the critical path.
         "systemd-run --user --scope *"
       ];
+
+      # jev-gate plugin: the approval gate that replaced the human card
+      # (approvals.mode: off). Plugins are opt-in via plugins.enabled; the
+      # plugin dir itself lives in the profile state dir (CLI-managed, like
+      # ponytail) and is NOT flake-owned.
+      plugins.enabled = [ "jev-gate" ];
 
       security = {
         allow_data_training_tiers_noninteractive = true;
@@ -416,6 +442,21 @@ in
   # plus the jev steer, so the flake OWNS it from here on.
   system.activationScripts.hermes-dossier-soul = lib.stringAfter [ "users" ] ''
     install -o smolpanda -g users -m 0660 -D ${./dossier-SOUL.md} /var/lib/hermes/.hermes/profiles/dossier/SOUL.md
+  '';
+
+  # ── jev-gate plugin install ──────────────────────────────────────────────
+  # The approval gate that replaced the human card (approvals.mode: off).
+  # Plugins live in the profile's state dir, which the CLI owns, so the flake
+  # copies the source in on every switch. Without this, settings.plugins.enabled
+  # = [ "jev-gate" ] would point at a missing dir after a profile reset.
+  # Installed for every profile that runs a gateway (default + workers).
+  system.activationScripts.hermes-jev-gate = lib.stringAfter [ "users" ] ''
+    for prof in "" profiles/atlas profiles/dossier; do
+      dest="/var/lib/hermes/.hermes/$prof/plugins/jev-gate"
+      mkdir -p "$dest"
+      install -o smolpanda -g users -m 0660 -D ${./jev-gate/plugin.yaml} "$dest/plugin.yaml"
+      install -o smolpanda -g users -m 0660 -D ${./jev-gate/__init__.py} "$dest/__init__.py"
+    done
   '';
 
   # ── Default (mastermind) + pandr SOUL: one source, two installs ──────────
