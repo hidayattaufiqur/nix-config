@@ -32,6 +32,7 @@ import json
 import logging
 import os
 import re
+import urllib.error
 import urllib.request
 
 logger = logging.getLogger(__name__)
@@ -163,16 +164,46 @@ def _parse_env_float(name: str, default: float) -> float:
 
 
 # ── jev call ────────────────────────────────────────────────────────────
+# ── jev providers ───────────────────────────────────────────────────────
+# Two upstream routes to the same model (TypeSafe Jev 1.14.x):
+#   1. CommandCode  POST https://api.commandcode.ai/provider/v1/systemone
+#      model "typesafe/jev"      <- primary, rides the user's paid sub
+#   2. Orvix       POST https://api.orvix.id/v1/evaluate
+#      model "orvix/jev"         <- fallback
+# Both answer the System One shape: {answers: {<id>: {noul: 0..1}}}.
+# The question type MUST be "noul" - CommandCode's endpoint is a strict
+# System One validator and rejects "boolean" with
+# "Invalid input ... questions.<id>.type" (Orvix accepts both and
+# normalises boolean -> noul).
+#
+# Order matters: CommandCode is the route the user pays for and wants used;
+# Orvix is the backup so a CommandCode outage does not silently disable the
+# approval gate (which would fail open on everything except the
+# deterministic floor).
+_JEV_PROVIDERS = (
+    {
+        "name": "commandcode",
+        "url": "https://api.commandcode.ai/provider/v1/systemone",
+        "model": "typesafe/jev",
+        "token_env": "COMMANDCODE_API_KEY",
+    },
+    {
+        "name": "orvix",
+        "url": "https://api.orvix.id/v1/evaluate",
+        "model": "orvix/jev",
+        "token_env": "ORVIX_TOKEN",
+    },
+)
+
+
 def _jev_unsafe_probability(command: str) -> tuple[float | None, str | None]:
-    """Ask jev one boolean: is this command unsafe to run?
+    """Ask jev one question: is this command unsafe to run?
 
-    Returns (probability or None, reason or None). None + reason means the
-    gate could not get an answer (network / upstream error / timeout).
+    Tries each provider in order and returns the first answer. Returns
+    (probability or None, reason or None). None + reason means the gate
+    could not get an answer from ANY provider (network / upstream error /
+    timeout / no credentials).
     """
-    token = os.getenv("ORVIX_TOKEN", "")
-    if not token:
-        return None, "ORVIX_TOKEN is not set"
-
     prompt = (
         "Is this shell command UNSAFE to run on a shared Linux server? "
         "Consider: data destruction beyond the session's own scratch space "
@@ -182,44 +213,59 @@ def _jev_unsafe_probability(command: str) -> tuple[float | None, str | None]:
         "docker log inspection, curls to read-only APIs, systemctl restart of "
         "services the user manages. Answer ONLY per the question."
     )
-    body = json.dumps({
-        "model": "orvix/jev",
-        "state": f"{prompt}\n\nCOMMAND:\n{command}",
-        # Orvix /v1/evaluate expects questions as a MAP keyed by question id,
-        # not an array - a sequence sends back HTTP 400 "invalid type:
-        # sequence, expected a map" (mirrors jev-mcp evalRequest).
-        "questions": {
-            "unsafe": {
-                "type": "boolean",
-                "instructions": "Is the COMMAND unsafe to run?",
+    state = f"{prompt}\n\nCOMMAND:\n{command}"
+    # "noul" is the only question type both providers accept.
+    questions = {
+        "unsafe": {
+            "type": "noul",
+            "instructions": "Is the COMMAND unsafe to run?",
+        },
+    }
+
+    errors = []
+    for prov in _JEV_PROVIDERS:
+        token = os.getenv(prov["token_env"], "")
+        if not token:
+            errors.append(f"{prov['name']}: {prov['token_env']} not set")
+            continue
+        body = json.dumps({
+            "model": prov["model"],
+            "state": state,
+            "questions": questions,
+        }).encode()
+        req = urllib.request.Request(
+            prov["url"],
+            data=body,
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+                # Cloudflare in front of Orvix 403s (error 1010) the default
+                # python urllib User-Agent; a plain curl-style UA passes.
+                "User-Agent": "curl/8.0",
             },
-        },
-    }).encode()
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT_S) as resp:
+                payload = json.loads(resp.read().decode())
+        except urllib.error.HTTPError as e:
+            errors.append(f"{prov['name']}: HTTP {e.code}")
+            logger.info("jev-gate: %s failed with HTTP %s", prov["name"], e.code)
+            continue
+        except Exception as e:
+            errors.append(f"{prov['name']}: {type(e).__name__}")
+            logger.info("jev-gate: %s failed with %s", prov["name"], type(e).__name__)
+            continue
+        try:
+            value = float(payload["answers"]["unsafe"]["noul"])
+        except (KeyError, TypeError, ValueError):
+            errors.append(f"{prov['name']}: response unmappable")
+            logger.info("jev-gate: %s response unmappable", prov["name"])
+            continue
+        logger.info("jev-gate: %s answered unsafe=%.2f", prov["name"], value)
+        return value, None
 
-    req = urllib.request.Request(
-        f"{ORVIX_BASE}/evaluate",
-        data=body,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-            # Cloudflare in front of Orvix 403s (error 1010) the default
-            # python urllib User-Agent; a plain curl-style UA passes.
-            "User-Agent": "curl/8.0",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=TIMEOUT_S) as resp:
-            payload = json.loads(resp.read().decode())
-    except urllib.error.HTTPError as e:
-        return None, f"jev HTTP {e.code}: {e.read().decode()[:150]}"
-    except Exception as e:  # network, timeout, HTTP error, decode
-        return None, f"jev upstream error: {type(e).__name__}"
-
-    try:
-        return float(payload["answers"]["unsafe"]["noul"]), None
-    except (KeyError, TypeError, ValueError):
-        return None, f"jev response unmappable: {str(payload)[:120]}"
+    return None, "jev unavailable: " + "; ".join(errors)
 
 
 def _verdict(command: str) -> tuple[str, str]:
