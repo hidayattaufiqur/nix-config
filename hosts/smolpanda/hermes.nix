@@ -173,6 +173,60 @@ in
       clarify_timeout = 900;
       gateway_timeout_warning = 300;
 
+      # Dangerous-command approval policy. User decision 2026-10-22: approval
+      # cards were timing out silently on Discord (the prompt arrives as a
+      # message with no @mention, so he never gets a ping), and a timeout is
+      # fail-closed -> the command is denied and the turn stalls. Fix is
+      # three-layered:
+      #   1. allowlist the prompt CLASSES that fire constantly on routine infra
+      #      work, so no card is raised at all (`hermes approvals suggest`
+      #      mines this from real history);
+      #   2. a long timeout, so a genuinely novel prompt survives him being away;
+      #   3. deny rules as the irreversible floor - they survive --yolo and
+      #      `mode: off`, unlike the allowlist.
+      # mode stays `smart` (NOT off): low-risk auto-approves, genuinely
+      # dangerous auto-denies, only uncertain cases escalate to a card.
+      approvals = {
+        mode = "smart";
+        # 30 min. Deliberately finite: an unanswered prompt pins a gateway
+        # worker slot, and this gateway also serves atlas + dossier.
+        timeout = 1800;
+        # Preserved from the previous live config (he clicked "Always Approve"
+        # on the /clear /new /reset modal at some point). Declared here so a
+        # nix-driven config regen does not silently re-enable that modal.
+        destructive_slash_confirm = false;
+        command_allowlist = [
+          # Class keys mined from 90d of approval history, i.e. things he has
+          # already approved by hand hundreds of times.
+          "script execution via -e/-c flag" # 531x
+          "shell command via -c/-lc flag" # 2x - wraps systemd-run/heredocs
+          "command parser limit or malformed executable payload" # 19x
+          "stop/restart system service" # 11x - infra deploys
+
+          # /tmp scratch cleanup. Scoped GLOBS on purpose, NOT the
+          # "delete in root path" class key: that key matches any leading-slash
+          # path, so allowlisting it would also silently permit
+          # `rm -rf /home/...` and `rm -rf /var/...`.
+          "rm -f /tmp/*"
+          "rm -rf /tmp/*"
+          "rm -f /tmp/*/*"
+          "rm -rf /tmp/*/*"
+          "rm -rf /tmp/*/*/*"
+
+          # The nix eval/build wrapper used on every rebuild. The eval MUST run
+          # outside the gateway's memory cgroup or it thrashes and kills the
+          # turn, so this wrapper is on the critical path.
+          "systemd-run --user --scope *"
+        ];
+        # Never-run floor. Hardline blocklist covers rootfs wipes; these are
+        # the additional "no, not from the agent" cases he cares about.
+        deny = [
+          "git push --force*"
+          "*curl*|*sh*"
+          "*wget*|*sh*"
+        ];
+      };
+
       security = {
         allow_data_training_tiers_noninteractive = true;
       };
@@ -383,7 +437,10 @@ in
         # rebuild-trigger knowledge that must live in slot #1) lands in the
         # running gateway — the SOUL is written by an activation script, so
         # restartTriggers cannot hash its new content within the same switch.
-        environment.HERMES_CONFIG_EPOCH = "4";
+        # 2026-10-22: bumped 4 -> 5 for the approvals policy (allowlist + 30m
+        # timeout + deny floor) so the running gateway stops raising cards that
+        # time out silently on Discord.
+        environment.HERMES_CONFIG_EPOCH = "5";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
