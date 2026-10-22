@@ -29,15 +29,16 @@ for prof in ("atlas", "dossier"):
             # Quoted: YAML 1.1 parses bare `off` as boolean False. Hermes
             # normalises that back to "off", but quoting keeps it a string
             # for every other YAML consumer too.
-            block = re.sub(r"^(\s*)mode:.*$", r"\1mode: 'off'", block, count=1, flags=re.M)
+            new_block = re.sub(r"^(\s*)mode:.*$", r"\1mode: 'off'", block, count=1, flags=re.M)
         else:
-            block = "\n  mode: 'off'" + block
-        if re.search(r"^(\s*)timeout:", block, re.M):
-            block = re.sub(r"^(\s*)timeout:.*$", r"\1timeout: 1800", block, count=1, flags=re.M)
+            new_block = "\n  mode: 'off'" + block
+        if re.search(r"^(\s*)timeout:", new_block, re.M):
+            new_block = re.sub(r"^(\s*)timeout:.*$", r"\1timeout: 1800", new_block, count=1, flags=re.M)
         else:
-            block = block.rstrip("\n") + "\n  timeout: 1800\n"
-        text = text[:blk_start] + block + text[blk_end:]
-        changed.append("approvals.mode=off timeout=1800")
+            new_block = new_block.rstrip("\n") + "\n  timeout: 1800\n"
+        if new_block != block:
+            text = text[:blk_start] + new_block + text[blk_end:]
+            changed.append("approvals.mode/timeout")
     else:
         text = text.rstrip("\n") + "\napprovals:\n  mode: 'off'\n  timeout: 1800\n"
         changed.append("approvals block added")
@@ -64,8 +65,12 @@ for prof in ("atlas", "dossier"):
         text += "\nplugins:\n  enabled:\n    - jev-gate\n  disabled: []\n"
         changed.append("plugins block added")
 
-    with open(path, "w") as f:
-        f.write(text)
-    print(f"{prof}: {changed}")
+    # Only write when something actually changed. An unconditional write
+    # would bump the mtime every switch, and config.yaml is a
+    # restartTrigger -> the worker gateway would restart on every rebuild.
+    if changed:
+        with open(path, "w") as f:
+            f.write(text)
+    print(f"{prof}: {changed if changed else 'already wired'}")
 
 sys.exit(0)

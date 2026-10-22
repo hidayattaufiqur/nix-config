@@ -60,7 +60,14 @@ let
       # (2026-09-30: v1; 2026-10-10: v2 = evidence-first SOUL.md steer).
       # Changing the value rewrites the unit env, which is what makes
       # switch-to-configuration restart this gateway.
-      HERMES_CONFIG_EPOCH = "2";
+      # 2026-10-22: v2 -> v3 to load the jev-gate plugin (plugins load once
+      # per process) together with the approvals.policy changes.
+      HERMES_CONFIG_EPOCH = "3";
+    }
+    // lib.optionalAttrs (name == "dossier") {
+      # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
+      # 2026-10-22: set to v3 to load the jev-gate plugin + approvals changes.
+      HERMES_CONFIG_EPOCH = "3";
     };
     serviceConfig = {
       Type = "simple";
