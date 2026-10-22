@@ -277,4 +277,4 @@ def _on_pre_tool_call(*, tool_name: str = "", args=None, **_) -> dict | None:
 def register(ctx) -> None:
     ctx.register_hook("pre_tool_call", _on_pre_tool_call)
     logger.info("jev-gate: active (block>=%.2f or uncertain>=%.2f; fail_open=%s)",
-                BLOCK_THRESHOLD, WARN_THRESHOLD, FAIL_OPEN)
+                BLOCK_CONFIDENT, BLOCK_UNCERTAIN, FAIL_OPEN)
