@@ -497,7 +497,9 @@ in
         # 2026-10-22: bumped 4 -> 5 for the approvals policy (allowlist + 30m
         # timeout + deny floor) so the running gateway stops raising cards that
         # time out silently on Discord.
-        environment.HERMES_CONFIG_EPOCH = "5";
+        # 2026-10-22 (2): bumped 5 -> 6 to restart the gateway after the
+        # jev-gate plugin landed (plugins load once per process).
+        environment.HERMES_CONFIG_EPOCH = "6";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
