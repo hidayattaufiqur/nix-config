@@ -107,6 +107,10 @@ let
       "/var/lib/hermes/.hermes/profiles/${name}/config.yaml"
       "/var/lib/hermes/.hermes/profiles/${name}/.env"
       "/var/lib/hermes/.hermes/profiles/${name}/SOUL.md"
+      # Plugin sources: plugins are loaded ONCE per gateway process, so a
+      # changed plugin file would not take effect until a manual restart.
+      # Hashing the plugin dir makes the switch restart the gateway instead.
+      "/var/lib/hermes/.hermes/profiles/${name}/plugins"
     ];
   };
 in
@@ -530,6 +534,9 @@ in
           "/var/lib/hermes/.hermes/config.yaml"
           "/var/lib/hermes/.hermes/.env"
           "/var/lib/hermes/.hermes/SOUL.md"
+          # Plugin sources: plugins are loaded ONCE per gateway process, so a
+          # changed plugin file would not take effect until a manual restart.
+          "/var/lib/hermes/.hermes/plugins"
           "/run/secrets/hermes-extra"
         ];
         serviceConfig.TimeoutStartSec = "300";
