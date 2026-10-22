@@ -212,13 +212,20 @@ let
   # Install script. systemd's ExecStart does NOT run through a shell, so a
   # multi-line command string is exec'd as one binary name and fails with
   # 203/EXEC ("Unable to locate executable 'mkdir'"). A real script fixes it.
+  #
+  # Runs as ROOT on purpose: it owns the DSH home's directory tree, so it can
+  # repair a root-owned leftover from an earlier tmpfiles rule. It then drops
+  # the tree to smolpanda:users, which is what the DSH process needs.
   installPatch = pkgs.writeShellApplication {
     name = "dsh-install-profile-patch";
     runtimeInputs = [ pkgs.coreutils ];
     text = ''
       mkdir -p ${dshHome}/profiles/sdk-minimal
+      chown -R smolpanda:users ${dshHome}
+      chmod 0755 ${dshHome} ${dshHome}/profiles ${dshHome}/profiles/sdk-minimal
       cp -f ${profilePatch} ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
       chown smolpanda:users ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
+      chmod 0644 ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
     '';
   };
 
@@ -235,7 +242,12 @@ in
   environment.systemPackages = [ dshRun dshCli ];
 
   systemd.tmpfiles.rules = [
+    # Declare EVERY level explicitly, owned by smolpanda. tmpfiles type "d"
+    # creates missing parent components as ROOT, so a single nested rule
+    # ("d .../dsh/profiles/sdk-minimal") left /var/lib/hermes/dsh/profiles
+    # root-owned 0755 and the service's mkdir then failed with EACCES.
     "d ${dshHome} 0755 smolpanda users -"
+    "d ${dshHome}/profiles 0755 smolpanda users -"
     "d ${dshHome}/profiles/sdk-minimal 0755 smolpanda users -"
   ];
 
@@ -245,8 +257,10 @@ in
     after = [ "network.target" ];
     serviceConfig = {
       Type = "oneshot";
-      User = "smolpanda";
-      Group = "users";
+      # Root: the script owns the DSH home tree (repairs root-owned leftovers
+      # from an earlier tmpfiles rule) and then hands it to smolpanda.
+      User = "root";
+      Group = "root";
       ExecStart = "${installPatch}/bin/dsh-install-profile-patch";
     };
     # Re-apply when the patch content changes.
