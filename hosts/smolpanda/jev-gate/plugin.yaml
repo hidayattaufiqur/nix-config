@@ -1,0 +1,10 @@
+name: jev-gate
+version: 0.1.0
+description: "Dangerous-command gate powered by jev (orvix/jev evaluate-only model). Runs in the pre_tool_call hook on every terminal command: a fast deterministic prescreen vetoes irreversible shapes, everything else gets one jev_evaluate call with a single boolean (unsafe 0..1). unsafe>=0.75 or >=0.35 (uncertain) blocks the tool call with a one-line verdict; below 0.35 allows. Fails OPEN to the approvals.deny floor + built-in hardline blocklist when jev is unreachable. Replaces the human approval gate (approvals.mode: off) because Discord approval cards arrive without a ping and fail closed at the timeout. Verdicts cached per unique command within the session."
+author: smolpanda
+kind: standalone
+platforms:
+  - linux
+provides_tools: []
+hooks:
+  - pre_tool_call
