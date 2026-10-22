@@ -17,5 +17,6 @@
     ./9router-offpeak.nix
     ./browser-use.nix
     ./hindsight.nix
+    ./dsh.nix
   ];
 }
