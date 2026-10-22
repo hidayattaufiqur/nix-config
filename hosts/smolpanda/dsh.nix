@@ -209,6 +209,19 @@ let
     '';
   };
 
+  # Install script. systemd's ExecStart does NOT run through a shell, so a
+  # multi-line command string is exec'd as one binary name and fails with
+  # 203/EXEC ("Unable to locate executable 'mkdir'"). A real script fixes it.
+  installPatch = pkgs.writeShellApplication {
+    name = "dsh-install-profile-patch";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      mkdir -p ${dshHome}/profiles/sdk-minimal
+      cp -f ${profilePatch} ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
+      chown smolpanda:users ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
+    '';
+  };
+
   dshCli = pkgs.writeShellApplication {
     name = "dsh";
     runtimeInputs = [ pythonEnv ];
@@ -234,11 +247,7 @@ in
       Type = "oneshot";
       User = "smolpanda";
       Group = "users";
-      ExecStart = ''
-        mkdir -p ${dshHome}/profiles/sdk-minimal
-        cp -f ${profilePatch} ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
-        chown smolpanda:users ${dshHome}/profiles/sdk-minimal/cordis.patch.yml
-      '';
+      ExecStart = "${installPatch}/bin/dsh-install-profile-patch";
     };
     # Re-apply when the patch content changes.
     restartTriggers = [ profilePatch ];
