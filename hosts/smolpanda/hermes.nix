@@ -459,6 +459,20 @@ in
     done
   '';
 
+  # ── jev-gate wiring in worker profiles ───────────────────────────────────
+  # Worker profile config.yaml files are CLI-owned (the flake only generates
+  # the default profile's via services.hermes-agent.settings), so the gate is
+  # wired in by a targeted TEXT edit (NOT a yaml round-trip - that would
+  # reorder every key in a CLI-owned file):
+  #   1. approvals.mode: 'off' + timeout: 1800 (quoted 'off' - YAML 1.1 parses
+  #      a bare off as boolean False)
+  #   2. plugins.enabled += jev-gate
+  # Idempotent: re-running on an already-wired profile reports "already wired".
+  system.activationScripts.hermes-jev-gate-worker-config =
+    lib.stringAfter [ "users" "hermes-jev-gate" ] ''
+      ${pkgs.python3}/bin/python3 ${./jev-gate/worker-patch.py}
+    '';
+
   # ── Default (mastermind) + pandr SOUL: one source, two installs ──────────
   # Both were hand-written and unmanaged until 2026-10-11, and their content
   # was already byte-identical (the shared Hindsight policy), so one file
