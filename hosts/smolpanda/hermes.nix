@@ -355,6 +355,14 @@ in
       mcp_discovery_timeout = 15;
       web.backend = "tavily";
       web.extract_backend = "tavily";
+      # Browser automation: drive a system Chromium over CDP instead of the
+      # bundled agent-browser binary (dynamically linked, cannot exec on NixOS
+      # — stub-ld). Chromium 147 runs headless with --remote-debugging-port=9222
+      # via hermes-chromium.service; the browser toolset attaches to that CDP
+      # endpoint at session start. Enables driving real web apps (job portals,
+      # dashboards) for automation runs.
+      browser.cdp_url = "http://127.0.0.1:9222";
+      browser.inactivity_timeout = 900;  # keep the remote session alive longer (15 min idle reap instead of 2 min)
       # Discord gateway tool progress verbosity (2026-09-30 user request:
       # set display.tool_progress to "new" for Discord).
       # `new` = tool indicator only when the tool changes (quieter than default `all`).

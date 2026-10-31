@@ -10,6 +10,7 @@
     ./workloads.nix
     ./public.nix
     ./hermes.nix
+    ./hermes-chromium.nix
     ./d365fo-mcp.nix
     ./jev-mcp.nix
     ./9router.nix
