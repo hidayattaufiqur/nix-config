@@ -41,6 +41,21 @@ let
   #   HERMES_HOME=/var/lib/hermes/.hermes[/profiles/<name>] \
   #     hermes plugins install DietrichGebert/ponytail --enable
   # Ruleset source of truth: ~/Fun/Projects/MCP/ponytail.
+  # Authorized Discord users, as an ENV list rather than only the config key.
+  #
+  # Why both: `discord.allow_from` in config.yaml gates the ADAPTER (intake),
+  # but the gateway's own authz layer (gateway/authz_mixin.py) reads ONLY
+  # DISCORD_ALLOWED_USERS / DISCORD_ALLOWED_ROLES / GATEWAY_ALLOWED_USERS from
+  # the environment, and Discord is not an "own-policy" adapter
+  # (enforces_own_access_policy is False), so the gateway does not delegate to
+  # the adapter's decision. Result with config-only: the adapter admits the
+  # user, the gateway then default-denies (no env allowlist ->
+  # GATEWAY_ALLOW_ALL_USERS, false). That is why an extra account added to
+  # allow_from only was still refused.
+  #
+  #   384880233288957952 = d9s (main)
+  #   852827695167569931 = d9s alt
+  discordAllowedUsers = "384880233288957952,852827695167569931";
   workerGateway = name: {
     description = "Hermes Agent Gateway - ${name} worker";
     after = [ "network-online.target" ];
@@ -52,6 +67,8 @@ let
       HERMES_HOME = "/var/lib/hermes/.hermes/profiles/${name}";
       # Browser tool binary for worker gateways (playwright E2E checks).
       AGENT_BROWSER_EXECUTABLE_PATH = "/home/smolpanda/.local/bin/chromium-fhs";
+      # Gateway-level allowlist (see discordAllowedUsers above).
+      DISCORD_ALLOWED_USERS = discordAllowedUsers;
     } // lib.optionalAttrs (name == "atlas") {
       # Restart-forcing token, same trick as hermes-agent below: a profile's
       # config.yaml is written at activation, so restartTriggers never hashes
@@ -533,6 +550,10 @@ in
     {
       hermes-agent = {
         environment.HOME = lib.mkForce "/home/smolpanda";
+        # Gateway-level Discord allowlist. The gateway authz layer reads this
+        # from the ENVIRONMENT only (config allow_from gates the adapter, not
+        # the gateway), so both accounts must be here too.
+        environment.DISCORD_ALLOWED_USERS = discordAllowedUsers;
         # Epoch forces gateway restart on switch (config.yaml rewrites land
         # after restartTriggers hash, so settings changes never restart it).
         # 2026-09-30: bumped 2 -> 3 for the work/atlas gpt-6-luna rollout.
