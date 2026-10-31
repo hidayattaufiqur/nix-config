@@ -401,6 +401,17 @@ in
       };
       discord = {
         require_mention = true;
+        # Authorized Discord users. Setting this list ENABLES strict mode -
+        # anyone NOT on it is ignored (adapter.py:_is_allowed_user), so BOTH
+        # accounts must be here:
+        #   384880233288957952 = d9s (main)
+        #   852827695167569931 = d9s alt (added 2026-10-31 by user request)
+        # The bot's own id (1534949774028177529) is not needed - bots are
+        # handled separately from the user gate.
+        allow_from = [
+          "384880233288957952"
+          "852827695167569931"
+        ];
         # Channels where the bot responds without @mention.
         # Home (general) + work + infra + projects channels.
         free_response_channels = [
