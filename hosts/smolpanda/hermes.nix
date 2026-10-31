@@ -62,12 +62,14 @@ let
       # switch-to-configuration restart this gateway.
       # 2026-10-22: v2 -> v3 to load the jev-gate plugin (plugins load once
       # per process) together with the approvals.policy changes.
-      HERMES_CONFIG_EPOCH = "3";
+      # 2026-10-31: v3 -> v4 for discord.allow_from (the alt account).
+      HERMES_CONFIG_EPOCH = "4";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
       # 2026-10-22: set to v3 to load the jev-gate plugin + approvals changes.
-      HERMES_CONFIG_EPOCH = "3";
+      # 2026-10-31: v3 -> v4 for discord.allow_from (the alt account).
+      HERMES_CONFIG_EPOCH = "4";
     };
     serviceConfig = {
       Type = "simple";
@@ -543,7 +545,8 @@ in
         # time out silently on Discord.
         # 2026-10-22 (2): bumped 5 -> 6 to restart the gateway after the
         # jev-gate plugin landed (plugins load once per process).
-        environment.HERMES_CONFIG_EPOCH = "6";
+        # 2026-10-31: bumped 6 -> 7 for discord.allow_from (the alt account).
+        environment.HERMES_CONFIG_EPOCH = "7";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
