@@ -163,21 +163,36 @@ def _parse_env_float(name: str, default: float) -> float:
         return default
 
 
-# ── jev call ────────────────────────────────────────────────────────────
 # ── jev providers ───────────────────────────────────────────────────────
-# Two upstream routes to the same model (TypeSafe Jev 1.14.x):
+# Two upstream routes to the same model (TypeSafe Jev 1.13/1.14):
 #   1. CommandCode  POST https://api.commandcode.ai/provider/v1/systemone
-#      model "typesafe/jev"      <- primary, rides the user's paid sub
-#   2. Orvix       POST https://api.orvix.id/v1/evaluate
-#      model "orvix/jev"         <- fallback
-# Both answer the System One shape: {answers: {<id>: {noul: 0..1}}}.
+#      model "typesafe/jev"      <- primary, rides the user's paid sub (Jev 1.14)
+#   2. OpenCode Zen POST https://opencode.ai/zen/v1/systemone
+#      model "jev-1.13-free"     <- fallback, free (Jev 1.13)
+# All answer the System One shape: {answers: {<id>: {noul: 0..1}}}.
 # The question type MUST be "noul" - CommandCode's endpoint is a strict
 # System One validator and rejects "boolean" with
-# "Invalid input ... questions.<id>.type" (Orvix accepts both and
-# normalises boolean -> noul).
+# "Invalid input ... questions.<id>.type".
+#
+# Orvix was the original fallback and is RETIRED here (2026-11-01): the
+# account is out of credit, and every call returns
+# "402 insufficient_credits". A dead fallback is worse than none because it
+# silently leaves the gate single-provider. OpenCode Zen replaces it.
+#
+# OpenCode quirks:
+#   * The key is the literal `Bearer public` - anonymous free tier, no account.
+#   * jev is NOT in /zen/v1/models (78 ids, zero matches). Decision models are
+#     hidden from the catalog, same as CommandCode's. Probe by calling, not by
+#     listing.
+#   * It serves Jev 1.13, one minor version behind CommandCode's 1.14. On a
+#     6-command battery the two agreed within 0.06 and were repeatable
+#     (0.94-0.96 over 5 identical calls), so the version skew is acceptable
+#     for a gate whose bands are 0.35 / 0.80.
+#   * The free lane shares one IP-scoped quota with the 9router `oc/` legs, so
+#     a heavy eval can exhaust it and the fallback will 429 until it resets.
 #
 # Order matters: CommandCode is the route the user pays for and wants used;
-# Orvix is the backup so a CommandCode outage does not silently disable the
+# OpenCode is the backup so a CommandCode outage does not silently disable the
 # approval gate (which would fail open on everything except the
 # deterministic floor).
 _JEV_PROVIDERS = (
@@ -188,10 +203,11 @@ _JEV_PROVIDERS = (
         "token_env": "COMMANDCODE_API_KEY",
     },
     {
-        "name": "orvix",
-        "url": "https://api.orvix.id/v1/evaluate",
-        "model": "orvix/jev",
-        "token_env": "ORVIX_TOKEN",
+        "name": "opencode",
+        "url": "https://opencode.ai/zen/v1/systemone",
+        "model": "jev-1.13-free",
+        # Not an env var: OpenCode's free tier is anonymous.
+        "token_literal": "public",
     },
 )
 
@@ -224,10 +240,15 @@ def _jev_unsafe_probability(command: str) -> tuple[float | None, str | None]:
 
     errors = []
     for prov in _JEV_PROVIDERS:
-        token = os.getenv(prov["token_env"], "")
-        if not token:
-            errors.append(f"{prov['name']}: {prov['token_env']} not set")
-            continue
+        # A provider either reads a key from the environment, or carries a
+        # literal token for anonymous free tiers (OpenCode's "public").
+        if "token_literal" in prov:
+            token = prov["token_literal"]
+        else:
+            token = os.getenv(prov["token_env"], "")
+            if not token:
+                errors.append(f"{prov['name']}: {prov['token_env']} not set")
+                continue
         body = json.dumps({
             "model": prov["model"],
             "state": state,

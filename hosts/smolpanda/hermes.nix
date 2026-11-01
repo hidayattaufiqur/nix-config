@@ -614,8 +614,45 @@ in
           ExecStart = "${pkgs.nixos-rebuild}/bin/nixos-rebuild switch --flake /root/.hermes-rebuild-flake#smolpanda";
         };
       };
+      # Nightly SQLite integrity check for every Hermes state.db.
+      #
+      # On 2026-11-01 the gateway replied "session storage could not be written"
+      # and stopped the turn: state.db's `sessions` b-tree was malformed, so
+      # INSERT failed while PK lookups still worked. Worse, after a restart
+      # PRAGMA quick_check returned `ok` (WAL replay rewrote the page) even
+      # though 108 session rows had already been silently dropped, orphaning
+      # 12,403 messages. quick_check alone is therefore NOT proof of health.
+      #
+      # This timer runs hosts/smolpanda/db-integrity-check.py, which also
+      # compares row counts to a stored baseline so slow row loss shows up as
+      # drift. Silent when healthy; a non-zero exit surfaces in
+      # `systemctl --failed`.
+      hermes-db-integrity = {
+        description = "Check Hermes state.db files for corruption and row loss";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "smolpanda";
+          Group = "users";
+          Environment = [
+            "HERMES_HOME=/var/lib/hermes/.hermes"
+            "PATH=${pkgs.coreutils}/bin:/run/current-system/sw/bin"
+          ];
+          ExecStart = "${pkgs.python3}/bin/python3 ${./db-integrity-check.py}";
+          Restart = "no";
+        };
+      };
     }
   ];
+
+  systemd.timers.hermes-db-integrity = {
+    description = "Nightly Hermes state.db integrity check";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "*-*-* 04:17:00";
+      Persistent = true;
+      RandomizedDelaySec = "5m";
+    };
+  };
 
   # Root rebuild trigger for the Hermes agent. The agent writes
   # /home/smolpanda/.hermes/rebuild-trigger; this .path unit sees the file
