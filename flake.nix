@@ -51,6 +51,28 @@ outputs = { self, home-manager, nixpkgs, nixpkgs-unstable, nixpkgs-6e99f2a2, dis
       config = {
         allowUnfree = true;
       };
+      # Alias docker -> docker_29 for everything that uses this `pkgs`.
+      #
+      # This overlay MUST live here, not in a module. `pkgs` built here is
+      # passed to every module through specialArgs (line below), so module-side
+      # `nixpkgs.overlays` is silently ignored - that is the source of the
+      # long-standing "specialArgs.pkgs and nixpkgs.overlays will be ignored"
+      # warning. Putting the overlay on `import nixpkgs` is the only place it
+      # actually applies.
+      #
+      # Why: plain `docker` resolves to docker_28 (28.5.2), which nixpkgs
+      # stable began marking insecure in the 2026-06-30 bump ("docker_28 has
+      # been unmaintained since November 2025, use docker_29 or newer"). The
+      # 2026-11-02 flake bump therefore failed evaluation at
+      # systemd.services."9router".serviceConfig, which interpolates
+      # ${pkgs.docker} directly. Aliasing the attribute fixes every referrer
+      # (9router, 9router-offpeak, hindsight) at once and keeps the CLI and
+      # daemon on one version.
+      overlays = [
+        (final: prev: {
+          docker = final.docker_29;
+        })
+      ];
     };
 
     upkgs = import nixpkgs-unstable {
