@@ -11,6 +11,7 @@
     ./public.nix
     ./hermes.nix
     ./hermes-chromium.nix
+    ./nix-ld.nix
     ./d365fo-mcp.nix
     ./jev-mcp.nix
     ./9router.nix

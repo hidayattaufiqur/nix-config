@@ -567,7 +567,11 @@ in
         # 2026-10-22 (2): bumped 5 -> 6 to restart the gateway after the
         # jev-gate plugin landed (plugins load once per process).
         # 2026-10-31: bumped 6 -> 7 for discord.allow_from (the alt account).
-        environment.HERMES_CONFIG_EPOCH = "7";
+        # 2026-11-01: bumped 7 -> 8 so the gateway respawns the jev MCP child
+        # from the new jev-mcp store path (dual-backend build). MCP stdio
+        # servers are spawned once per gateway process, so a switch alone
+        # leaves the old binary — and its stale ORVIX-only config — running.
+        environment.HERMES_CONFIG_EPOCH = "8";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
