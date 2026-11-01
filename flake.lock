@@ -133,11 +133,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1791619307,
-        "narHash": "sha256-EGhXIhcDY2fbEHZRbrj4pLUf6BSGaHAI5Fb5S+3yYbE=",
+        "lastModified": 1793531503,
+        "narHash": "sha256-N44cfWSE2EBeTXtZMmYyMqtWSiJRWajiCwR88Dk9xZw=",
         "ref": "refs/heads/main",
-        "rev": "710239a965fc38f5e2e1c0f7091e781677a1d9dc",
-        "revCount": 2,
+        "rev": "e810b35a99e5921852aaa155e927cbfc583fea67",
+        "revCount": 4,
         "type": "git",
         "url": "file:///home/smolpanda/Fun/Projects/jev-mcp"
       },

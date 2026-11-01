@@ -5,24 +5,38 @@ in
 {
   environment.systemPackages = [ jevPkg ];
 
-  # jev (orvix/jev) is an *evaluator*, not a chat model: POST /v1/chat/completions
-  # with orvix/jev hard-fails with 400 and points at /v1/evaluate — so it can never
-  # be a providers.orvix entry. It is wired as a stdio MCP tool instead.
+  # jev is an *evaluator*, not a chat model: POST /v1/chat/completions with
+  # orvix/jev hard-fails with 400 and points at /v1/evaluate, and CommandCode's
+  # typesafe/jev only answers on /systemone. So it can never be a providers.*
+  # entry. It is wired as a stdio MCP tool instead.
   #
-  # The binary itself lives in ~/Fun/Projects/jev-mcp (flake input above); this
-  # file only declares how the system uses it.
+  # Two evaluator legs, selected by JEV_BACKEND:
+  #   auto (default) -> CommandCode first, Orvix second (fallback on 402/5xx)
+  #   commandcode    -> CommandCode only
+  #   orvix          -> Orvix only
   #
-  # ORVIX_TOKEN is left as a ${VAR} placeholder (same idiom as NOTION_TOKEN in
-  # hermes.nix): Hermes resolves it at server start from the profile's secret
-  # scope / .env, so the token never lands in the nix store.
+  # Tokens are ${VAR} placeholders (same idiom as NOTION_TOKEN in hermes.nix):
+  # Hermes resolves them at server start from the profile's secret scope / .env,
+  # so neither key lands in the nix store.
+  #
+  # 2026-11-01: the Orvix leg was out of credits (HTTP 402) and the
+  # COMMANDCODE_API_KEY in $HERMES_HOME/.env was stale (401 everywhere), which
+  # left jev_evaluate returning upstream_error. CommandCode auth also had to
+  # move to x-api-key — it rejects `Authorization: Bearer` with 401. The binary
+  # now owns both legs and the fallback, so no external workaround is needed.
   services.hermes-agent.mcpServers.jev = {
     command = "${jevPkg}/bin/jev-mcp";
     args = [ ]; # stdio, no args needed
     env = {
+      # Credentials — resolved by Hermes from the profile secret scope / .env.
       ORVIX_TOKEN = "\${ORVIX_TOKEN}";
+      COMMANDCODE_API_KEY = "\${COMMANDCODE_API_KEY}";
       # Optional overrides (defaults live in the binary):
-      # ORVIX_BASE_URL = "https://api.orvix.id/v1";
-      # JEV_MODEL      = "orvix/jev";   # orvix/jev is the only evaluator
+      JEV_BACKEND = "auto";
+      # ORVIX_BASE_URL          = "https://api.orvix.id/v1";
+      # JEV_ORVIX_MODEL         = "orvix/jev";
+      # COMMANDCODE_BASE_URL    = "https://api.commandcode.ai/provider/v1";
+      # JEV_COMMANDCODE_MODEL   = "typesafe/jev";
     };
   };
 }
