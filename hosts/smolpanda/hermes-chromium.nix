@@ -27,7 +27,7 @@
     serviceConfig = {
       Type = "simple";
       User = "smolpanda";
-      ExecStart = "${pkgs.chromium}/bin/chromium --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --remote-debugging-port=9222 --user-data-dir=%h/.hermes/chrome-debug --no-first-run --no-default-browser-check about:blank";
+      ExecStart = "${pkgs.chromium}/bin/chromium --headless --no-sandbox --disable-gpu --disable-dev-shm-usage --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 --user-data-dir=%h/.hermes/chrome-debug --no-first-run --no-default-browser-check about:blank";
       Restart = "on-failure";
       RestartSec = 5;
       # RAM guard: headless chromium peaks ~600M with several tabs.
