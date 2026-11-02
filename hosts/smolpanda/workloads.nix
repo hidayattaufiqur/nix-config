@@ -28,6 +28,14 @@
     homeDir = "/home/smolpanda";
   };
 
+  # Loopback only. services/psql.nix (shared with desktop/laptop) sets
+  # enableTCPIP = true, which makes the NixOS module write
+  # listen_addresses = "*". That is the only thing enableTCPIP controls, so
+  # forcing it false yields listen_addresses = "localhost" (127.0.0.1 + ::1)
+  # and leaves the KB's pg_hba host rules working. websnag/notion-ods run their
+  # own Postgres inside Docker and are unaffected.
+  services.postgresql.enableTCPIP = lib.mkForce false;
+
   # Docker is needed by the websnag compose stack.
   virtualisation.docker.enable = true;
   users.users.smolpanda.extraGroups = [ "docker" ];
