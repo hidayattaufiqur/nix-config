@@ -25,5 +25,10 @@
     ./browser-use.nix
     ./hindsight.nix
     ./dsh.nix
+    # CVE-2026-98432 interim fix: kernel 6.12.114 (from nixpkgs-unstable, the
+    # pinned nixpkgs still ships the vulnerable 6.12.93) + MPTCP off + an
+    # nftables rule dropping inbound TCP with IP options. Remove this import
+    # once nixpkgs' default kernel is >= 6.12.113.
+    ./cve-2026-98432.nix
   ];
 }
