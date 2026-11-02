@@ -17,6 +17,11 @@ in
 
   services.tailscale.enable = true;
 
+  # Version hygiene (card t_6c0a1a00): pinned nixpkgs ships 1.90.9, which is
+  # below the TS-2026-014..017 fix line (1.104.4). Same mechanism as the
+  # CVE-2026-98432 kernel pin: take the one attribute from upkgs, no flake bump.
+  services.tailscale.package = upkgs.tailscale;
+
   # Advertise smolpanda as a tailnet exit node. Idempotent — just re-applies
   # the pref on every boot so it survives prefs resets. Enabling other nodes
   # to actually USE it requires the tailnet admin to approve the exit node
@@ -29,7 +34,7 @@ in
       Type = "oneshot";
       Restart = "on-failure";
       RestartSec = "10s";
-      ExecStart = "${pkgs.tailscale}/bin/tailscale set --advertise-exit-node";
+      ExecStart = "${upkgs.tailscale}/bin/tailscale set --advertise-exit-node";
     };
   };
 
