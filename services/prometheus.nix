@@ -15,6 +15,9 @@ in
     services.prometheus = {
       enable = true;
       port = 9001;
+      # Loopback only: nothing scrapes this from off-box. Default is 0.0.0.0,
+      # which would be reachable the moment the firewall opens a port.
+      listenAddress = "127.0.0.1";
       retentionTime = "7d";
 
       globalConfig = {
