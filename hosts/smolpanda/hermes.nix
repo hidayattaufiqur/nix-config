@@ -297,7 +297,15 @@ in
       # (approvals.mode: off). Plugins are opt-in via plugins.enabled; the
       # plugin dir itself lives in the profile state dir (CLI-managed, like
       # ponytail) and is NOT flake-owned.
-      plugins.enabled = [ "jev-gate" ];
+      #
+      # proactive-gate plugin: relevancy/materiality gate for cron deliveries
+      # (anvie's Proactive Agent split - Relevancy, Materiality, Economy -
+      # applied to the one lane where noise actually costs something). Runs in
+      # transform_llm_output on platform=cron only, so interactive replies are
+      # never inspected. Ships in dry-run: it logs verdicts to
+      # plugins/proactive-gate/decisions.jsonl and changes nothing until
+      # PROACTIVE_GATE_MODE=enforce. See hosts/smolpanda/proactive-gate/.
+      plugins.enabled = [ "jev-gate" "proactive-gate" ];
 
       security = {
         allow_data_training_tiers_noninteractive = true;
@@ -521,6 +529,27 @@ in
     lib.stringAfter [ "users" "hermes-jev-gate" ] ''
       ${pkgs.python3}/bin/python3 ${./jev-gate/worker-patch.py}
     '';
+
+  # ── proactive-gate plugin install ────────────────────────────────────────
+  # Relevancy/materiality gate for cron deliveries. Same lifecycle as jev-gate:
+  # the plugin dir lives in the profile state dir that the CLI owns, so the
+  # flake copies the source in on every switch. Without this, settings
+  # plugins.enabled would point at a missing dir after a profile reset.
+  #
+  # Installed for the default profile ONLY: cron jobs are scheduled and
+  # delivered by the default gateway. The worker profiles (atlas, dossier) run
+  # kanban cards, not cron ticks, so the hook would never fire there and the
+  # copy would be dead weight.
+  #
+  # decisions.jsonl is written next to this directory at runtime and is NOT
+  # installed here - it is the tuning record, and clobbering it on every
+  # rebuild would destroy exactly the data the dry-run mode exists to collect.
+  system.activationScripts.hermes-proactive-gate = lib.stringAfter [ "users" ] ''
+    dest="/var/lib/hermes/.hermes/plugins/proactive-gate"
+    mkdir -p "$dest"
+    install -o smolpanda -g users -m 0660 -D ${./proactive-gate/plugin.yaml} "$dest/plugin.yaml"
+    install -o smolpanda -g users -m 0660 -D ${./proactive-gate/__init__.py} "$dest/__init__.py"
+  '';
 
   # ── Default (mastermind) + pandr SOUL: one source, two installs ──────────
   # Both were hand-written and unmanaged until 2026-10-11, and their content
