@@ -56,9 +56,11 @@ CONTAINER = os.getenv("QUOTA_CONTAINER", "9router")
 BASE = os.getenv("QUOTA_9ROUTER", "http://127.0.0.1:20128")
 
 # Published monthly allowances, used to turn a bare counter into a percentage.
-# Copilot Business: 300 premium requests/user/month. CommandCode values come
-# from its own API, so they are not hardcoded here.
-COPILOT_PREMIUM_ALLOWANCE = int(os.getenv("COPILOT_PREMIUM_ALLOWANCE", "300"))
+# Copilot Business = 1,900 GitHub AI credits per user per month (NOT the legacy
+# 300 "premium requests" figure, which is dead as of usage-based billing).
+# 1 AI credit = $0.01 USD. CommandCode values come from its own API, so they are
+# not hardcoded here.
+COPILOT_PREMIUM_ALLOWANCE = int(os.getenv("COPILOT_PREMIUM_ALLOWANCE", "1900"))
 
 
 def _env_value(name: str) -> str | None:
@@ -189,13 +191,25 @@ def collect_copilot() -> dict:
         "plan": data.get("copilot_plan"),
         "sku": data.get("access_type_sku"),
         "reset_date": data.get("quota_reset_date"),
-        "premium_interactions": {
+        "credits": {
+            # `credits_used` on the premium_interactions snapshot IS the GitHub AI
+            # Credits figure under usage-based billing (1 credit = $0.01). The
+            # quota_id name is a legacy label; `token_based_billing: true` and
+            # the docs are what settle it.
             "used": used,
-            "allowance_documented": allowance,
-            "percent_of_allowance": pct,
-            "github_says_unlimited": pm.get("unlimited"),
-            "note": "GitHub reports unlimited:true but still counts credits_used; "
-                    "Business allowance is 300 premium requests/user/month.",
+            "allowance_per_seat": allowance,
+            "percent_of_seat_allowance": pct,
+            "implied_usd": round(used * 0.01, 2) if isinstance(used, (int, float)) else None,
+            # Do NOT report this against a hard cap. Business credits are POOLED
+            # across the whole org, so one seat's 1,900 is its contribution to
+            # the pool, not that user's ceiling. The API exposes no pool total
+            # (org copilot/billing needs an admin-scoped token we do not hold),
+            # so we report per-seat contribution usage and say so plainly.
+            "pool_note": "Business credits are pooled org-wide; this is one seat's "
+                         "consumption against its 1,900/mo contribution, not a cap.",
+            "github_reports": {k: pm.get(k) for k in
+                               ("unlimited", "percent_remaining", "entitlement",
+                                "token_based_billing", "overage_permitted")},
         },
         "snapshots": {k: {"credits_used": (v or {}).get("credits_used"),
                           "unlimited": (v or {}).get("unlimited"),
@@ -240,25 +254,22 @@ def _breaches(doc: dict) -> list[str]:
 
     cp = doc.get("copilot") or {}
     if cp.get("ok"):
-        pm = cp.get("premium_interactions") or {}
-        pct = pm.get("percent_of_allowance")
-        used = pm.get("used")
-        # GitHub claims unlimited, so a percentage over the documented allowance
-        # is never a hard threshold: the counter looks cumulative rather than
-        # per-cycle (878 > 300 with percent_remaining still 100). We therefore
-        # only surface it ONCE PER DAY — reporting a static number every tick is
-        # precisely the noise this system exists to remove. State is kept in the
-        # snapshot file so the frequency survives between runs.
+        cr = cp.get("credits") or {}
+        pct = cr.get("percent_of_seat_allowance")
+        used = cr.get("used")
+        # Copilot Business credits are POOLED org-wide, and the API exposes no
+        # pool total, so there is no real threshold to cross. What is worth a
+        # message is scale: a seat consuming more than its own 1,900/mo
+        # contribution means the org pool is being drawn down by this seat
+        # alone. Report that once per day — a static credit count re-notified
+        # every 4 hours is exactly the noise this system exists to remove.
         if isinstance(pct, (int, float)) and pct >= 100:
             today = datetime.now(timezone.utc).date().isoformat()
             if cp.get("_reported_on") != today:
                 findings.append(
-                    f"Copilot premium interactions: {used} counted against a documented "
-                    f"{pm.get('allowance_documented')}/mo allowance (GitHub reports unlimited; "
-                    f"counter looks cumulative). Resets {cp.get('reset_date', '?')}")
-            # Mark reported regardless: the marker means "already surfaced today",
-            # and stamping it only on the reporting path made the guard re-fire
-            # because _breaches runs before the snapshot is persisted.
+                    f"Copilot AI credits: {used} used (~${cr.get('implied_usd')}), beyond this "
+                    f"seat's {cr.get('allowance_per_seat')}/mo contribution — drawing on the "
+                    f"shared org pool. Resets {cp.get('reset_date', '?')}")
             cp["_reported_on"] = today
     else:
         findings.append(f"Copilot quota unreadable: {cp.get('error', 'unknown')}")
