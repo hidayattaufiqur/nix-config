@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import urllib.error
@@ -111,9 +112,21 @@ const base = process.env.QB || "http://127.0.0.1:20128";
 
 def collect_commandcode() -> dict:
     """CommandCode quota through 9router's admin session, executed in-container."""
+    # cron runs with PATH=/usr/bin:/bin, where docker does not exist. Resolve it
+    # explicitly rather than trusting PATH: on NixOS the stable entry point is
+    # /run/current-system/sw/bin, and a hardcoded /nix/store path would break on
+    # every rebuild that touches docker.
+    docker = shutil.which("docker")
+    if not docker:
+        for cand in ("/run/current-system/sw/bin/docker", "/usr/bin/docker"):
+            if os.access(cand, os.X_OK):
+                docker = cand
+                break
+    if not docker:
+        return {"source": "9router", "ok": False, "error": "docker not found in PATH or /run/current-system"}
     try:
         proc = subprocess.run(
-            ["docker", "exec", "-i", CONTAINER, "node", "--input-type=module", "-e", _CC_JS],
+            [docker, "exec", "-i", CONTAINER, "node", "--input-type=module", "-e", _CC_JS],
             capture_output=True, text=True, timeout=45,
         )
     except FileNotFoundError:
