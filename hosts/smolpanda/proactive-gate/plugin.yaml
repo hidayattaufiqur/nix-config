@@ -1,0 +1,12 @@
+name: proactive-gate
+version: 0.1.0
+description: "Relevancy/materiality gate for scheduled (cron) deliveries. Runs in the transform_llm_output hook on cron turns only: a deterministic prescreen passes through empty/short output and explicit [SILENT], recurring low-signal report shapes skip the model entirely, and everything else gets ONE jev_evaluate call (CommandCode typesafe/jev) with four noul questions (relevant, material, action, novel) at ~400 input tokens / ~1s per report. Bands: clearly boring (material < 0.30) is suppressed to [SILENT] so output is still saved but nothing is delivered; clearly material (material >= 0.65 with relevant >= 0.50, or action >= 0.70) delivers untouched; the middle band escalates to one GLM-5.3-Flash call (CommandCode, $0.15/M in) for a tie-breaking verdict plus the human-readable reason stored in the decision log. Implements the Relevancy/Materiality/Economy split from anvie's Proactive Agent design without adopting that platform: cron output stops being noise and starts being an assistant. Fails OPEN - a jev or GLM outage delivers the report rather than swallowing it. Dry-run mode logs verdicts without suppressing."
+author: smolpanda
+kind: standalone
+platforms:
+  - linux
+provides_tools: []
+provides_hooks:
+  - transform_llm_output
+hooks:
+  - transform_llm_output
