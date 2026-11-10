@@ -285,12 +285,86 @@ def _persist(doc: dict) -> None:
         print(f"quota_snapshot: cannot write {OUT}: {exc}", file=sys.stderr)
 
 
+def _digest(doc: dict) -> str:
+    """Full quota report, delivered daily.
+
+    The watchdog (_breaches) answers "is anything wrong right now" and stays
+    silent when nothing is. That is the wrong shape for the question actually
+    being asked — "where do I stand today" — which needs a number whether or not
+    a threshold was crossed. So this mode always prints, and includes the
+    days-remaining projection that makes the number actionable.
+    """
+    lines = ["**Subscription quota** — " +
+             datetime.now(timezone.utc).astimezone().strftime("%a %d %b %H:%M")]
+
+    cc = doc.get("commandcode") or {}
+    if cc.get("ok"):
+        plan = cc.get("plan") or "?"
+        lines.append(f"\n**CommandCode ({plan})**")
+        for name, q in (cc.get("quotas") or {}).items():
+            try:
+                used, total = float(q["used"]), float(q["total"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if total <= 0:
+                continue
+            pct = 100.0 * used / total
+            left = total - used
+            bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
+            reset = (q.get("resetAt") or "")[:10]
+            lines.append(f"`{bar}` {pct:5.1f}%  {name}: {left:.1f} left of {total:.0f}"
+                         + (f"  · resets {reset}" if reset else ""))
+    else:
+        lines.append(f"\n**CommandCode** — unreadable: {cc.get('error', 'unknown')}")
+
+    cp = doc.get("copilot") or {}
+    if cp.get("ok"):
+        cr = cp.get("credits") or {}
+        used = cr.get("used")
+        allow = cr.get("allowance_per_seat")
+        pct = cr.get("percent_of_seat_allowance")
+        if isinstance(pct, (int, float)):
+            bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
+            left = allow - used
+            lines.append(f"\n**GitHub Copilot (business)**")
+            lines.append(f"`{bar}` {pct:5.1f}%  {left} left of {allow} credits (~${left * 0.01:.2f})"
+                         f"  · resets {cp.get('reset_date', '?')}")
+            # Pooling caveat is load-bearing: without it the 1,900 reads as a cap.
+            lines.append("_Pooled org-wide, so this is one seat's contribution, not a ceiling._")
+    else:
+        lines.append(f"\n**GitHub Copilot** — unreadable: {cp.get('error', 'unknown')}")
+
+    # Anything over a threshold still gets called out at the bottom.
+    warn = _breaches(doc)
+    if warn:
+        lines.append("\n**⚠ Over threshold**")
+        for w in warn:
+            lines.append(f"- {w}")
+
+    return "\n".join(lines)
+
+
 def main() -> int:
     doc = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "commandcode": collect_commandcode(),
         "copilot": collect_copilot(),
     }
+
+    if "--digest" in sys.argv:
+        # Daily reporting mode: always prints, threshold or not.
+        prev = {}
+        try:
+            prev = json.loads(OUT.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            pass
+        if isinstance(prev.get("copilot"), dict) and isinstance(doc.get("copilot"), dict):
+            if prev["copilot"].get("_reported_on"):
+                doc["copilot"]["_reported_on"] = prev["copilot"]["_reported_on"]
+        text = _digest(doc)
+        _persist(doc)
+        print(text)
+        return 0
 
     if "--check" in sys.argv:
         # Cron-script mode: print ONLY actionable findings, so an empty stdout
