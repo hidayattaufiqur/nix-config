@@ -316,7 +316,8 @@ def _digest(doc: dict) -> str:
             reset = (q.get("resetAt") or "")[:10]
             label = {"Credits": "Monthly", "Session (5h)": "5-hour",
                      "Weekly": "Weekly"}.get(name, name)
-            lines.append(f"`{bar}` {label}: ${left:.2f} left of ${total:.0f} ({pct:.0f}% used)"
+            lines.append(f"`{bar}` {label}: ${used:.2f} of ${total:.0f} "
+                         f"({pct:.0f}% used, ${left:.2f} left)"
                          + (f" · resets {reset}" if reset else ""))
     else:
         lines.append(f"\n**CommandCode** — unreadable: {cc.get('error', 'unknown')}")
@@ -331,8 +332,8 @@ def _digest(doc: dict) -> str:
             bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
             left = allow - used
             lines.append(f"\n**GitHub Copilot (business)** — credits")
-            lines.append(f"`{bar}` {left} credits left of {allow} (~${left * 0.01:.2f})"
-                         f" · {used} used ({pct:.0f}%)"
+            lines.append(f"`{bar}` {used} of {allow} credits "
+                         f"({pct:.0f}% used, {left} left ~${left * 0.01:.2f})"
                          f" · resets {cp.get('reset_date', '?')}")
             # Pooling caveat is load-bearing: without it the 1,900 reads as a cap.
             lines.append("_Pooled org-wide, so this is one seat's contribution, not a ceiling._")

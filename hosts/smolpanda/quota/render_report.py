@@ -125,12 +125,14 @@ def html_quota(doc: dict) -> str:
             left = total - used
             reset = (q.get("resetAt") or "")[:10]
             label = CC_WINDOW_LABEL.get(name, name)
-            # Currency first so the unit is read before the numbers.
+            # Show consumed against the limit, not headroom: "used of limit" is
+            # how a budget is normally read, and it makes the bar and the number
+            # point the same direction.
             rows.append(
                 f'<div class="row"><div class="lbl">{_esc(label)}</div>{_bar(pct)}'
-                f'<div class="val">{CC_UNIT}{left:.2f}<i> of {CC_UNIT}{total:.0f}</i></div></div>'
+                f'<div class="val">{CC_UNIT}{used:.2f}<i> of {CC_UNIT}{total:.0f}</i></div></div>'
                 f'<div class="note" style="margin:-4px 0 6px 206px">'
-                f'{CC_UNIT}{used:.2f} used ({pct:.0f}%)'
+                f'{pct:.0f}% used · {CC_UNIT}{left:.2f} left'
                 + (f' · resets {reset}' if reset else '') + '</div>')
         body.append('<div class="sec"><h2>CommandCode · '
                     f'{_esc(cc.get("plan") or "?")} · budget in USD</h2>{"".join(rows)}</div>')
@@ -147,9 +149,9 @@ def html_quota(doc: dict) -> str:
         body.append(
             '<div class="sec"><h2>GitHub Copilot · business · credits</h2>'
             f'<div class="row"><div class="lbl">AI credits</div>{_bar(pct)}'
-            f'<div class="val">{left}<i> of {allow} credits</i></div></div>'
+            f'<div class="val">{used}<i> of {allow} credits</i></div></div>'
             f'<div class="note" style="margin:-4px 0 6px 206px">'
-            f'{used} used ({pct:.0f}%) · ~${left * 0.01:.2f} left · '
+            f'{pct:.0f}% used · {left} left (~${left * 0.01:.2f}) · '
             f'resets {_esc(cp.get("reset_date", "?"))}</div>'
             '<div class="note">Pooled org-wide, so this is one seat\'s contribution, not a ceiling.</div>'
             '</div>')
