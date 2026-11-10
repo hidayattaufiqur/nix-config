@@ -51,13 +51,14 @@ body{background:#0d1117;font-family:'Inter','DejaVu Sans',system-ui,sans-serif;
 .sec:last-child{margin-bottom:6px}
 .sec h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;
         color:#7d8590;margin-bottom:12px;font-weight:620}
-.row{display:grid;grid-template-columns:190px 1fr 92px;align-items:center;
+.row{display:grid;grid-template-columns:190px 1fr 150px;align-items:center;
      gap:16px;padding:9px 0}
 .row .lbl{font-size:15px;color:#c9d1d9}
 .bar{height:9px;border-radius:5px;background:#21262d;overflow:hidden}
 .bar>i{display:block;height:100%;border-radius:5px}
-.val{font-size:14px;text-align:right;color:#8b949e;
+.val{font-size:14px;text-align:right;color:#c9d1d9;
      font-variant-numeric:tabular-nums;font-family:'DejaVu Sans Mono',monospace}
+.val i{color:#6e7681;font-style:normal}
 .note{font-size:12.5px;color:#6e7681;margin-top:9px;line-height:1.5}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;
@@ -93,6 +94,18 @@ def _esc(s: str) -> str:
 
 
 # ── quota card ───────────────────────────────────────────────────────────
+# The CommandCode API sends bare numbers with no unit field. Per the official
+# docs (docs.commandcode.ai/plans/goat), the three windows are DOLLARS of usage:
+# 5-hour = $14, weekly = $35, monthly = $70. Labelling them as credits would be
+# wrong, and showing "17.7 / 70" with no unit is unreadable.
+CC_UNIT = "$"
+CC_WINDOW_LABEL = {
+    "Credits": "Monthly budget",
+    "Session (5h)": "5-hour window",
+    "Weekly": "Weekly window",
+}
+
+
 def html_quota(doc: dict) -> str:
     now = datetime.now(timezone.utc).astimezone()
     body = [f'<div class="hd"><h1>Subscription quota</h1>'
@@ -111,14 +124,16 @@ def html_quota(doc: dict) -> str:
             pct = 100.0 * used / total
             left = total - used
             reset = (q.get("resetAt") or "")[:10]
-            sub = f"resets {reset}" if reset else ""
+            label = CC_WINDOW_LABEL.get(name, name)
+            # Currency first so the unit is read before the numbers.
             rows.append(
-                f'<div class="row"><div class="lbl">{_esc(name)}</div>{_bar(pct)}'
-                f'<div class="val">{left:.1f}<span style="color:#484f58"> / {total:.0f}</span></div></div>'
+                f'<div class="row"><div class="lbl">{_esc(label)}</div>{_bar(pct)}'
+                f'<div class="val">{CC_UNIT}{left:.2f}<i> of {CC_UNIT}{total:.0f}</i></div></div>'
                 f'<div class="note" style="margin:-4px 0 6px 206px">'
-                f'{pct:.0f}% used · {sub}</div>')
+                f'{CC_UNIT}{used:.2f} used ({pct:.0f}%)'
+                + (f' · resets {reset}' if reset else '') + '</div>')
         body.append('<div class="sec"><h2>CommandCode · '
-                    f'{_esc(cc.get("plan") or "?")}</h2>{"".join(rows)}</div>')
+                    f'{_esc(cc.get("plan") or "?")} · budget in USD</h2>{"".join(rows)}</div>')
     else:
         body.append('<div class="sec"><h2>CommandCode</h2>'
                     f'<div class="note">unreadable: {_esc(cc.get("error", "unknown"))}</div></div>')
@@ -130,11 +145,12 @@ def html_quota(doc: dict) -> str:
         pct = cr.get("percent_of_seat_allowance") or 0
         left = (allow or 0) - (used or 0)
         body.append(
-            '<div class="sec"><h2>GitHub Copilot · business</h2>'
+            '<div class="sec"><h2>GitHub Copilot · business · credits</h2>'
             f'<div class="row"><div class="lbl">AI credits</div>{_bar(pct)}'
-            f'<div class="val">{left}<span style="color:#484f58"> / {allow}</span></div></div>'
+            f'<div class="val">{left}<i> of {allow} credits</i></div></div>'
             f'<div class="note" style="margin:-4px 0 6px 206px">'
-            f'{pct:.0f}% used · ~${left * 0.01:.2f} left · resets {_esc(cp.get("reset_date", "?"))}</div>'
+            f'{used} used ({pct:.0f}%) · ~${left * 0.01:.2f} left · '
+            f'resets {_esc(cp.get("reset_date", "?"))}</div>'
             '<div class="note">Pooled org-wide, so this is one seat\'s contribution, not a ceiling.</div>'
             '</div>')
     else:

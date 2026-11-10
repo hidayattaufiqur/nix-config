@@ -300,7 +300,9 @@ def _digest(doc: dict) -> str:
     cc = doc.get("commandcode") or {}
     if cc.get("ok"):
         plan = cc.get("plan") or "?"
-        lines.append(f"\n**CommandCode ({plan})**")
+        # Windows are DOLLARS of usage, not credits: 5h=$14, weekly=$35,
+        # monthly=$70 per docs.commandcode.ai/plans/goat. The API sends no unit.
+        lines.append(f"\n**CommandCode ({plan})** — budget in USD")
         for name, q in (cc.get("quotas") or {}).items():
             try:
                 used, total = float(q["used"]), float(q["total"])
@@ -312,8 +314,10 @@ def _digest(doc: dict) -> str:
             left = total - used
             bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
             reset = (q.get("resetAt") or "")[:10]
-            lines.append(f"`{bar}` {pct:5.1f}%  {name}: {left:.1f} left of {total:.0f}"
-                         + (f"  · resets {reset}" if reset else ""))
+            label = {"Credits": "Monthly", "Session (5h)": "5-hour",
+                     "Weekly": "Weekly"}.get(name, name)
+            lines.append(f"`{bar}` {label}: ${left:.2f} left of ${total:.0f} ({pct:.0f}% used)"
+                         + (f" · resets {reset}" if reset else ""))
     else:
         lines.append(f"\n**CommandCode** — unreadable: {cc.get('error', 'unknown')}")
 
@@ -326,9 +330,10 @@ def _digest(doc: dict) -> str:
         if isinstance(pct, (int, float)):
             bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
             left = allow - used
-            lines.append(f"\n**GitHub Copilot (business)**")
-            lines.append(f"`{bar}` {pct:5.1f}%  {left} left of {allow} credits (~${left * 0.01:.2f})"
-                         f"  · resets {cp.get('reset_date', '?')}")
+            lines.append(f"\n**GitHub Copilot (business)** — credits")
+            lines.append(f"`{bar}` {left} credits left of {allow} (~${left * 0.01:.2f})"
+                         f" · {used} used ({pct:.0f}%)"
+                         f" · resets {cp.get('reset_date', '?')}")
             # Pooling caveat is load-bearing: without it the 1,900 reads as a cap.
             lines.append("_Pooled org-wide, so this is one seat's contribution, not a ceiling._")
     else:
