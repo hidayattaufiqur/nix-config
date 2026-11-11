@@ -283,6 +283,110 @@ def _measure_height(html: str, chrome: str) -> int | None:
     return None
 
 
+def html_timesheet(doc: dict) -> str:
+    """Weekly timesheet progress card.
+
+    Two progress axes, because they answer different questions: the big bar is
+    week-to-date against the 40 h target (the number he asked for), and the day
+    strip shows which days are carrying the load so a thin Wednesday is visible
+    at a glance rather than needing arithmetic.
+    """
+    pct = doc.get("percent") or 0.0
+    wtd = doc.get("week_to_date") or 0.0
+    target = doc.get("target") or 40.0
+    remaining = doc.get("remaining") or 0.0
+    ws, we = doc.get("week_start", ""), doc.get("week_end", "")
+    body = [f'<div class="hd"><h1>Timesheet · week {doc.get("week_no","?")}</h1>'
+            f'<div class="sub">{ws} → {we}</div></div>']
+
+    # Headline: hours logged against target.
+    body.append(
+        '<div class="sec">'
+        f'<div class="row" style="grid-template-columns:1fr 210px">'
+        f'<div class="bigbar">{_bar(pct)}</div>'
+        f'<div class="val" style="font-size:19px">{wtd:.2f}<i> of {target:.0f} h</i></div>'
+        '</div>'
+        f'<div class="note" style="margin-top:10px">'
+        f'{pct:.1f}% of target · <b style="color:#e6edf3">{remaining:.2f} h remaining</b>'
+        '</div></div>')
+
+    # Day strip: bar height scaled to the largest day, so relative load is visible.
+    days = doc.get("days") or []
+    peak = max([d.get("hours") or 0.0 for d in days] + [8.0])
+    cells = []
+    for d in days:
+        h = d.get("hours") or 0.0
+        hpct = 100.0 * h / peak
+        if d.get("is_future"):
+            col, lab = "#21262d", ""
+        elif h >= 8:
+            col, lab = "#3fb950", ""
+        elif h >= 4:
+            col, lab = "#d29922", ""
+        elif h > 0:
+            col, lab = "#f85149", ""
+        else:
+            col, lab = "#30363d", ""
+        ov = d.get("overlap") or 0.0
+        flag = ('<div class="ov">↔%.2f</div>' % ov) if ov else '<div class="ov"> </div>'
+        cells.append(
+            '<div class="dcell">'
+            f'<div class="dval">{h:.2f}</div>'
+            f'<div class="dbar"><i style="height:{max(2.0,hpct):.0f}%;background:{col}"></i></div>'
+            f'<div class="dname">{_esc(d.get("dow",""))}</div>'
+            f'<div class="ddate">{_esc((d.get("date","") or "")[8:])}</div>'
+            f'{flag}</div>')
+    body.append('<div class="sec"><h2>Daily load</h2>'
+                f'<div class="dstrip">{"".join(cells)}</div>'
+                '<div class="note">Bar height is relative to the heaviest day. '
+                '↔ marks logged intervals that overlap, so wall-clock double-counts.</div></div>')
+
+    # Status lines: what needs attention, in his words.
+    flags = []
+    if doc.get("overlap_total"):
+        days_ov = ", ".join(f"{k[5:]} ({v:.2f} h)" for k, v in (doc.get("overlaps") or {}).items())
+        flags.append(("warn", f"Overlapping logs: {doc['overlap_total']:.2f} h on {days_ov}"))
+    else:
+        flags.append(("ok", "Overlaps: none"))
+    if doc.get("mismatches"):
+        flags.append(("warn", f"Timeline/start-date mismatches: {doc['mismatches']}"))
+    else:
+        flags.append(("ok", "Timeline/start-date mismatches: none"))
+    if doc.get("pending_count"):
+        names = doc.get("pending_names") or []
+        preview = "; ".join(n.split(" - ", 1)[-1][:42] for n in names[:3])
+        flags.append(("info", f"{doc['pending_count']} entries still at 0 min"
+                              + (f" — {preview}" if preview else "")))
+    rows = []
+    for kind, text in flags:
+        sym = {"ok": "✓", "warn": "!", "info": "·"}[kind]
+        col = {"ok": "#3fb950", "warn": "#d29922", "info": "#7d8590"}[kind]
+        rows.append(f'<div class="flag"><span style="color:{col}">{sym}</span>'
+                    f'<span>{_esc(text)}</span></div>')
+    body.append('<div class="sec">' + "".join(rows) + '</div>')
+
+    body.append(f'<div class="note">ODS as of {_esc(doc.get("ods_freshness","?"))} WIB · '
+                'no hours were nudged or invented</div>')
+    return f"<html><head><meta charset='utf-8'><style>{CSS}{TS_CSS}</style></head><body>{''.join(body)}</body></html>"
+
+
+TS_CSS = """
+.bigbar .bar{height:16px;border-radius:8px}
+.bigbar .bar>i{border-radius:8px}
+.dstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:6px}
+.dcell{text-align:center}
+.dval{font-size:13px;color:#c9d1d9;font-variant-numeric:tabular-nums;
+      font-family:'DejaVu Sans Mono',monospace;margin-bottom:5px}
+.dbar{height:74px;display:flex;align-items:flex-end;justify-content:center}
+.dbar>i{display:block;width:100%;border-radius:4px 4px 0 0}
+.dname{font-size:12.5px;color:#e6edf3;margin-top:6px;font-weight:600}
+.ddate{font-size:11px;color:#6e7681;font-variant-numeric:tabular-nums}
+.ov{font-size:10.5px;color:#d29922;margin-top:3px;min-height:13px}
+.flag{display:flex;gap:10px;font-size:14px;color:#c9d1d9;padding:5px 0;line-height:1.45}
+.flag span:first-child{width:14px;text-align:center;flex:0 0 14px;font-weight:700}
+"""
+
+
 def render(html: str, out: Path) -> None:
     chrome = _chrome()
     if not chrome:
@@ -437,6 +541,10 @@ def main() -> int:
     if kind == "quota":
         src = json_path or Path("/var/lib/hermes/.hermes/cache/quota/latest.json")
         html = html_quota(json.loads(src.read_text(encoding="utf-8")))
+    elif kind == "timesheet":
+        if not json_path:
+            raise SystemExit("render_report: timesheet needs --json <path>")
+        html = html_timesheet(json.loads(Path(json_path).read_text(encoding="utf-8")))
     elif kind == "usage":
         text = sys.stdin.read()
         html = html_usage(text)

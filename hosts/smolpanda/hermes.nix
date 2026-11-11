@@ -575,9 +575,11 @@ in
     mkdir -p "$dest"
     install -o smolpanda -g users -m 0660 -D ${./quota/quota_snapshot.py} "$dest/quota_snapshot.py"
     install -o smolpanda -g users -m 0660 -D ${./quota/render_report.py} "$dest/render_report.py"
+    install -o smolpanda -g users -m 0660 -D ${./quota/timesheet_card.py} "$dest/timesheet_card.py"
     install -o smolpanda -g users -m 0770 -D ${./quota/quota_watch.sh} "$dest/quota_watch.sh"
     install -o smolpanda -g users -m 0770 -D ${./quota/quota_digest.sh} "$dest/quota_digest.sh"
     install -o smolpanda -g users -m 0770 -D ${./quota/usage_digest.sh} "$dest/usage_digest.sh"
+    install -o smolpanda -g users -m 0770 -D ${./quota/timesheet_digest.sh} "$dest/timesheet_digest.sh"
   '';
 
   # ── Default (mastermind) + pandr SOUL: one source, two installs ──────────
