@@ -37,41 +37,98 @@ CHROME_CANDIDATES = [
     "/usr/bin/google-chrome",
 ]
 
-# Palette: near-black card, high-contrast text, one accent. Deliberately not the
-# Discord dark colour so the card reads as an image, not as part of the chat.
-CSS = """
+def _font_face() -> str:
+    """Inline JetBrains Mono as a base64 @font-face.
+
+    Embedding beats relying on fontconfig: the flake installs the font under
+    fonts.packages, but that only takes effect after a system switch, and the
+    render must work regardless. A data: URI makes the card self-contained.
+
+    WOFF2 is preferred over TTF: same face at roughly a third of the bytes
+    (94 KB vs 350 KB), and Chromium decodes it natively.
+    """
+    import base64
+    import glob
+    patterns = [
+        "/nix/store/*jetbrains-mono*/share/fonts/WOFF2/JetBrainsMono-Regular.woff2",
+        "/nix/store/*jetbrains-mono*/share/fonts/truetype/JetBrainsMono-Regular.ttf",
+        "/nix/store/*jetbrains-mono*/share/fonts/**/*Regular*.woff2",
+        "/nix/store/*jetbrains-mono*/share/fonts/**/*Regular*.ttf",
+        "/nix/store/*jetbrains-mono*/share/fonts/**/*.ttf",
+    ]
+    path = None
+    for pat in patterns:
+        hits = sorted(glob.glob(pat, recursive=True))
+        if hits:
+            path = hits[0]
+            break
+    if not path:
+        return ""
+    try:
+        with open(path, "rb") as fh:
+            b64 = base64.b64encode(fh.read()).decode("ascii")
+    except OSError:
+        return ""
+    fmt = "woff2" if path.endswith(".woff2") else "truetype"
+    mime = "font/woff2" if fmt == "woff2" else "font/ttf"
+    return ("@font-face{font-family:'JBMono';"
+            f"src:url(data:{mime};base64,{b64}) format('{fmt}');"
+            "font-weight:100 900;font-style:normal;font-display:block}")
+
+
+FONT_CSS = _font_face()
+
+# Palette + typography: a terminal window, not a dashboard.
+#
+# Monospace throughout, squared corners, no soft cards or gradients. The accent is
+# amber-on-black because that is what the status output it replaces looked like;
+# colour is used only for state (ok/warn/crit), never for decoration.
+CSS = FONT_CSS + """
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d1117;font-family:'Inter','DejaVu Sans',system-ui,sans-serif;
-     padding:34px 38px;width:900px;color:#e6edf3}
+body{background:#0b0e14;
+     font-family:'JBMono','JetBrains Mono','DejaVu Sans Mono',monospace;
+     font-size:13.5px;line-height:1.5;
+     padding:22px 26px;width:900px;color:#c8ccd4}
+/* Prompt line instead of a header rule. */
 .hd{display:flex;align-items:baseline;justify-content:space-between;
-    border-bottom:1px solid #21262d;padding-bottom:15px;margin-bottom:24px}
-.hd h1{font-size:25px;font-weight:650;letter-spacing:-.4px}
-.hd .sub{font-size:14px;color:#7d8590;font-variant-numeric:tabular-nums}
-.sec{margin-bottom:26px}
-.sec:last-child{margin-bottom:6px}
-.sec h2{font-size:13px;text-transform:uppercase;letter-spacing:1.4px;
-        color:#7d8590;margin-bottom:12px;font-weight:620}
+    margin-bottom:20px;font-size:13px}
+.hd h1{font-size:13.5px;font-weight:500;letter-spacing:0;color:#c8ccd4}
+.hd h1:before{content:"$ ";color:#5c6370}
+.hd .sub{font-size:12px;color:#5c6370}
+.sec{margin-bottom:22px}
+.sec:last-child{margin-bottom:4px}
+/* Section label mimics a comment line: # ... */
+.sec h2{font-size:12px;text-transform:none;letter-spacing:0;
+        color:#5c6370;margin-bottom:11px;font-weight:400}
+.sec h2:before{content:"# ";color:#3f4652}
 .row{display:grid;grid-template-columns:190px 1fr 150px;align-items:center;
-     gap:16px;padding:9px 0}
-.row .lbl{font-size:15px;color:#c9d1d9}
-.bar{height:9px;border-radius:5px;background:#21262d;overflow:hidden}
-.bar>i{display:block;height:100%;border-radius:5px}
-.val{font-size:14px;text-align:right;color:#c9d1d9;
-     font-variant-numeric:tabular-nums;font-family:'DejaVu Sans Mono',monospace}
-.val i{color:#6e7681;font-style:normal}
-.note{font-size:12.5px;color:#6e7681;margin-top:9px;line-height:1.5}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.9px;
-   color:#7d8590;font-weight:600;padding:0 10px 9px 0;border-bottom:1px solid #21262d}
-td{padding:8px 10px 8px 0;border-bottom:1px solid #161b22;color:#c9d1d9}
+     gap:14px;padding:7px 0}
+.row .lbl{font-size:13px;color:#9aa2ae}
+/* Progress bar as a block-character meter: filling, empty. */
+.bar{height:13px;background:transparent;overflow:hidden;
+     font-size:12px;line-height:13px;letter-spacing:1px;color:#3f4652;
+     display:flex;align-items:center}
+.bar>i{display:block;height:13px;border-radius:0}
+/* Terminal meter: solid glyphs in the state colour, dim remainder. */
+.meter{font-size:13px;letter-spacing:1.5px;line-height:1;white-space:nowrap}
+.meter.g{color:#7ec87e}.meter.y{color:#d9a441}.meter.r{color:#d96a6a}
+.meter .rest{color:#2a303c}
+.val{font-size:13px;text-align:right;color:#e6e9ef}
+.val i{color:#5c6370;font-style:normal}
+.note{font-size:11.5px;color:#5c6370;margin-top:7px;line-height:1.55;
+      font-family:'JetBrains Mono','DejaVu Sans Mono',monospace}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;
+   color:#5c6370;font-weight:500;padding:0 9px 7px 0;border-bottom:1px solid #1c212b}
+td{padding:6px 9px 6px 0;border-bottom:1px solid #12161e;color:#c8ccd4}
 tr:last-child td{border-bottom:none}
-td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;
-          font-family:'DejaVu Sans Mono',monospace}
-td.dim{color:#7d8590}
-.g{background:#3fb950}.y{background:#d29922}.r{background:#f85149}.b{background:#388bfd}
-.warn{margin-top:20px;padding:13px 16px;border-radius:8px;
-      background:rgba(248,81,73,.1);border-left:3px solid #f85149;font-size:13.5px}
-.warn b{color:#f85149}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.dim{color:#5c6370}
+/* State colours: green ok, amber warn, red crit. */
+.g{background:#7ec87e}.y{background:#d9a441}.r{background:#d96a6a}.b{background:#6a9fd9}
+.warn{margin-top:16px;padding:10px 12px;
+      background:transparent;border-left:2px solid #d96a6a;font-size:12.5px}
+.warn b{color:#d96a6a}
 """
 
 
@@ -82,11 +139,19 @@ def _chrome() -> str | None:
     return shutil.which("chromium") or shutil.which("google-chrome")
 
 
-def _bar(pct: float) -> str:
-    """Colour by headroom: green under 60%, amber to 85%, red beyond."""
+def _bar(pct: float, width: int = 24) -> str:
+    """Block-character meter, the way a terminal progress bar renders.
+
+    Colour marks state only: green under 60%, amber to 85%, red beyond. The
+    glyphs carry the proportion so the card still reads correctly in greyscale.
+    """
     cls = "g" if pct < 60 else ("y" if pct < 85 else "r")
-    w = max(1.5, min(100.0, pct))
-    return f'<div class="bar"><i class="{cls}" style="width:{w:.1f}%"></i></div>'
+    frac = max(0.0, min(100.0, pct)) / 100.0
+    filled = int(round(frac * width))
+    # Half-block for an odd remainder keeps short bars from reading as zero.
+    return (f'<span class="meter {cls}">'
+            f'{"█" * filled}<span class="rest">{"░" * (width - filled)}</span>'
+            '</span>')
 
 
 def _esc(s: str) -> str:
@@ -359,8 +424,8 @@ def html_timesheet(doc: dict) -> str:
                               + (f" — {preview}" if preview else "")))
     rows = []
     for kind, text in flags:
-        sym = {"ok": "✓", "warn": "!", "info": "·"}[kind]
-        col = {"ok": "#3fb950", "warn": "#d29922", "info": "#7d8590"}[kind]
+        sym = {"ok": "[ok]", "warn": "[!]", "info": "[..]"}[kind]
+        col = {"ok": "#7ec87e", "warn": "#d9a441", "info": "#5c6370"}[kind]
         rows.append(f'<div class="flag"><span style="color:{col}">{sym}</span>'
                     f'<span>{_esc(text)}</span></div>')
     body.append('<div class="sec">' + "".join(rows) + '</div>')
@@ -371,19 +436,21 @@ def html_timesheet(doc: dict) -> str:
 
 
 TS_CSS = """
-.bigbar .bar{height:16px;border-radius:8px}
-.bigbar .bar>i{border-radius:8px}
-.dstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:6px}
+/* Timesheet extras, kept in the same terminal idiom. */
+.bigbar .meter{font-size:17px;letter-spacing:2px}
+.dstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin-top:4px}
 .dcell{text-align:center}
-.dval{font-size:13px;color:#c9d1d9;font-variant-numeric:tabular-nums;
-      font-family:'DejaVu Sans Mono',monospace;margin-bottom:5px}
-.dbar{height:74px;display:flex;align-items:flex-end;justify-content:center}
-.dbar>i{display:block;width:100%;border-radius:4px 4px 0 0}
-.dname{font-size:12.5px;color:#e6edf3;margin-top:6px;font-weight:600}
-.ddate{font-size:11px;color:#6e7681;font-variant-numeric:tabular-nums}
-.ov{font-size:10.5px;color:#d29922;margin-top:3px;min-height:13px}
-.flag{display:flex;gap:10px;font-size:14px;color:#c9d1d9;padding:5px 0;line-height:1.45}
-.flag span:first-child{width:14px;text-align:center;flex:0 0 14px;font-weight:700}
+.dval{font-size:12.5px;color:#c8ccd4;font-variant-numeric:tabular-nums;
+      margin-bottom:5px}
+.dbar{height:66px;display:flex;align-items:flex-end;justify-content:center}
+/* Vertical meter built from the same glyphs, stacked. */
+.dbar>i{display:block;width:100%;border-radius:0}
+.dname{font-size:12px;color:#e6e9ef;margin-top:6px}
+.ddate{font-size:11px;color:#3f4652;font-variant-numeric:tabular-nums}
+.ov{font-size:10.5px;color:#d9a441;margin-top:3px;min-height:13px}
+/* Flag lines mimic compiler/status output: [ok] / [!] / [..] */
+.flag{display:flex;gap:9px;font-size:12.5px;color:#c8ccd4;padding:3px 0;line-height:1.5}
+.flag span:first-child{width:26px;text-align:left;flex:0 0 26px;font-weight:400}
 """
 
 

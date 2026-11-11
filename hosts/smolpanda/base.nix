@@ -144,6 +144,11 @@ in
   security.sudo.wheelNeedsPassword = false;
   programs.zsh.enable = true;
 
+  # Monospace face for the rendered report cards (headless Chromium has only
+  # DejaVu Sans otherwise, so `monospace` resolved to nothing and the terminal
+  # look was impossible). JetBrains Mono is the terminal font these cards mimic.
+  fonts.packages = with pkgs; [ jetbrains-mono ];
+
   # 2026-08-28: system neovim pinned to 0.12.5 (upkgs) for treesitter `main`
   environment.systemPackages = (with pkgs; [
      curl
