@@ -101,19 +101,17 @@ body{background:#0b0e14;
 .sec h2{font-size:12px;text-transform:none;letter-spacing:0;
         color:#5c6370;margin-bottom:11px;font-weight:400}
 .sec h2:before{content:"# ";color:#3f4652}
-.row{display:grid;grid-template-columns:190px 1fr 150px;align-items:center;
-     gap:14px;padding:7px 0}
+.row{display:block;padding:11px 0 3px}
+/* Head line: label left, percentage right, like a usage-limits panel. */
+.row .head{display:flex;align-items:baseline;justify-content:space-between;
+           gap:12px;margin-bottom:7px}
 .row .lbl{font-size:13px;color:#9aa2ae}
-/* Progress bar as a block-character meter: filling, empty. */
-.bar{height:13px;background:transparent;overflow:hidden;
-     font-size:12px;line-height:13px;letter-spacing:1px;color:#3f4652;
-     display:flex;align-items:center}
-.bar>i{display:block;height:13px;border-radius:0}
-/* Terminal meter: solid glyphs in the state colour, dim remainder. */
-.meter{font-size:13px;letter-spacing:1.5px;line-height:1;white-space:nowrap}
-.meter.g{color:#7ec87e}.meter.y{color:#d9a441}.meter.r{color:#d96a6a}
-.meter .rest{color:#2a303c}
-.val{font-size:13px;text-align:right;color:#e6e9ef}
+.row .pct{font-size:13px;color:#e6e9ef;font-variant-numeric:tabular-nums}
+/* Smooth track, not block glyphs. */
+.bar{height:7px;border-radius:4px;background:#1c212b;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px}
+.val{font-size:12px;color:#5c6370;margin-top:6px;font-variant-numeric:tabular-nums}
+.val b{color:#c8ccd4;font-weight:400}
 .val i{color:#5c6370;font-style:normal}
 .note{font-size:11.5px;color:#5c6370;margin-top:7px;line-height:1.55;
       font-family:'JetBrains Mono','DejaVu Sans Mono',monospace}
@@ -139,19 +137,16 @@ def _chrome() -> str | None:
     return shutil.which("chromium") or shutil.which("google-chrome")
 
 
-def _bar(pct: float, width: int = 24) -> str:
-    """Block-character meter, the way a terminal progress bar renders.
+def _bar(pct: float) -> str:
+    """Smooth thin progress bar, the way a usage dashboard renders it.
 
-    Colour marks state only: green under 60%, amber to 85%, red beyond. The
-    glyphs carry the proportion so the card still reads correctly in greyscale.
+    Block glyphs (████░░░░) were the wrong call: at small heights they read as
+    texture rather than proportion, and the gaps between glyphs add visual noise.
+    A filled track is smoother and the fill colour still carries state.
     """
     cls = "g" if pct < 60 else ("y" if pct < 85 else "r")
-    frac = max(0.0, min(100.0, pct)) / 100.0
-    filled = int(round(frac * width))
-    # Half-block for an odd remainder keeps short bars from reading as zero.
-    return (f'<span class="meter {cls}">'
-            f'{"█" * filled}<span class="rest">{"░" * (width - filled)}</span>'
-            '</span>')
+    w = max(0.6, min(100.0, pct))
+    return f'<div class="bar"><i class="{cls}" style="width:{w:.1f}%"></i></div>'
 
 
 def _esc(s: str) -> str:
@@ -190,15 +185,17 @@ def html_quota(doc: dict) -> str:
             left = total - used
             reset = (q.get("resetAt") or "")[:10]
             label = CC_WINDOW_LABEL.get(name, name)
-            # Show consumed against the limit, not headroom: "used of limit" is
-            # how a budget is normally read, and it makes the bar and the number
-            # point the same direction.
+            # Label and percentage on one line, bar beneath it full width. This is
+            # how a usage-limits panel reads: the eye lands on the % first, then
+            # the bar confirms it, then the raw numbers if you care.
             rows.append(
-                f'<div class="row"><div class="lbl">{_esc(label)}</div>{_bar(pct)}'
-                f'<div class="val">{CC_UNIT}{used:.2f}<i> of {CC_UNIT}{total:.0f}</i></div></div>'
-                f'<div class="note" style="margin:-4px 0 6px 206px">'
-                f'{pct:.0f}% used · {CC_UNIT}{left:.2f} left'
-                + (f' · resets {reset}' if reset else '') + '</div>')
+                '<div class="row">'
+                '<div class="head"><span class="lbl">' + _esc(label) + '</span>'
+                f'<span class="pct">{pct:.0f}%</span></div>'
+                f'{_bar(pct)}'
+                f'<div class="val"><b>{CC_UNIT}{used:.2f}</b> of {CC_UNIT}{total:.0f}'
+                f' · {CC_UNIT}{left:.2f} left'
+                + (f' · resets {reset}' if reset else '') + '</div></div>')
         body.append('<div class="sec"><h2>CommandCode · '
                     f'{_esc(cc.get("plan") or "?")} · budget in USD</h2>{"".join(rows)}</div>')
     else:
@@ -213,11 +210,13 @@ def html_quota(doc: dict) -> str:
         left = (allow or 0) - (used or 0)
         body.append(
             '<div class="sec"><h2>GitHub Copilot · business · credits</h2>'
-            f'<div class="row"><div class="lbl">AI credits</div>{_bar(pct)}'
-            f'<div class="val">{used}<i> of {allow} credits</i></div></div>'
-            f'<div class="note" style="margin:-4px 0 6px 206px">'
-            f'{pct:.0f}% used · {left} left (~${left * 0.01:.2f}) · '
-            f'resets {_esc(cp.get("reset_date", "?"))}</div>'
+            '<div class="row">'
+            f'<div class="head"><span class="lbl">AI credits</span>'
+            f'<span class="pct">{pct:.0f}%</span></div>'
+            f'{_bar(pct)}'
+            f'<div class="val"><b>{used}</b> of {allow} credits'
+            f' · {left} left (~${left * 0.01:.2f})'
+            f' · resets {_esc(cp.get("reset_date", "?"))}</div></div>'
             '<div class="note">Pooled org-wide, so this is one seat\'s contribution, not a ceiling.</div>'
             '</div>')
     else:
@@ -364,16 +363,15 @@ def html_timesheet(doc: dict) -> str:
     body = [f'<div class="hd"><h1>Timesheet · week {doc.get("week_no","?")}</h1>'
             f'<div class="sub">{ws} → {we}</div></div>']
 
-    # Headline: hours logged against target.
+    # Headline: hours logged against target, same shape as the quota rows.
     body.append(
         '<div class="sec">'
-        f'<div class="row" style="grid-template-columns:1fr 210px">'
-        f'<div class="bigbar">{_bar(pct)}</div>'
-        f'<div class="val" style="font-size:19px">{wtd:.2f}<i> of {target:.0f} h</i></div>'
-        '</div>'
-        f'<div class="note" style="margin-top:10px">'
-        f'{pct:.1f}% of target · <b style="color:#e6edf3">{remaining:.2f} h remaining</b>'
-        '</div></div>')
+        '<div class="row">'
+        f'<div class="head"><span class="lbl">Week to date</span>'
+        f'<span class="pct">{pct:.1f}%</span></div>'
+        f'{_bar(pct)}'
+        f'<div class="val"><b>{wtd:.2f} h</b> of {target:.0f} h'
+        f' · <b>{remaining:.2f} h</b> remaining</div></div></div>')
 
     # Day strip: bar height scaled to the largest day, so relative load is visible.
     days = doc.get("days") or []
@@ -437,7 +435,6 @@ def html_timesheet(doc: dict) -> str:
 
 TS_CSS = """
 /* Timesheet extras, kept in the same terminal idiom. */
-.bigbar .meter{font-size:17px;letter-spacing:2px}
 .dstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:9px;margin-top:4px}
 .dcell{text-align:center}
 .dval{font-size:12.5px;color:#c8ccd4;font-variant-numeric:tabular-nums;
