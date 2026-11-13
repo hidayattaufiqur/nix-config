@@ -80,7 +80,9 @@ let
       # 2026-10-22: v2 -> v3 to load the jev-gate plugin (plugins load once
       # per process) together with the approvals.policy changes.
       # 2026-10-31: v3 -> v4 for discord.allow_from (the alt account).
-      HERMES_CONFIG_EPOCH = "4";
+      # 2026-11-14: v4 -> v5 for the d365fo-mcp routing steer in atlas-SOUL.md
+      # and the schema-5 binary (MCP stdio children spawn once per process).
+      HERMES_CONFIG_EPOCH = "5";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
