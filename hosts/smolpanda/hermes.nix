@@ -638,7 +638,12 @@ in
         # source in, but the running gateway had been up since 2026-11-02 and
         # plugins are loaded ONCE per process — the config was correct and
         # completely inert until this bump forced the restart.
-        environment.HERMES_CONFIG_EPOCH = "9";
+        # 2026-11-14: bumped 9 -> 10 for the d365fo-mcp schema-5 binary. The
+        # restartTriggers hash on config.yaml did NOT fire (the file is written
+        # during activation), so the gateway kept a Nov-7 child running the old
+        # tool set against a schema-5 index -> every d365fo call returned
+        # schema_mismatch. MCP stdio children spawn once per process.
+        environment.HERMES_CONFIG_EPOCH = "10";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
