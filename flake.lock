@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794601476,
-        "narHash": "sha256-cr1sGKTxnrz5plQib+6XLRkDI/LnJx2DcsyVGzb/C9w=",
+        "lastModified": 1794620696,
+        "narHash": "sha256-2AfOjyl3qDg02RVpLnoLv2tJDI5VfmG7F1XZWsHYMpM=",
         "ref": "refs/heads/main",
-        "rev": "587fbf795b2536cb136fd8e895acd7c74d15f73d",
-        "revCount": 39,
+        "rev": "68a7de40de60df3d7b53a5ae739f11d9044a8d6c",
+        "revCount": 44,
         "type": "git",
         "url": "file:///home/smolpanda/Fun/Projects/d365fo-mcp"
       },
@@ -92,8 +92,8 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1789371321,
-        "narHash": "sha256-D4l5gO2+tJHnweNgSTMCImCJ+nPXLU1i/vIvz1h3gnU=",
+        "lastModified": 1794738915,
+        "narHash": "sha256-QO2iejxjcf+V+f++NqY2Z9FGgiLm/O5fgxzJcb/tZl4=",
         "path": "/home/smolpanda/nix-config/vendor/hermes-agent",
         "type": "path"
       },
