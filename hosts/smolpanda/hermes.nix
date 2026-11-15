@@ -396,11 +396,22 @@ in
       # set display.tool_progress to "new" for Discord).
       # `new` = tool indicator only when the tool changes (quieter than default `all`).
       display.platforms.discord.tool_progress = "new";
-      # Vision analysis backend: commandcode Muse Spark 1.3 contributor (vision-capable).
-      # 9router oc/muse-spark-1.2-contributor-free returns empty content on vision (HTTP 200 content:"") — pinned to commandcode paid vision.
+      # Vision analysis backend — routed through 9router so it rides whichever
+      # subscription currently has headroom instead of being pinned to one paid
+      # provider. Measured 2026-11-15 with a glyph-reading test (two block
+      # letters, answer "ZQ"): ocg/muse-spark-1.3-contributor reads images
+      # correctly, while ocg/deepseek-v4.1-flash and ocg/glm-5.3-flash accept
+      # the payload but return EMPTY content — blind. So the model is pinned
+      # explicitly rather than left to combo fallback, which could silently land
+      # on a blind leg and produce "(empty)" analysis.
+      #
+      # Prior pin was commandcode/meta/muse-spark-1.3-contributor; that broke
+      # once CommandCode credits hit zero (2026-11-15, $0.75 left, resets 22 Nov)
+      # and vision failed with _AuxProbeClientStub — a Hermes internal guard, not
+      # an auth error, which is why "check hermes doctor" was a dead end.
       auxiliary.vision = {
-        provider = "commandcode";
-        model = "meta/muse-spark-1.3-contributor";
+        provider = "9router";
+        model = "ocg/muse-spark-1.3-contributor";
       };
       # MCP servers ported from the user's opencode setup (~/.config/opencode/opencode.json).
       # - microsoft_learn: official Microsoft Learn MCP (remote, no auth) — used by the
@@ -643,7 +654,20 @@ in
         # during activation), so the gateway kept a Nov-7 child running the old
         # tool set against a schema-5 index -> every d365fo call returned
         # schema_mismatch. MCP stdio children spawn once per process.
-        environment.HERMES_CONFIG_EPOCH = "10";
+        # 2026-11-14 (later): bumped 10 -> 11 so the gateway respawns the
+        # d365fo-mcp MCP child from the issue-burndown binary (587fbf7 ->
+        # 68a7de4: scan-stop classification #1/#7/#14, claims-includes-members
+        # #2, excerpt envelope #3/#4, AxMenu parser, scan-cursor round-trip
+        # #17). Same failure mode as the line above: the switch replaced the
+        # store path and the unit file, but systemd did not restart the
+        # service, so the 03:38 gateway kept the pre-burndown child alive.
+        # 2026-11-15: bumped 11 -> 12 for auxiliary.vision moving from
+        # commandcode/meta/muse-spark-1.3-contributor to
+        # 9router/ocg/muse-spark-1.3-contributor. CommandCode credits hit zero
+        # and vision had been failing with _AuxProbeClientStub. Same trap as
+        # 2026-11-14: the config.yaml restartTrigger cannot fire because the
+        # file is rewritten during activation, so the epoch is the only lever.
+        environment.HERMES_CONFIG_EPOCH = "12";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
