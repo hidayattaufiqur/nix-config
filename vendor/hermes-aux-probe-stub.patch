@@ -1,0 +1,55 @@
+diff --git a/agent/auxiliary_client.py b/agent/auxiliary_client.py
+index f5e827b..e4bd6ab 100644
+--- a/agent/auxiliary_client.py
++++ b/agent/auxiliary_client.py
+@@ -124,6 +124,12 @@ OpenAI = _OpenAIProxy()  # module-level name, resolves lazily on call/isinstance
+ # never receive one.
+ _aux_probe_state = threading.local()
+ 
++# Attributes that callers probe on an auxiliary client purely to *inspect* it
++# (host match, slash-model compat, credential checks). On a probe stub these
++# must behave like any other absent attribute rather than raising, or an
++# availability check turns into a hard failure.
++_AUX_INSPECTABLE_ATTRS = frozenset({"client", "base_url", "api_key"})
++
+ 
+ class _AuxProbeClientStub:
+     """Non-functional placeholder returned while `aux_probe_mode` is active."""
+@@ -137,6 +143,18 @@ class _AuxProbeClientStub:
+     def __getattr__(self, name: str) -> Any:
+         # Loud failure if a probe stub ever leaks into a runtime call path
+         # (it must not — stubs are cache-excluded and probe-scoped).
++        #
++        # LOCAL PATCH (smolpanda): capability probes are exempt.
++        # Callers legitimately do `getattr(client, "_client", None)`,
++        # `getattr(client, "client", None)` and `getattr(client, "base_url", "")`
++        # to *inspect* a client; a probe test is not a client use. Raising for
++        # those turned an availability check into a RuntimeError that poisoned
++        # the client cache and permanently broke vision (see the matching fix in
++        # _get_cached_client). Real use still fails loudly because every actual
++        # call target (chat.completions, responses, close, ...) is not in this
++        # set.
++        if name.startswith("_") or name in _AUX_INSPECTABLE_ATTRS:
++            raise AttributeError(name)
+         raise RuntimeError(
+             f"_AuxProbeClientStub used as a real client (attribute {name!r}); "
+             "aux_probe_mode is for availability checks only"
+@@ -7687,6 +7705,18 @@ def _get_cached_client(
+         # can detect stale entries later.
+         bound_loop = current_loop
+         with _client_cache_lock:
++            # LOCAL PATCH (smolpanda): never cache a probe stub.
++            #
++            # `_store_cached_client` already refuses stubs, but this path writes
++            # `_client_cache` directly and skipped that guard. Under probe mode
++            # resolve_provider_client returns a stub, so the FIRST availability
++            # check (e.g. check_vision_requirements at tool-registry time)
++            # permanently installed a non-functional client. Every later vision
++            # call then hit the stub and raised
++            # "aux_probe_mode is for availability checks only" until process
++            # restart — which is exactly how browser_vision broke.
++            if isinstance(client, _AuxProbeClientStub):
++                return client, model or default_model
+             if cache_key not in _client_cache:
+                 # Safety belt: if the cache has grown beyond the max, evict
+                 # the oldest entries (FIFO — dict preserves insertion order).
