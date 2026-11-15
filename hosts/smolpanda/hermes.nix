@@ -82,7 +82,11 @@ let
       # 2026-10-31: v3 -> v4 for discord.allow_from (the alt account).
       # 2026-11-14: v4 -> v5 for the d365fo-mcp routing steer in atlas-SOUL.md
       # and the schema-5 binary (MCP stdio children spawn once per process).
-      HERMES_CONFIG_EPOCH = "5";
+      # 2026-11-15: v5 -> v6 for the get_object stale-state fix (6d18bf7). Atlas
+      # resolves the binary through /run/current-system/sw/bin/d365fo-mcp, so its
+      # MCP child keeps whatever that symlink pointed at when the gateway
+      # started; only a restart respawns it.
+      HERMES_CONFIG_EPOCH = "6";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
@@ -667,7 +671,18 @@ in
         # and vision had been failing with _AuxProbeClientStub. Same trap as
         # 2026-11-14: the config.yaml restartTrigger cannot fire because the
         # file is rewritten during activation, so the epoch is the only lever.
-        environment.HERMES_CONFIG_EPOCH = "12";
+        # 2026-11-15 (later): bumped 12 -> 13 for the d365fo-mcp schema-6
+        # binary (68a7de4 -> a982773: citation verified/mode derived from the
+        # file, stale_index precedence, named empty states, table-extension
+        # composition 46 -> 262). Binary and index must move together: schema 5
+        # and 6 refuse each other, and the MCP stdio child is spawned once per
+        # gateway process, so the pointer swap alone would leave a schema-5
+        # client talking to a schema-6 generation.
+        # 2026-11-15 (later still): bumped 13 -> 14 for the get_object stale-state
+        # fix (a982773 -> 6d18bf7). get_object was the one surface reporting a
+        # changed file as coverage_gap instead of stale_index; the index is
+        # unchanged (same schema 6, same generation), so only the binary moves.
+        environment.HERMES_CONFIG_EPOCH = "14";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
