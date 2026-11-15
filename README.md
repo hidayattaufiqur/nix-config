@@ -13,7 +13,7 @@ I'm also interested and fascinated by the world of Nix and NixOS in general, and
 - `home-manager/` — reusable user-level configuration (shell, editor, dotfiles)
 - `services/` — service definitions (nginx vhosts, systemd units, cloudflared)
 - `secrets/` — encrypted secrets managed via `sops-nix`
-- `PLANS.md` — current plans and historical notes
+- `docs/` — operational notes, including `docs/GIT_CONVENTIONS.md`
 
 ## Practical wins (in this repo)
 
@@ -47,7 +47,6 @@ home-manager switch --flake .#nixos
 - Nix has a real learning curve — the docs are good but the mental model is different from traditional distros.
 - GNOME extensions are sensitive to channel mixing: keep extension packages on the same channel as your GNOME shell version.
 - Some precompiled binaries assume an FHS layout — `nix-ld` is used as an escape hatch.
-- See `PLANS.md` for notes on key rotation and other operational details.
 
 ## TODO
 
