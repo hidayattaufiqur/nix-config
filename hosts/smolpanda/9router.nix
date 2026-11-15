@@ -1,44 +1,43 @@
 { config, lib, pkgs, ... }:
 
-# 9Router v0.5.99 + AgentRouter header-spoof overlay + combo-400-fallthrough patch.
-# 0.5.99 has no git tag, so the build pins the npm-published commit ce4460ef.
-# 9router-build.service builds that commit with the local AgentRouter overlay and
-# the combo-400-fallthrough patch; 9router.service runs it with the persistent
-# /var/lib/9router/data bind.
-# Local image tags are versioned by patch content (v0.5.99 → v0.5.99-combo400):
-# the build-service "image exists, skip" guard keys on the tag, so a new tag per
-# patch keeps a stale unpatched image from being silently reused.
-# The previous v0.5.99 image remains installed for rollback.
+# 9Router v0.5.119. v0.5.119 has a real git tag, so the build checks out the tag
+# rather than a raw SHA. 9router-build.service builds it; 9router.service runs it
+# with the persistent /var/lib/9router/data bind.
 #
-# ponytail: upstream custom-server.js is byte-identical between v0.5.91 (f01fb909)
-# and the 0.5.99 commit ce4460ef (sha256 c3b4f23a…), so the overlay needs no rebase.
-# The 0.5.91 -> 0.5.99 DB diff is additive only (apiKeys.accessRestricted/accessAllow,
-# SCHEMA_VERSION 1 -> 2); syncSchemaFromTables() adds the columns on boot after a
-# pre-change backup. Same SQLite file, v0.5.91 stays as rollback.
+# Both behavioural source patches are now gone, so a version bump is close to a
+# string change (see the one remaining edit — the version stamp — in buildScript):
+#  - AgentRouter header-spoof plugin: retired 2026-11-16, provider unused (its
+#    connection is inactive and no combo leg references it). The old 193-line
+#    overlay replaced upstream's custom-server.js wholesale, so every bump
+#    silently reverted upstream changes to that file.
+#  - combo-400-fallthrough: upstream adopted it. v0.5.119's
+#    open-sse/services/accountFallback.js:69-71 returns
+#    { shouldFallback: false, cooldownMs: 0, requestScoped: true } for unmatched
+#    4xx, and combo.js:580-600 advances to the next member on requestScoped with
+#    no account cooldown, returning the first request-scoped failure only after
+#    every member rejected the request. 9router-combo-fallback-check.mjs is kept
+#    as a post-build guard on that upstream behaviour.
+#
+# SCHEMA_VERSION is still 2 at v0.5.119, so the SQLite file needs no migration;
+# take a backup before switching anyway.
 # Use the reachable CN package mirrors explicitly during image build.
 
 let
-  # AgentRouter header-spoof patch — injects Claude Code / Copilot headers
-  # when 9router proxies to agentrouter.org upstreams.
-  overlayScript = ./9router-agentrouter-overlay.js;
-  # Combo fallthrough patch — a model-scoped 400 must advance to the next combo
-  # leg instead of aborting the chain (card t_54fa8e8b). Applied to the checked
-  # out source BEFORE `npm run build`, because the Next bundle is what the route
-  # handlers actually load at runtime (.next/server/chunks/8910.js), not the
-  # open-sse/*.js source that ships alongside it. Fails the build if upstream
-  # refactors that block away.
-  comboPatch = ./9router-combo-fallback-patch.mjs;
+  # Behavioural post-build check: upstream's own requestScoped combo advance, the
+  # behaviour our deleted combo-400 patch used to provide. Keeps the drop honest —
+  # if a future bump regresses it, the build fails instead of silently shipping.
+  comboCheck = ./9router-combo-fallback-check.mjs;
   buildScript = pkgs.writeShellScriptBin "build-9router" ''
     #!${pkgs.bash}/bin/bash
     set -euo pipefail
 
-    VERSION="v0.5.99"
-    # Image tag carries the local patch revision: the "already built, skip"
-    # guard below keys on the tag, so reusing the bare version tag after a
-    # patch change would silently serve the UNPATCHED image.
-    IMAGE_VERSION="v0.5.99-combo400"
-    # npm gitHead of 0.5.99; no v0.5.99 tag exists, so pin the immutable commit.
-    COMMIT="ce4460ef79382bfddb4aa5fc0ff9f3cb0d5f95a8"
+    VERSION="v0.5.119"
+    # Image tag carries the only remaining local edit (the version stamp below):
+    # the "already built, skip" guard keys on the tag, so a content change needs
+    # a new tag or the stale image is silently reused.
+    IMAGE_VERSION="v0.5.119-verstamp"
+    # Real git tag (commit 1855aa44), matching npm gitHead for 0.5.119.
+    REF="refs/tags/v0.5.119"
     IMAGE="9router-local:$IMAGE_VERSION"
 
     # Skip if image already built
@@ -53,14 +52,19 @@ let
     cd "$SRC/repo"
     git init -q .
     git remote add origin https://github.com/decolua/9router.git
-    git fetch -q --depth 1 origin "$COMMIT"
+    git fetch -q --depth 1 origin "$REF"
     git checkout -q FETCH_HEAD
 
-    # Overlay AgentRouter header-spoof patch into custom-server.js
-    cp "${overlayScript}" "$SRC/repo/custom-server.js"
-
-    # Combo fallthrough patch (pre-build: the Next bundle is the runtime artifact)
-    ${pkgs.nodejs}/bin/node "${comboPatch}" "$SRC/repo/open-sse/services/combo.js"
+    # Upstream's tag bumps cli/package.json to 0.5.119 but leaves root package.json
+    # at 0.5.116, and /api/version answers with pkg.version — so a pristine v0.5.119
+    # tag advertises itself as 0.5.116. Stamp the pinned version (derived from
+    # $VERSION, so a bump needs no edit here). Fails closed if the field is gone.
+    PLAIN_VERSION=''${VERSION#v}
+    ${pkgs.gnused}/bin/sed -i -E "0,/^  \"version\": \"[0-9.]+\",\$/s//  \"version\": \"$PLAIN_VERSION\",/" "$SRC/repo/package.json"
+    grep -q "\"version\": \"$PLAIN_VERSION\"" "$SRC/repo/package.json" || {
+      echo "FAIL: could not stamp root package.json to $PLAIN_VERSION"
+      exit 1
+    }
 
     # Build image from upstream Dockerfile
     ${pkgs.docker}/bin/docker build \
@@ -69,13 +73,28 @@ let
       --build-arg APP_VERSION="$VERSION" \
       -t "$IMAGE" "$SRC/repo"
 
-    # The patch script edits open-sse/services/combo.js, but the route handlers load
-    # the Next bundle. Assert the patch reached the artifact that actually serves
-    # traffic; on failure drop the tag so the "already exists, skip" guard on the
-    # next run cannot serve an unpatched image.
+    # Assert against the RUNTIME artifact, inside the image: a model-scoped 400 must
+    # advance to the next combo leg (upstream requestScoped behaviour, which replaced
+    # our local patch). Drop the tag on failure so the "already exists, skip" guard
+    # on the next run cannot serve a regressed image.
     if ! ${pkgs.docker}/bin/docker run --rm --entrypoint sh "$IMAGE" \
-         -c 'grep -rq "trying next (no account cooldown)" /app/.next'; then
-      echo "FAIL: combo-400-fallthrough patch absent from the built .next bundle"
+         -c 'test -f /app/custom-server.js'; then
+      echo "FAIL: custom-server.js absent from the built image"
+      ${pkgs.docker}/bin/docker rmi -f "$IMAGE" >/dev/null 2>&1 || true
+      exit 1
+    fi
+    if ! ${pkgs.docker}/bin/docker run --rm -i --entrypoint node "$IMAGE" \
+         --input-type=module - < "${comboCheck}"; then
+      echo "FAIL: combo requestScoped fallthrough check failed on the built image"
+      ${pkgs.docker}/bin/docker rmi -f "$IMAGE" >/dev/null 2>&1 || true
+      exit 1
+    fi
+    # /api/version answers with package.json's version, so assert the stamp survived
+    # into the image the container runs. Drop the tag so the "already exists, skip"
+    # guard cannot serve an image that reports the wrong version.
+    if ! ${pkgs.docker}/bin/docker run --rm --entrypoint sh "$IMAGE" \
+         -c 'grep -q "\"version\": \"0.5.119\"" /app/package.json'; then
+      echo "FAIL: in-image package.json does not report 0.5.119 (/api/version would lie)"
       ${pkgs.docker}/bin/docker rmi -f "$IMAGE" >/dev/null 2>&1 || true
       exit 1
     fi
@@ -99,9 +118,9 @@ in
     "d /var/lib/9router/build-src 0755 root root -"
   ];
 
-  # Build 9router v0.5.99 image from source (runs once, cached in nix store path)
+  # Build 9router v0.5.119 image from source (runs once, cached in nix store path)
   systemd.services."9router-build" = {
-    description = "Build 9router v0.5.99 from source";
+    description = "Build 9router v0.5.119 from source";
     after = [ "network.target" "docker.service" ];
     requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
@@ -125,7 +144,7 @@ in
       Type = "simple";
       EnvironmentFile = config.sops.templates."9router.env".path;
       ExecStartPre = "-${pkgs.docker}/bin/docker rm -f 9router";
-      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.99-combo400";
+      ExecStart = "${pkgs.docker}/bin/docker run --rm --name 9router --network host --env INITIAL_PASSWORD -v /var/lib/9router/data:/app/data 9router-local:v0.5.119-verstamp";
       ExecStop = "-${pkgs.docker}/bin/docker stop 9router";
       Restart = "always";
       RestartSec = 10;

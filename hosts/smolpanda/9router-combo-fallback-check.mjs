@@ -1,12 +1,18 @@
-// Behavioural check for the combo-400-fallthrough patch (card t_54fa8e8b).
+// Behavioural check for combo fallthrough on request-scoped 4xx.
+//
+// This used to test our local combo-400-fallthrough patch (card t_54fa8e8b).
+// Upstream adopted the behaviour in v0.5.119 (accountFallback.js requestScoped +
+// combo.js's requestScoped advance), the patch is gone, and this check now guards
+// UPSTREAM's behaviour so a future bump that regresses it fails the image build.
 //
 // Asserts against the RUNTIME artifact, so run it inside a built image:
 //
 //   docker run --rm -i --entrypoint /usr/local/bin/node \
 //     <image> --input-type=module - < 9router-combo-fallback-check.mjs
 //
-// Expected: ALL CHECKS PASSED (exit 0). On an unpatched image the 400 cases in
-// checks 1 and 3 fail, which is the negative control that proves this test bites.
+// Expected: ALL CHECKS PASSED (exit 0). Against an image without the requestScoped
+// behaviour the 400 cases in checks 1 and 3 fail, which is the negative control
+// that proves this test bites.
 //
 // Import path is intentionally the in-container path: this is a post-build check.
 const { handleComboChat } = await import("/app/open-sse/services/combo.js");
