@@ -86,7 +86,13 @@ let
       # resolves the binary through /run/current-system/sw/bin/d365fo-mcp, so its
       # MCP child keeps whatever that symlink pointed at when the gateway
       # started; only a restart respawns it.
-      HERMES_CONFIG_EPOCH = "6";
+      # 2026-11-16: v6 -> v7 for the UX-feedback binary (6d18bf7 -> 02a1a8a:
+      # outline, list_members, callers, read_objects, prefix fallback, and
+      # source bodies are now X++ instead of the XML wrapper around them).
+      # Same trap as v5 -> v6: this gateway resolves the binary through
+      # /run/current-system/sw/bin/d365fo-mcp at spawn time, so only a restart
+      # gives it the new tool set.
+      HERMES_CONFIG_EPOCH = "7";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
@@ -682,7 +688,13 @@ in
         # fix (a982773 -> 6d18bf7). get_object was the one surface reporting a
         # changed file as coverage_gap instead of stale_index; the index is
         # unchanged (same schema 6, same generation), so only the binary moves.
-        environment.HERMES_CONFIG_EPOCH = "14";
+        # 2026-11-16: bumped 14 -> 15 for the UX-feedback binary
+        # (6d18bf7 -> 02a1a8a). Five feedback items are new tools (outline,
+        # list_members, callers, read_objects) plus the fix that made source
+        # bodies real X++ rather than the <Method><Source><![CDATA[ wrapper.
+        # The index is unchanged — same schema 6, same generation — so only
+        # the binary moves and no rebuild of the catalog is needed.
+        environment.HERMES_CONFIG_EPOCH = "15";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
