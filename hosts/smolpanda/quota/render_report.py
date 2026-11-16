@@ -122,6 +122,13 @@ td{padding:6px 9px 6px 0;border-bottom:1px solid #12161e;color:#c8ccd4}
 tr:last-child td{border-bottom:none}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 td.dim{color:#5c6370}
+/* Per-provider section colours, so the eye can jump to a provider instead of
+   re-reading three identical grey headers. Deliberately NOT the state palette
+   (green/amber/red): a coloured header must never read as "this one is fine"
+   or "this one is broken". */
+.sec h2.cc{color:#6a9fd9}
+.sec h2.ocg{color:#b48ead}
+.sec h2.cp{color:#5fb3a1}
 /* State colours: green ok, amber warn, red crit. */
 .g{background:#7ec87e}.y{background:#d9a441}.r{background:#d96a6a}.b{background:#6a9fd9}
 .warn{margin-top:16px;padding:10px 12px;
@@ -196,10 +203,10 @@ def html_quota(doc: dict) -> str:
                 f'<div class="val"><b>{CC_UNIT}{used:.2f}</b> of {CC_UNIT}{total:.0f}'
                 f' · {CC_UNIT}{left:.2f} left'
                 + (f' · resets {reset}' if reset else '') + '</div></div>')
-        body.append('<div class="sec"><h2>CommandCode · '
+        body.append('<div class="sec"><h2 class="cc">CommandCode · '
                     f'{_esc(cc.get("plan") or "?")} · budget in USD</h2>{"".join(rows)}</div>')
     else:
-        body.append('<div class="sec"><h2>CommandCode</h2>'
+        body.append('<div class="sec"><h2 class="cc">CommandCode</h2>'
                     f'<div class="note">unreadable: {_esc(cc.get("error", "unknown"))}</div></div>')
 
     og = doc.get("opencode_go") or {}
@@ -224,13 +231,13 @@ def html_quota(doc: dict) -> str:
                 + (f' · resets {_esc(reset)}' if reset else '')
                 + '</div></div>')
         body.append(
-            '<div class="sec"><h2>OpenCode Go · '
+            '<div class="sec"><h2 class="ocg">OpenCode Go · '
             f'{_esc(og.get("plan") or "?")} · allowance</h2>'
             f'{"".join(rows)}'
             '<div class="note">Rolling window shown for context; only Weekly and '
             'Monthly raise alerts.</div></div>')
     else:
-        body.append('<div class="sec"><h2>OpenCode Go</h2>'
+        body.append('<div class="sec"><h2 class="ocg">OpenCode Go</h2>'
                     f'<div class="note">unreadable: {_esc(og.get("error", "unknown"))}</div></div>')
 
     cp = doc.get("copilot") or {}
@@ -240,7 +247,7 @@ def html_quota(doc: dict) -> str:
         pct = cr.get("percent_of_seat_allowance") or 0
         left = (allow or 0) - (used or 0)
         body.append(
-            '<div class="sec"><h2>GitHub Copilot · business · credits</h2>'
+            '<div class="sec"><h2 class="cp">GitHub Copilot · business · credits</h2>'
             '<div class="row">'
             f'<div class="head"><span class="lbl">AI credits</span>'
             f'<span class="pct">{pct:.0f}%</span></div>'
@@ -251,7 +258,7 @@ def html_quota(doc: dict) -> str:
             '<div class="note">Pooled org-wide, so this is one seat\'s contribution, not a ceiling.</div>'
             '</div>')
     else:
-        body.append('<div class="sec"><h2>GitHub Copilot</h2>'
+        body.append('<div class="sec"><h2 class="cp">GitHub Copilot</h2>'
                     f'<div class="note">unreadable: {_esc(cp.get("error", "unknown"))}</div></div>')
 
     return f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>{''.join(body)}</body></html>"
