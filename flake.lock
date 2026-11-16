@@ -10,11 +10,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794831653,
-        "narHash": "sha256-dF2lDBe9KURlyfxDX/i/PDIv7NBKKz0Q3Rr4GWzWSNg=",
+        "lastModified": 1794843459,
+        "narHash": "sha256-eOFgyJcw45EBmS7QO4z0VNxG2TMQDA7hKnSB5+d4G/0=",
         "ref": "refs/heads/main",
-        "rev": "403ae1379326974cf533615a3a81823e4a9b60e4",
-        "revCount": 70,
+        "rev": "bc96957e9f28c042d90f968a84dc8b3b79262a5c",
+        "revCount": 71,
         "type": "git",
         "url": "file:///home/smolpanda/Fun/Projects/d365fo-mcp"
       },
