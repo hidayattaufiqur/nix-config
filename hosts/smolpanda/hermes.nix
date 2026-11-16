@@ -96,7 +96,11 @@ let
       # (02a1a8a -> 2038ff3: read_object named methods lead the page axis,
       # read_objects refuses a budget too small instead of losing bodies,
       # method_names_missing names a typo, and callers walks the whole corpus).
-      HERMES_CONFIG_EPOCH = "8";
+      # 2026-11-16 (last): v8 -> v9 for the callers --exhaustive budget fix
+      # (2038ff3 -> 403ae13): d365fo_callers now gets callers' own 120s budget
+      # instead of the generic 4s query default, so --exhaustive actually walks
+      # the corpus and "nothing calls this" becomes answerable over MCP.
+      HERMES_CONFIG_EPOCH = "9";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
@@ -704,7 +708,14 @@ in
         # read_objects refuses budget_too_small rather than returning
         # truncated-with-no-cursor; callers scans the whole corpus by default
         # and has --exhaustive. Index unchanged (schema 6, same generation).
-        environment.HERMES_CONFIG_EPOCH = "16";
+        # 2026-11-16 (last): bumped 16 -> 17 for the callers --exhaustive budget
+        # fix (2038ff3 -> 403ae13). server.go handed d365fo_callers the generic
+        # 4s query default, which made CallersDefaultTimeoutMS (120s) unreachable
+        # dead code on the MCP path — exhaustive callers stopped at ~8% of the
+        # corpus and could not answer "nothing calls this". Now `timeout_ms` is
+        # honoured and an unspecified budget defers to callers' own default.
+        # Index unchanged (schema 6, same generation): binary only.
+        environment.HERMES_CONFIG_EPOCH = "17";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
