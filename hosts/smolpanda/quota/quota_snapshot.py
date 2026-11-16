@@ -322,11 +322,11 @@ def _breaches(doc: dict) -> list[str]:
             if pct >= crit:
                 findings.append(
                     f"CRITICAL OpenCode Go {name}: {used:.0f}/{total:.0f} used "
-                    f"({pct:.0f}%), resets {q.get('resets_at', '?')}")
+                    f"({pct:.0f}%), resets {q.get('resetAt', '?')}")
             elif pct >= warn:
                 findings.append(
                     f"WARNING OpenCode Go {name}: {used:.0f}/{total:.0f} used "
-                    f"({pct:.0f}%), resets {q.get('resets_at', '?')}")
+                    f"({pct:.0f}%), resets {q.get('resetAt', '?')}")
     elif og:
         findings.append(f"OpenCode Go quota unreadable: {og.get('error', 'unknown')}")
 
@@ -418,7 +418,7 @@ def _digest(doc: dict) -> str:
             pct = 100.0 * used / total
             left = total - used
             bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
-            reset = (q.get("resets_at") or "")[:10]
+            reset = (q.get("resetAt") or "")[:10]
             lines.append(f"`{bar}` {name}: {pct:.0f}% used, "
                          f"{left:.0f} of {total:.0f} left"
                          + (f" · resets {reset}" if reset else ""))

@@ -214,7 +214,7 @@ def html_quota(doc: dict) -> str:
                 continue
             pct = 100.0 * used / total
             left = total - used
-            reset = (q.get("resets_at") or "")[:10]
+            reset = (q.get("resetAt") or "")[:10]
             rows.append(
                 '<div class="row">'
                 f'<div class="head"><span class="lbl">{_esc(name)} window</span>'
