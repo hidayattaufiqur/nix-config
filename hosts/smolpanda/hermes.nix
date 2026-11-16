@@ -92,7 +92,11 @@ let
       # Same trap as v5 -> v6: this gateway resolves the binary through
       # /run/current-system/sw/bin/d365fo-mcp at spawn time, so only a restart
       # gives it the new tool set.
-      HERMES_CONFIG_EPOCH = "7";
+      # 2026-11-16 (later): v7 -> v8 for the review-fix binary
+      # (02a1a8a -> 2038ff3: read_object named methods lead the page axis,
+      # read_objects refuses a budget too small instead of losing bodies,
+      # method_names_missing names a typo, and callers walks the whole corpus).
+      HERMES_CONFIG_EPOCH = "8";
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
@@ -694,7 +698,13 @@ in
         # bodies real X++ rather than the <Method><Source><![CDATA[ wrapper.
         # The index is unchanged — same schema 6, same generation — so only
         # the binary moves and no rebuild of the catalog is needed.
-        environment.HERMES_CONFIG_EPOCH = "15";
+        # 2026-11-16 (later): bumped 15 -> 16 for the review-fix binary
+        # (02a1a8a -> 2038ff3). read_object's named methods now lead the page
+        # axis, so a table's requested body is reachable at any budget;
+        # read_objects refuses budget_too_small rather than returning
+        # truncated-with-no-cursor; callers scans the whole corpus by default
+        # and has --exhaustive. Index unchanged (schema 6, same generation).
+        environment.HERMES_CONFIG_EPOCH = "16";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
