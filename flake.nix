@@ -23,6 +23,17 @@ inputs = {
   #    conversion rejects the undeclared tool_search with "`input[N]` missing
   #    required field `arguments`", poisoning long threads on meta/muse-spark
   #    (2026-08-26; card t_f794c2ae).
+  #  - vendor/hermes-state-writer-lock.patch: four read-only methods executed
+  #    SELECTs on the SHARED writer connection without self._lock
+  #    (get_compression_lock_holder, get_handoff_state, list_pending_handoffs,
+  #    clear_session_activity_labels' no-op fast path). Racing a turn-boundary
+  #    append_messages_batch raises a bare SystemError ("<Connection> returned
+  #    NULL without setting an exception") that is not a sqlite3.Error, escapes
+  #    _execute_write's retry net, and ends the turn as
+  #    session_persistence_failed (2026-11-16, ~6 hits since 2026-11-08).
+  #    Upstream #90734 fixed it by moving those callers onto _read_ctx(); that
+  #    read pool does not exist in 0.20.1, so the patch takes the lock instead.
+  #    Drop it when the pin reaches v0.22.0+.
   # The vendored tree == upstream @ 1b1975781 plus these patches.
   hermes-agent.url = "path:/home/smolpanda/nix-config/vendor/hermes-agent";
   # git+file:// (not path:) — path: inputs copy the whole dir and ignore

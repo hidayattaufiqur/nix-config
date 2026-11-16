@@ -1,0 +1,106 @@
+diff --git a/hermes_state.py b/hermes_state.py
+index 1f44cfc..980e7c1 100644
+--- a/hermes_state.py
++++ b/hermes_state.py
+@@ -5747,11 +5747,21 @@ class SessionDB(SessionSearchMixin, SessionSchemaMixin, SessionPortabilityMixin)
+         if not session_id:
+             return None
+         now = time.time()
+-        row = self._conn.execute(
+-            "SELECT holder FROM compression_locks "
+-            "WHERE session_id = ? AND expires_at >= ?",
+-            (session_id, now),
+-        ).fetchone()
++        # LOCAL PATCH (smolpanda): take the writer lock. This SELECT runs on
++        # the SHARED writer connection (check_same_thread=False); without the
++        # lock it can race a turn-boundary append_messages_batch on the same
++        # connection and CPython's sqlite3 raises a bare SystemError
++        # ("<Connection> returned NULL without setting an exception") that is
++        # NOT a sqlite3.Error, escapes _execute_write's retry net, and kills
++        # the user's turn as session_persistence_failed. Upstream #90734/#94258
++        # fixed this by moving the callers onto _read_ctx(); the vendor tree is
++        # 0.20.1 and has no read pool, so lock instead.
++        with self._lock:
++            row = self._conn.execute(
++                "SELECT holder FROM compression_locks "
++                "WHERE session_id = ? AND expires_at >= ?",
++                (session_id, now),
++            ).fetchone()
+         if row is None:
+             return None
+         return row["holder"] if isinstance(row, sqlite3.Row) else row[0]
+@@ -5825,11 +5835,17 @@ class SessionDB(SessionSearchMixin, SessionSchemaMixin, SessionPortabilityMixin)
+         # No-op fast path: skip the transaction when there is nothing to
+         # clear. Read-only, no write lock.
+         try:
+-            row = self._conn.execute(
+-                "SELECT last_activity_description, last_activity_provenance "
+-                "FROM sessions WHERE id = ?",
+-                (session_id,),
+-            ).fetchone()
++            # LOCAL PATCH (smolpanda): runs in the turn's finally block, i.e.
++            # concurrent with other sessions' appends on the shared writer
++            # connection. Same SystemError race as
++            # get_compression_lock_holder above; the fast path must hold the
++            # lock it was skipping.
++            with self._lock:
++                row = self._conn.execute(
++                    "SELECT last_activity_description, last_activity_provenance "
++                    "FROM sessions WHERE id = ?",
++                    (session_id,),
++                ).fetchone()
+         except sqlite3.Error:
+             row = None
+         if row is not None:
+@@ -11565,12 +11581,16 @@ class SessionDB(SessionSearchMixin, SessionSchemaMixin, SessionPortabilityMixin)
+         no handoff record.
+         """
+         try:
+-            cur = self._conn.execute(
+-                "SELECT handoff_state, handoff_platform, handoff_error "
+-                "FROM sessions WHERE id = ?",
+-                (session_id,),
+-            )
+-            row = cur.fetchone()
++            # LOCAL PATCH (smolpanda): same shared-writer race as
++            # get_compression_lock_holder above. Gateway handoff watcher runs
++            # this on a poll thread.
++            with self._lock:
++                cur = self._conn.execute(
++                    "SELECT handoff_state, handoff_platform, handoff_error "
++                    "FROM sessions WHERE id = ?",
++                    (session_id,),
++                )
++                row = cur.fetchone()
+             if not row:
+                 return None
+             return {
+@@ -11587,15 +11607,19 @@ class SessionDB(SessionSearchMixin, SessionSchemaMixin, SessionPortabilityMixin)
+         Used by the gateway's handoff watcher.
+         """
+         try:
+-            cur = self._conn.execute(
+-                "SELECT s.*, "
+-                "COALESCE(sp.prompt, s.system_prompt) AS _system_prompt_resolved "
+-                "FROM sessions s "
+-                "LEFT JOIN system_prompts sp ON sp.hash = s.system_prompt_hash "
+-                "WHERE s.handoff_state = 'pending' "
+-                "ORDER BY s.started_at ASC"
+-            )
+-            return [self._session_row_dict(r) for r in cur.fetchall()]
++            # LOCAL PATCH (smolpanda): gateway handoff watcher poll — same
++            # shared-writer race as get_compression_lock_holder above.
++            with self._lock:
++                cur = self._conn.execute(
++                    "SELECT s.*, "
++                    "COALESCE(sp.prompt, s.system_prompt) AS _system_prompt_resolved "
++                    "FROM sessions s "
++                    "LEFT JOIN system_prompts sp ON sp.hash = s.system_prompt_hash "
++                    "WHERE s.handoff_state = 'pending' "
++                    "ORDER BY s.started_at ASC"
++                )
++                rows = cur.fetchall()
++            return [self._session_row_dict(r) for r in rows]
+         except Exception:
+             return []
+ 
