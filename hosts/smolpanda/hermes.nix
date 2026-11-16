@@ -1,6 +1,20 @@
-{ config, lib, pkgs, upkgs, ... }:
+{ config, lib, pkgs, upkgs, d365fo-mcp, ... }:
 
 let
+  # d365foEpoch: the store hash of the d365fo-mcp binary, used to derive
+  # HERMES_CONFIG_EPOCH instead of hand-incrementing a counter.
+  #
+  # An MCP stdio child is spawned ONCE per gateway process, so a new d365fo-mcp
+  # binary does not reach a running gateway until that gateway restarts. The
+  # epoch trick forces the restart by changing the unit env. It only works if
+  # someone remembers to bump a number — and on 2026-11-16 nobody did: one
+  # session committed a bump the working tree already carried, the commit held
+  # only flake.lock, the unit was unchanged, systemd correctly did not restart,
+  # and the gateway kept serving a four-hour-old binary. Deriving the token from
+  # the artifact removes the bookkeeping entirely: new binary, new hash, restart.
+  d365foEpoch = builtins.substring 0 8
+    (builtins.baseNameOf (builtins.unsafeDiscardStringContext
+      "${d365fo-mcp.packages.${pkgs.stdenv.hostPlatform.system}.default}"));
   # ── Worker gateways (per-profile systemd services) ──────────────────────
   # The 6 worker profiles each run their own gateway so they can connect to
   # Discord as their own bot (mastermind = default profile, managed by
@@ -100,7 +114,18 @@ let
       # (2038ff3 -> 403ae13): d365fo_callers now gets callers' own 120s budget
       # instead of the generic 4s query default, so --exhaustive actually walks
       # the corpus and "nothing calls this" becomes answerable over MCP.
-      HERMES_CONFIG_EPOCH = "9";
+      #
+      # STOP hand-incrementing this. On 2026-11-16 a manual bump was committed by
+      # one session while the working tree already carried the same value from
+      # another; the second commit contained only flake.lock, the unit was
+      # unchanged, systemd correctly did NOT restart, and the gateway kept a
+      # four-hour-old MCP child serving the pre-fix binary. Hand counters race.
+      # The token below is DERIVED from what actually has to change — the
+      # d365fo-mcp store path — so a new binary forces the restart by itself and
+      # no session has to remember a number. Keep the counter only for changes
+      # that are not a new d365fo binary (config.yaml/SOUL.md/plugin edits).
+      HERMES_CONFIG_EPOCH = "9-${d365foEpoch}";
+
     }
     // lib.optionalAttrs (name == "dossier") {
       # Same restart-forcing trick, dossier's own counter (runs at v0: unset).
@@ -715,7 +740,13 @@ in
         # corpus and could not answer "nothing calls this". Now `timeout_ms` is
         # honoured and an unspecified budget defers to callers' own default.
         # Index unchanged (schema 6, same generation): binary only.
-        environment.HERMES_CONFIG_EPOCH = "17";
+        #
+        # Derived, not counted — see the atlas block above for the 2026-11-16
+        # incident where a hand-incremented epoch raced between two sessions and
+        # silently left a stale MCP child. d365foEpoch is the store hash of the
+        # d365fo-mcp binary, so any new binary changes this string and systemd
+        # restarts the gateway with no human bookkeeping.
+        environment.HERMES_CONFIG_EPOCH = "17-${d365foEpoch}";
         serviceConfig.ReadWritePaths = [ "/home/smolpanda" ];
         # Restart the gateway when the generated config.yaml or the merged .env
         # changes (auxiliary.vision, mcp_servers, secrets from sops, ...).
