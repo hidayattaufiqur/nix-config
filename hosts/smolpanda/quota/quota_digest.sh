@@ -20,6 +20,16 @@ OUTDIR=/var/lib/hermes/.hermes/cache/images
 OUT=$OUTDIR/quota-digest.png
 "$PY" /var/lib/hermes/.hermes/scripts/render_report.py quota "$OUT" >/dev/null 2>&1
 if [ -s "$OUT" ]; then
+  # Pre-flight: the card must show every provider we collect. A renderer that
+  # silently drops a section (e.g. an older render_report.py restored by a
+  # rebuild) still produces a valid-looking PNG with missing data — which is
+  # exactly how a whole provider went unreported with no error anywhere.
+  MISSING=$("$PY" /var/lib/hermes/.hermes/scripts/render_report.py --verify 2>/dev/null)
+  if [ -n "$MISSING" ]; then
+    echo "⚠ quota digest is missing these sections: $MISSING"
+    echo "(render_report.py or quota_snapshot.py is stale — check that the"
+    echo " nix-config source, not just the deployed copy, carries the change)"
+  fi
   echo "MEDIA:$OUT"
 else
   "$PY" /var/lib/hermes/.hermes/scripts/quota_snapshot.py --digest

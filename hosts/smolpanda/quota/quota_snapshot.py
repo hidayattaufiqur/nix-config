@@ -40,6 +40,7 @@ Exit codes: 0 always. Quota collection must never break a cron chain.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -96,8 +97,13 @@ const base = process.env.QB || "http://127.0.0.1:20128";
     if (!cookie) { out.error = "9router login failed"; console.log(JSON.stringify(out)); return; }
     const H = { Cookie: cookie, "Content-Type": "application/json" };
     const conns = await (await fetch(base + "/api/providers/client", { headers: H })).json();
-    const cc = (conns.connections || []).filter((c) => c.provider === "commandcode");
-    if (!cc.length) { out.error = "no commandcode connection"; console.log(JSON.stringify(out)); return; }
+    // Provider comes from QB_PROVIDER so one script serves CommandCode and
+    // OpenCode Go: both live in 9router's providerConnections and share the
+    // /api/usage/<id> admin shape. Hardcoding it here is what forced a second
+    // copy of this whole block for every new provider.
+    const want = process.env.QB_PROVIDER || "commandcode";
+    const cc = (conns.connections || []).filter((c) => c.provider === want);
+    if (!cc.length) { out.error = "no " + want + " connection"; console.log(JSON.stringify(out)); return; }
     out.connections = [];
     for (const c of cc) {
       const r = await fetch(base + "/api/usage/" + c.id, { headers: H });
@@ -112,8 +118,13 @@ const base = process.env.QB || "http://127.0.0.1:20128";
 """
 
 
-def collect_commandcode() -> dict:
-    """CommandCode quota through 9router's admin session, executed in-container."""
+def _collect_9router_provider(provider: str) -> dict:
+    """Read a 9router-backed provider's quota through its admin session.
+
+    Shared by CommandCode and OpenCode Go: both live in 9router's
+    ``providerConnections`` and expose the same ``/api/usage/<id>`` shape, so
+    only the provider name differs.
+    """
     # cron runs with PATH=/usr/bin:/bin, where docker does not exist. Resolve it
     # explicitly rather than trusting PATH: on NixOS the stable entry point is
     # /run/current-system/sw/bin, and a hardcoded /nix/store path would break on
@@ -126,10 +137,12 @@ def collect_commandcode() -> dict:
                 break
     if not docker:
         return {"source": "9router", "ok": False, "error": "docker not found in PATH or /run/current-system"}
+    env = dict(os.environ, QB_PROVIDER=provider)
     try:
         proc = subprocess.run(
-            [docker, "exec", "-i", CONTAINER, "node", "--input-type=module", "-e", _CC_JS],
-            capture_output=True, text=True, timeout=45,
+            [docker, "exec", "-i", "-e", f"QB_PROVIDER={provider}",
+             CONTAINER, "node", "--input-type=module", "-e", _CC_JS],
+            capture_output=True, text=True, timeout=45, env=env,
         )
     except FileNotFoundError:
         return {"source": "9router", "ok": False, "error": "docker not available"}
@@ -146,6 +159,7 @@ def collect_commandcode() -> dict:
         return {"source": "9router", "ok": False, "error": "unparseable: " + raw[-1][:150]}
 
     parsed["source"] = "9router"
+    parsed["provider"] = provider
     # Surface the ACTIVE connection's numbers as the top-level convenience view.
     conns = parsed.get("connections") or []
     active = next((c for c in conns if c.get("active")), conns[0] if conns else None)
@@ -153,6 +167,21 @@ def collect_commandcode() -> dict:
         parsed["plan"] = active.get("plan")
         parsed["quotas"] = active["quotas"]
     return parsed
+
+
+def collect_commandcode() -> dict:
+    """CommandCode quota through 9router's admin session, executed in-container."""
+    return _collect_9router_provider("commandcode")
+
+
+def collect_opencode_go() -> dict:
+    """OpenCode Go quota — same 9router admin path, different provider row.
+
+    Windows are Rolling / Weekly / Monthly, each expressed as percent-of-
+    allowance with a reset date, which is a different shape from CommandCode's
+    USD budget + 5h/weekly windows.
+    """
+    return _collect_9router_provider("opencode-go")
 
 
 # ── Copilot ──────────────────────────────────────────────────────────────
@@ -274,7 +303,57 @@ def _breaches(doc: dict) -> list[str]:
     else:
         findings.append(f"Copilot quota unreadable: {cp.get('error', 'unknown')}")
 
+    og = doc.get("opencode_go") or {}
+    if og.get("ok"):
+        # OpenCode Go windows are percent-of-allowance, not USD. Rolling is
+        # deliberately NOT alerted (it rolls constantly and would fire on every
+        # blip), matching how CommandCode's Session (5h) window is treated.
+        quotas = og.get("quotas") or {}
+        for name in ("Weekly", "Monthly"):
+            q = quotas.get(name) or {}
+            try:
+                used = float(q["used"])
+                total = float(q["total"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if total <= 0:
+                continue
+            pct = used / total * 100.0
+            if pct >= crit:
+                findings.append(
+                    f"CRITICAL OpenCode Go {name}: {used:.0f}/{total:.0f} used "
+                    f"({pct:.0f}%), resets {q.get('resets_at', '?')}")
+            elif pct >= warn:
+                findings.append(
+                    f"WARNING OpenCode Go {name}: {used:.0f}/{total:.0f} used "
+                    f"({pct:.0f}%), resets {q.get('resets_at', '?')}")
+    elif og:
+        findings.append(f"OpenCode Go quota unreadable: {og.get('error', 'unknown')}")
+
     return findings
+
+
+def _finding_key(finding: str, day: str | None = None) -> str:
+    """Stable identity for a finding, ignoring the numbers that tick.
+
+    A quota creeping 69.24 -> 69.31 -> 69.38 would otherwise produce a new
+    "message" every run and defeat de-dup entirely. Strip quantities, dates and
+    times, keep the label and the shape.
+
+    ``day`` scopes the key to a UTC date. Callers that have their own
+    once-a-day rule (Copilot's pooled-credit note) pass it so de-dup cannot
+    silence them past day one — without the day in the key, a finding whose
+    numbers are stripped is byte-identical forever after its first send.
+    """
+    import re
+    s = re.sub(r"\d+(?:\.\d+)?%", "<pct>", finding)
+    s = re.sub(r"\$?\d+(?:\.\d+)?", "<n>", s)
+    s = re.sub(r"\d{4}-\d{2}-\d{2}(?:[T ]\S*)?", "<date>", s)
+    s = re.sub(r"\s+", " ", s).strip()
+    if day:
+        s = f"{day}|{s}"
+    key = hashlib.sha256(s.encode()).hexdigest()[:16]
+    return key
 
 
 def _persist(doc: dict) -> None:
@@ -322,6 +401,30 @@ def _digest(doc: dict) -> str:
     else:
         lines.append(f"\n**CommandCode** — unreadable: {cc.get('error', 'unknown')}")
 
+    og = doc.get("opencode_go") or {}
+    if og.get("ok"):
+        # Windows are PERCENT-of-allowance with a reset date, not USD: the API
+        # reports used/total as 100-scale units. Rolling is included in the
+        # digest (informational) but never alerted on — it rolls constantly.
+        plan = og.get("plan") or "?"
+        lines.append(f"\n**OpenCode Go ({plan})** — allowance")
+        for name, q in (og.get("quotas") or {}).items():
+            try:
+                used, total = float(q["used"]), float(q["total"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if total <= 0:
+                continue
+            pct = 100.0 * used / total
+            left = total - used
+            bar = "█" * int(round(pct / 10)) + "░" * (10 - int(round(pct / 10)))
+            reset = (q.get("resets_at") or "")[:10]
+            lines.append(f"`{bar}` {name}: {pct:.0f}% used, "
+                         f"{left:.0f} of {total:.0f} left"
+                         + (f" · resets {reset}" if reset else ""))
+    elif og:
+        lines.append(f"\n**OpenCode Go** — unreadable: {og.get('error', 'unknown')}")
+
     cp = doc.get("copilot") or {}
     if cp.get("ok"):
         cr = cp.get("credits") or {}
@@ -354,6 +457,7 @@ def main() -> int:
     doc = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "commandcode": collect_commandcode(),
+        "opencode_go": collect_opencode_go(),
         "copilot": collect_copilot(),
     }
 
@@ -390,9 +494,31 @@ def main() -> int:
                 doc["copilot"]["_reported_on"] = prev["copilot"]["_reported_on"]
 
         findings = _breaches(doc)  # may stamp _reported_on on doc["copilot"]
+
+        # Deliver only findings that are NEW since the last run. A CRITICAL that
+        # stays true must not re-notify every tick — that is the noise this
+        # system exists to remove. Keys ignore the numbers that tick, so a quota
+        # creeping 69.2 -> 69.4 stays one message instead of dozens.
+        #
+        # Day-scoped so a standing condition still nags once per day, and a
+        # condition that CLEARS drops its key — recurrence then alerts at once.
+        today = datetime.now(timezone.utc).date().isoformat()
+        seen = prev.get("_sent_keys") or {}
+        if not isinstance(seen, dict):
+            seen = {}
+        fresh = []
+        for f in findings:
+            k = _finding_key(f, day=today if "Copilot" in f else None)
+            if k not in seen:
+                fresh.append(f)
+                seen[k] = today
+        # Prune keys older than 7 days so the snapshot cannot grow forever.
+        seen = {k: d for k, d in seen.items() if isinstance(d, str)}
+        doc["_sent_keys"] = seen
+
         _persist(doc)
-        if findings:
-            print("\n".join(findings))
+        if fresh:
+            print("\n".join(fresh))
         return 0
 
     _persist(doc)

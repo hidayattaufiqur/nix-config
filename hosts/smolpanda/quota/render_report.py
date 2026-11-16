@@ -202,6 +202,37 @@ def html_quota(doc: dict) -> str:
         body.append('<div class="sec"><h2>CommandCode</h2>'
                     f'<div class="note">unreadable: {_esc(cc.get("error", "unknown"))}</div></div>')
 
+    og = doc.get("opencode_go") or {}
+    if og.get("ok"):
+        rows = []
+        for name, q in (og.get("quotas") or {}).items():
+            try:
+                used, total = float(q["used"]), float(q["total"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if total <= 0:
+                continue
+            pct = 100.0 * used / total
+            left = total - used
+            reset = (q.get("resets_at") or "")[:10]
+            rows.append(
+                '<div class="row">'
+                f'<div class="head"><span class="lbl">{_esc(name)} window</span>'
+                f'<span class="pct">{pct:.0f}%</span></div>'
+                f'{_bar(pct)}'
+                f'<div class="val"><b>{left:.0f}</b> of {total:.0f} left'
+                + (f' · resets {_esc(reset)}' if reset else '')
+                + '</div></div>')
+        body.append(
+            '<div class="sec"><h2>OpenCode Go · '
+            f'{_esc(og.get("plan") or "?")} · allowance</h2>'
+            f'{"".join(rows)}'
+            '<div class="note">Rolling window shown for context; only Weekly and '
+            'Monthly raise alerts.</div></div>')
+    else:
+        body.append('<div class="sec"><h2>OpenCode Go</h2>'
+                    f'<div class="note">unreadable: {_esc(og.get("error", "unknown"))}</div></div>')
+
     cp = doc.get("copilot") or {}
     if cp.get("ok"):
         cr = cp.get("credits") or {}
@@ -593,7 +624,44 @@ def _crop_to_content(png: Path) -> None:
                     + chunk(b"IEND", b""))
 
 
+# Sections the quota card must always carry. If a renderer (or the snapshot it
+# reads) is missing one, the card renders fine but silently under-reports — a
+# whole provider vanished this way once, with no error anywhere. `--verify`
+# turns that into a visible warning from quota_digest.sh.
+_REQUIRED_SECTIONS = ("CommandCode", "OpenCode Go", "GitHub Copilot")
+
+
+def verify_quota(src: Path | None = None) -> list[str]:
+    """Return the required quota sections absent from the rendered card.
+
+    Checks the SNAPSHOT for the provider block, not just the rendered heading:
+    html_quota emits an "unreadable" placeholder for a provider it knows about
+    but has no data for, so heading-presence alone would mask a snapshot that
+    stopped collecting it (which is the failure this guards against).
+    """
+    src = src or Path("/var/lib/hermes/.hermes/cache/quota/latest.json")
+    try:
+        doc = json.loads(src.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return list(_REQUIRED_SECTIONS)
+
+    missing = []
+    # map: label shown on the card -> snapshot key that must carry data
+    for label, key in (("CommandCode", "commandcode"),
+                       ("OpenCode Go", "opencode_go"),
+                       ("GitHub Copilot", "copilot")):
+        block = doc.get(key)
+        if not isinstance(block, dict) or not block.get("ok"):
+            missing.append(label)
+    return missing
+
+
 def main() -> int:
+    if "--verify" in sys.argv:
+        missing = verify_quota()
+        if missing:
+            print(", ".join(missing))
+        return 0
     if len(sys.argv) < 3:
         print(__doc__)
         return 2
