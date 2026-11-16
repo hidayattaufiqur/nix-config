@@ -122,13 +122,10 @@ td{padding:6px 9px 6px 0;border-bottom:1px solid #12161e;color:#c8ccd4}
 tr:last-child td{border-bottom:none}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
 td.dim{color:#5c6370}
-/* Per-provider section colours, so the eye can jump to a provider instead of
-   re-reading three identical grey headers. Deliberately NOT the state palette
-   (green/amber/red): a coloured header must never read as "this one is fine"
-   or "this one is broken". */
-.sec h2.cc{color:#6a9fd9}
-.sec h2.ocg{color:#b48ead}
-.sec h2.cp{color:#5fb3a1}
+/* Provider section headings share one accent colour. Yellow is bright against
+   the near-black background and reads as a heading, not as state — the bars
+   keep green/amber/red to themselves. */
+.sec h2.cc,.sec h2.ocg,.sec h2.cp{color:#d9a441}
 /* State colours: green ok, amber warn, red crit. */
 .g{background:#7ec87e}.y{background:#d9a441}.r{background:#d96a6a}.b{background:#6a9fd9}
 .warn{margin-top:16px;padding:10px 12px;
