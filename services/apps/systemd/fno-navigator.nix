@@ -106,7 +106,12 @@ in
         set -euo pipefail
         cd ${repo}
 
+        # Records the sha that is currently SERVED, so "needs deploy" is decided
+        # against the live site rather than against local HEAD. On this box the
+        # working tree and origin/main usually move together (the merge and the
+        # push happen here), so comparing local to remote would never fire.
         state=${role.homeDir}/.hermes/fno-auto-deploy.state
+        deployed=$(cat "$state" 2>/dev/null || echo none)
 
         # Only ever act on main. A feature branch here would publish unreviewed
         # code — the deploy trap this repo has hit three times.
@@ -125,31 +130,34 @@ in
         local_sha=$(git rev-parse HEAD)
         remote_sha=$(git rev-parse origin/main)
 
-        if [ "$local_sha" = "$remote_sha" ]; then
-          echo "up to date at $local_sha"; exit 0
+        # Fast-forward local main to remote when possible; if they are equal
+        # that is the normal case here.
+        if [ "$local_sha" != "$remote_sha" ]; then
+          git merge --ff-only origin main
+          local_sha=$(git rev-parse HEAD)
+        fi
+
+        if [ "$local_sha" = "$deployed" ]; then
+          echo "already serving $local_sha"; exit 0
         fi
 
         # A commit that failed to build before must not be retried forever.
-        if [ -f "$state" ] && [ "$(cat "$state")" = "$remote_sha" ]; then
-          echo "skip: $remote_sha already failed to build; waiting for a new commit"
+        if [ -f "$state.failed" ] && [ "$(cat "$state.failed")" = "$local_sha" ]; then
+          echo "skip: $local_sha already failed to build; waiting for a new commit"
           exit 0
         fi
 
-        # Fast-forward only. Never merge, never rebase — a conflict here means
-        # a human should look, not that the timer should improvise.
-        git merge --ff-only origin/main
-
         if ! npm run build; then
-          echo "$remote_sha" > "$state"
-          git reset --hard "$local_sha"
-          echo "BUILD FAILED for $remote_sha — rolled back to $local_sha"
+          echo "$local_sha" > "$state.failed"
+          echo "BUILD FAILED for $local_sha — live site left on $deployed"
           exit 1
         fi
 
-        rm -f "$state"
+        rm -f "$state.failed"
         rsync -a --delete ${repo}/build/ ${deployDir}/
         chmod -R a+rX ${deployDir}
-        echo "deployed $(git rev-parse HEAD)"
+        echo "$local_sha" > "$state"
+        echo "deployed $local_sha (was $deployed)"
       '');
     };
   };
